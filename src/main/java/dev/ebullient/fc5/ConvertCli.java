@@ -2,30 +2,48 @@ package dev.ebullient.fc5;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 
+import javax.inject.Inject;
+
+import io.quarkus.runtime.QuarkusApplication;
+import io.quarkus.runtime.annotations.QuarkusMain;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
+import picocli.CommandLine.IFactory;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ScopeType;
 
-@Command(name = "fc5-convert", mixinStandardHelpOptions = true)
-public class ConvertCli implements Runnable {
+@QuarkusMain
+@Command(name = "fc5-convert", mixinStandardHelpOptions = true, subcommands = {
+    Transform.class, Validate.class, Completion.class } )
+public class ConvertCli implements QuarkusApplication, Callable<Integer> {
 
-    Path input;
-    	
-    @Parameters(description = "Source XML file")
-    void setInput(File inputFile) {
-        input = inputFile.toPath().toAbsolutePath().normalize();
+    List<Path> input;
+
+    @Parameters(description = "XML Source file(s)", scope = ScopeType.INHERIT)
+    void setInput(List<File> inputFile) {
+        input = new ArrayList<>(inputFile.size());
+        for(File f : inputFile) {
+            input.add(f.toPath().toAbsolutePath().normalize());
+        }
     }
 
-    @Option(names = "-o", description = "Output file")
-    File output;
+    @Inject
+    IFactory factory;
 
     @Override
-    public void run() {
-        System.out.printf("Input: %s\nOutput: %s\n", 
-			input, 
-			output == null ? "stdout" : output.getAbsolutePath());
+    public int run(String... args) throws Exception {
+        return new CommandLine(this, factory).execute(args);
+    }
+
+    @Override
+    public Integer call() throws Exception {
+
+
+        return CommandLine.ExitCode.OK;
     }
 
 }
