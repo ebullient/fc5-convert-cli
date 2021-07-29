@@ -1,0 +1,12 @@
+<compendium>
+   <item>
+      <name>Jug</name>
+      <type>G</type>
+      <detail>Adventuring Gear</detail>
+      <weight>4</weight>
+      <text>A jug holds 1 gallon of liquid.
+Source: Player's Handbook p. 153</text>
+      <value>0.02</value>
+      <property/>
+   </item>
+</compendium>

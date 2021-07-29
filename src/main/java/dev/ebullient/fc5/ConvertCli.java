@@ -18,7 +18,7 @@ import picocli.CommandLine.ScopeType;
 
 @QuarkusMain
 @Command(name = "fc5-convert", mixinStandardHelpOptions = true, subcommands = {
-    Transform.class, Validate.class, Completion.class } )
+    Convert.class, Transform.class, Validate.class, Completion.class } )
 public class ConvertCli implements QuarkusApplication, Callable<Integer> {
 
     List<Path> input;

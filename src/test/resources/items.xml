@@ -1,0 +1,29 @@
+<compendium>
+   <item>
+      <name>Light Crossbow</name>
+      <type>R</type>
+      <detail>simple Weapon, Ranged Weapon</detail>
+      <weight>5</weight>
+      <text>Source: Player's Handbook p. 149</text>
+      <value>25.0</value>
+      <dmg1>1d8</dmg1>
+      <dmgType>P</dmgType>
+      <property>A,LD,2H</property>
+      <range>80/320</range>
+   </item>
+   <item>
+      <name>Longsword of Life Stealing</name>
+      <type>M</type>
+      <detail>major, martial Weapon, Melee Weapon</detail>
+      <weight>3</weight>
+      <text>When you attack a creature with this magic weapon and roll a 20 on the attack roll, that target takes an extra 10 necrotic damage if it isn't a construct or an undead. You also gain 10 temporary hit points.
+Note: According to the SRD, it is an extra 3d6 necrotic damage.
+Found On: Magic Item Table G
+Source: Dungeon Master's Guide p. 206</text>
+      <roll>3d6</roll>
+      <dmg1>1d8</dmg1>
+      <dmg2>1d10</dmg2>
+      <dmgType>S</dmgType>
+      <property>V,M</property>
+   </item>
+</compendium>
