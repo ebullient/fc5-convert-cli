@@ -18,8 +18,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 
-@Command(name = "validate", mixinStandardHelpOptions = true, 
-    header = "Validate XML files against a schema definition")
+@Command(name = "validate", mixinStandardHelpOptions = true, header = "Validate XML files against a schema definition")
 public class Validate implements Callable<Integer> {
 
     Path xsd;
@@ -40,14 +39,14 @@ public class Validate implements Callable<Integer> {
         Schema schema = factory.newSchema(xsd.toFile());
         Validator validator = schema.newValidator();
 
-        for(Path source : parent.input ) {
+        for (Path source : parent.input) {
             try {
                 System.out.printf("Validate %80s ... ", source.getFileName());
                 validator.validate(new StreamSource(source.toFile()));
                 System.out.println("✅ ");
             } catch (IOException | SAXException e) {
                 System.out.println("⛔️ ");
-                System.out.println("Exception: "+e.getMessage());
+                System.out.println("Exception: " + e.getMessage());
                 allOk = false;
             }
         }

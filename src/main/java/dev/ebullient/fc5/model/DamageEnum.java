@@ -2,7 +2,7 @@ package dev.ebullient.fc5.model;
 
 /**
  * 
- *  <pre>
+ * <pre>
  *     &lt;xs:simpleType name="damageEnum">
  *      &lt;xs:restriction base="xs:string">
  *          &lt;xs:enumeration value="B"/><!-- bludgeoning -->
@@ -48,7 +48,7 @@ public enum DamageEnum {
     }
 
     public static DamageEnum fromValue(String v) {
-        for (DamageEnum d: DamageEnum.values()) {
+        for (DamageEnum d : DamageEnum.values()) {
             if (d.value.equals(v)) {
                 return d;
             }

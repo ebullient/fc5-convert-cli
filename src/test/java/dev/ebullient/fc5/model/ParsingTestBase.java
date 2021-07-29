@@ -21,13 +21,13 @@ public class ParsingTestBase {
     }
 
     CompendiumType doParse(String input) throws Exception {
-        return CompendiumType.readCompendium(db, 
+        return CompendiumType.readCompendium(db,
                 new ByteArrayInputStream(input.getBytes()), null);
     }
 
     CompendiumType doParseInputResource(String resourceName) throws Exception {
         File file = new File("src/test/resources/" + resourceName);
-        try(InputStream is = new FileInputStream(file)) {
+        try (InputStream is = new FileInputStream(file)) {
             return CompendiumType.readCompendium(db, is, null);
         }
     }

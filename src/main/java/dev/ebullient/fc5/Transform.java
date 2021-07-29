@@ -28,8 +28,7 @@ import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
 
-@Command(name = "transform", mixinStandardHelpOptions = true, 
-    header = "Transform XML files")
+@Command(name = "transform", mixinStandardHelpOptions = true, header = "Transform XML files", requiredOptionMarker = '*')
 public class Transform implements Callable<Integer> {
 
     Path xslt;
@@ -41,7 +40,7 @@ public class Transform implements Callable<Integer> {
     @ParentCommand
     private ConvertCli parent;
 
-    @Option(names = "-t", description = "XSLT file", required = true)
+    @Option(names = "-t", description = "XSLT file")
     void setXsltFile(File xsltFile) {
         xslt = xsltFile.toPath().toAbsolutePath().normalize();
     }
@@ -49,10 +48,10 @@ public class Transform implements Callable<Integer> {
     @Option(names = "-o", description = "Output directory", required = true)
     void setOutputPath(File outputDir) {
         output = outputDir.toPath().toAbsolutePath().normalize();
-        if ( !output.toFile().exists() ) {
+        if (!output.toFile().exists()) {
             throw new ParameterException(spec.commandLine(), "Specified output path does not exist: " + output.toString());
         }
-        if ( !output.toFile().isDirectory() ) {
+        if (!output.toFile().isDirectory()) {
             throw new ParameterException(spec.commandLine(), "Specified output path is not a directory: " + output.toString());
         }
     }
@@ -64,18 +63,27 @@ public class Transform implements Callable<Integer> {
     public Integer call() throws Exception {
         boolean allOk = true;
 
+        final StreamSource xsltSource;
+        if (xslt == null) {
+            System.out.println("💡 Using default XSLT filter");
+            xsltSource = new StreamSource(this.getClass().getResourceAsStream("/filterMerge-2.0.xslt"));
+        } else {
+            System.out.println("💡 Using XLST " + xslt.toAbsolutePath());
+            xsltSource = new StreamSource(xslt.toFile());
+        }
+
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
 
         TransformerFactory transformerFactory = new net.sf.saxon.BasicTransformerFactory();
-        Transformer transformer = transformerFactory.newTransformer(new StreamSource(xslt.toFile()));
+        Transformer transformer = transformerFactory.newTransformer(xsltSource);
 
-        for(Path sourcePath : parent.input ) {
+        for (Path sourcePath : parent.input) {
             String systemId = sourcePath.toString();
-            System.out.printf("Transform %80s ... ", sourcePath.getFileName());
+            System.out.printf("Transform %40s ... ", sourcePath.getFileName());
 
             String filename = sourcePath.getFileName().toString();
-            if ( suffix != null ) {
+            if (suffix != null) {
                 int pos = filename.lastIndexOf(".");
                 filename = filename.substring(0, pos) + suffix + filename.substring(pos);
             }
@@ -83,16 +91,16 @@ public class Transform implements Callable<Integer> {
 
             try (InputStream is = new FileInputStream(sourcePath.toFile())) {
                 Document doc = db.parse(is, systemId);
-    
+
                 // transform xml to html via a xslt file
                 try (FileOutputStream target = new FileOutputStream(targetFile, false)) {
                     transformer.transform(new DOMSource(doc, systemId), new StreamResult(target));
                 }
-    
+
                 System.out.printf("✅ wrote %s\n", targetFile.getAbsolutePath());
             } catch (IOException | SAXException | TransformerException e) {
                 System.out.println("⛔️ ");
-                System.out.println("Exception: "+e.getMessage());
+                System.out.println("Exception: " + e.getMessage());
                 allOk = false;
             }
             db.reset();

@@ -12,9 +12,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * <p>Java class for compendiumType complex type.
+ * <p>
+ * Java class for compendiumType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="compendiumType">
@@ -49,40 +51,68 @@ public class CompendiumType {
     final List<SpellType> spells = new ArrayList<>();
 
     public CompendiumType(Node compendiumRoot) {
-        if ( compendiumRoot.hasChildNodes() ) {
+        if (compendiumRoot.hasChildNodes()) {
             NodeList nodeList = compendiumRoot.getChildNodes();
-            for(int i = 0; i < nodeList.getLength(); i++) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
                 Node child = nodeList.item(i);
                 if (child.getNodeType() == Node.ELEMENT_NODE) {
                     Map<String, Object> elements = NodeParser.parseNodeElements(child);
-                    switch(child.getNodeName()) {
-                        case "background" : 
+                    switch (child.getNodeName()) {
+                        case "background":
                             backgrounds.add(new BackgroundType(elements));
                             break;
-                        case "class" : 
+                        case "class":
                             classes.add(new ClassType(elements));
                             break;
-                        case "feat" : 
+                        case "feat":
                             feats.add(new FeatType(elements));
                             break;
-                        case "item" : 
+                        case "item":
                             items.add(new ItemType(elements));
                             break;
-                        case "monster" : 
+                        case "monster":
                             monsters.add(new MonsterType(elements));
                             break;
-                        case "race" : 
+                        case "race":
                             races.add(new RaceType(elements));
                             break;
-                        case "spell" : 
+                        case "spell":
                             spells.add(new SpellType(elements));
                             break;
                         default:
                             throw new IllegalArgumentException("Unknown element in compendium: " + child.getNodeName());
                     }
                 }
-            }            
+            }
         }
+    }
+
+    public List<BackgroundType> getBackgrounds() {
+        return backgrounds;
+    }
+
+    public List<ClassType> getClasses() {
+        return classes;
+    }
+
+    public List<FeatType> getFeats() {
+        return feats;
+    }
+
+    public List<ItemType> getItems() {
+        return items;
+    }
+
+    public List<MonsterType> getMonsters() {
+        return monsters;
+    }
+
+    public List<RaceType> getRaces() {
+        return races;
+    }
+
+    public List<SpellType> getSpells() {
+        return spells;
     }
 
     @Override
@@ -94,7 +124,7 @@ public class CompendiumType {
     public static final CompendiumType readCompendium(DocumentBuilder db, InputStream is, String systemId) throws Exception {
         Document doc = db.parse(is, systemId);
         Node compendiumNode = doc.getFirstChild();
-        assert("compendium".equals(compendiumNode.getNodeName()));
+        assert ("compendium".equals(compendiumNode.getNodeName()));
         return new CompendiumType(compendiumNode);
     }
 }

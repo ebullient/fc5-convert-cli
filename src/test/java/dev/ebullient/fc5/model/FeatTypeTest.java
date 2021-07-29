@@ -14,15 +14,14 @@ public class FeatTypeTest extends ParsingTestBase {
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.feats.isEmpty(),
-            "Feats should not be empty, found " + compendium);
-        
+                "Feats should not be empty, found " + compendium);
+
         FeatType feat = compendium.feats.get(0);
         Assertions.assertAll(
-            () -> assertEquals("Actor", feat.name),
-            () -> assertEquals("", feat.prerequisite),
-            () -> assertTrue(textContains(feat.text, "Skilled at mimicry")),
-            () -> assertEquals(1, feat.modifier.size(), "Should have found a modifier")
-        );
+                () -> assertEquals("Actor", feat.name),
+                () -> assertEquals("", feat.prerequisite),
+                () -> assertTrue(textContains(feat.text, "Skilled at mimicry")),
+                () -> assertEquals(1, feat.modifier.size(), "Should have found a modifier"));
     }
 
     @Test
@@ -31,14 +30,13 @@ public class FeatTypeTest extends ParsingTestBase {
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.feats.isEmpty(),
-            "Feats should not be empty, found " + compendium);
-        
+                "Feats should not be empty, found " + compendium);
+
         FeatType feat = compendium.feats.get(0);
         Assertions.assertAll(
-            () -> assertEquals("Defensive Duelist", feat.name),
-            () -> assertEquals("Dexterity 13 or higher", feat.prerequisite),
-            () -> assertTrue(textContains(feat.text, "When you are wielding")),
-            () -> assertEquals(0, feat.modifier.size(), "Should not have found a modifier")
-        );
+                () -> assertEquals("Defensive Duelist", feat.name),
+                () -> assertEquals("Dexterity 13 or higher", feat.prerequisite),
+                () -> assertTrue(textContains(feat.text, "When you are wielding")),
+                () -> assertEquals(0, feat.modifier.size(), "Should not have found a modifier"));
     }
 }

@@ -4,11 +4,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-
 /**
- * <p>Java class for featType complex type.
+ * <p>
+ * Java class for featType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="featType">
@@ -26,7 +27,7 @@ import java.util.Map;
  * &lt;/complexType>
  * </pre>
  */
-public class FeatType {
+public class FeatType implements BaseType {
 
     final String name;
     final String prerequisite;
@@ -43,6 +44,26 @@ public class FeatType {
         proficiency.setFlavor("abilityAndSkillList");
 
         modifier = NodeParser.getOrDefault(elements, "modifier", Collections.emptyList());
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getPrerequisite() {
+        return prerequisite;
+    }
+
+    public Text getText() {
+        return text;
+    }
+
+    public Proficiency getProficiency() {
+        return proficiency;
+    }
+
+    public List<Modifier> getModifier() {
+        return modifier;
     }
 
     @Override

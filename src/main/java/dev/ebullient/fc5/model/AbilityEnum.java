@@ -1,7 +1,7 @@
 package dev.ebullient.fc5.model;
 
 /**
- *  <pre>
+ * <pre>
  *  &lt;xs:simpleType name="abilityEnum">
  *    &lt;xs:restriction base="xs:string">
  *        &lt;xs:enumeration value="Strength"/>
@@ -13,7 +13,7 @@ package dev.ebullient.fc5.model;
  *        &lt;xs:enumeration value=""/>
  *    &lt;/xs:restriction>
  *  &lt;/xs:simpleType>
- *  </pre>
+ * </pre>
  */
 public enum AbilityEnum {
     Strength,
@@ -23,13 +23,13 @@ public enum AbilityEnum {
     Wisdom,
     Charisma,
     NONE;
-    
+
     public String value() {
         return name();
     }
 
     public static AbilityEnum fromValue(String v) {
-        if ( v == null || v.isBlank() ) {
+        if (v == null || v.isBlank()) {
             return NONE;
         }
         return valueOf(v);

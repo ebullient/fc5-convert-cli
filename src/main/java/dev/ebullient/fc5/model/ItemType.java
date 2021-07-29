@@ -4,11 +4,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-
 /**
- * <p>Java class for itemType complex type.
+ * <p>
+ * Java class for itemType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="itemType">
@@ -38,7 +39,7 @@ import java.util.Map;
  * &lt;/complexType>
  * </pre>
  */
-public class ItemType {
+public class ItemType implements BaseType {
 
     final String name;
     final ItemEnum type;
@@ -76,6 +77,74 @@ public class ItemType {
         dmgType = NodeParser.getOrDefault(elements, "dmgType", DamageEnum.UNKNOWN);
         property = NodeParser.getOrDefault(elements, "property", "");
         range = NodeParser.getOrDefault(elements, "range", "");
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public ItemEnum getType() {
+        return type;
+    }
+
+    public boolean isMagic() {
+        return magic;
+    }
+
+    public String getDetail() {
+        return detail;
+    }
+
+    public double getWeight() {
+        return weight;
+    }
+
+    public Text getText() {
+        return text;
+    }
+
+    public List<Roll> getRoll() {
+        return roll;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public List<Modifier> getModifier() {
+        return modifier;
+    }
+
+    public int getAc() {
+        return ac;
+    }
+
+    public int getStrength() {
+        return strength;
+    }
+
+    public boolean isStealth() {
+        return stealth;
+    }
+
+    public Roll getDmg1() {
+        return dmg1;
+    }
+
+    public Roll getDmg2() {
+        return dmg2;
+    }
+
+    public DamageEnum getDmgType() {
+        return dmgType;
+    }
+
+    public String getProperty() {
+        return property;
+    }
+
+    public String getRange() {
+        return range;
     }
 
     @Override

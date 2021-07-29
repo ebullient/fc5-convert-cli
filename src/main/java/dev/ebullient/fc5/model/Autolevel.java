@@ -7,9 +7,11 @@ import java.util.Map;
 import org.w3c.dom.Node;
 
 /**
- * <p>Java class for autolevelType complex type.
+ * <p>
+ * Java class for autolevelType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="autolevelType">

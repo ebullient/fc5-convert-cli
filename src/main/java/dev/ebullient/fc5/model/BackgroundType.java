@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Java class for backgroundType complex type.
+ * <p>
+ * Java class for backgroundType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="backgroundType">
@@ -23,14 +25,14 @@ import java.util.Map;
  * &lt;/complexType>
  * </pre>
  */
-public class BackgroundType {
+public class BackgroundType implements BaseType {
     final String name;
     final List<Trait> traits;
     final Proficiency proficiency;
 
     public BackgroundType(Map<String, Object> elements) {
         name = NodeParser.getOrDefault(elements, "name", "unknown");
-        
+
         proficiency = NodeParser.getOrDefault(elements, "proficiency", Proficiency.SKILL_LIST);
         proficiency.setFlavor("skillList");
 

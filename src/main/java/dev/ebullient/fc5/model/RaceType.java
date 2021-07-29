@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Java class for raceType complex type.
+ * <p>
+ * Java class for raceType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="raceType">
@@ -28,7 +30,7 @@ import java.util.Map;
  * &lt;/complexType>
  * </pre>
  */
-public class RaceType {
+public class RaceType implements BaseType {
 
     final String name;
     final SizeEnum size;
@@ -48,6 +50,38 @@ public class RaceType {
         proficiency = NodeParser.getOrDefault(elements, "proficiency", Proficiency.SKILL_LIST);
         traits = NodeParser.getOrDefault(elements, "trait", Collections.emptyList());
         modifiers = NodeParser.getOrDefault(elements, "modifier", Collections.emptyList());
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public SizeEnum getSize() {
+        return size;
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
+
+    public String getAbility() {
+        return ability;
+    }
+
+    public AbilityEnum getSpellAbility() {
+        return spellAbility;
+    }
+
+    public Proficiency getProficiency() {
+        return proficiency;
+    }
+
+    public List<Trait> getTraits() {
+        return traits;
+    }
+
+    public List<Modifier> getModifiers() {
+        return modifiers;
     }
 
     @Override

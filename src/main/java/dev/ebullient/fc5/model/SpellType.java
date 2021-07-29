@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Java class for spellType complex type.
+ * <p>
+ * Java class for spellType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="spellType">
@@ -34,7 +36,7 @@ import java.util.Map;
  * 
  * 
  */
-public class SpellType {
+public class SpellType implements BaseType {
 
     final String name;
     final int level;
@@ -62,6 +64,54 @@ public class SpellType {
         source = NodeParser.getOrDefault(elements, "source", "");
         text = NodeParser.getOrDefault(elements, "text", Text.NONE);
         roll = NodeParser.getOrDefault(elements, "roll", Collections.emptyList());
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public SchoolEnum getSchool() {
+        return school;
+    }
+
+    public boolean isRitual() {
+        return ritual;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public String getRange() {
+        return range;
+    }
+
+    public String getComponents() {
+        return components;
+    }
+
+    public String getDuration() {
+        return duration;
+    }
+
+    public String getClasses() {
+        return classes;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public Text getText() {
+        return text;
+    }
+
+    public List<Roll> getRoll() {
+        return roll;
     }
 
     @Override

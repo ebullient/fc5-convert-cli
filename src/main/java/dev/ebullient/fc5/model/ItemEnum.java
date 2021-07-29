@@ -1,11 +1,13 @@
 package dev.ebullient.fc5.model;
 
-
 /**
- * <p>Java class for itemEnum.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
+ * Java class for itemEnum.
+ * 
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * 
  * <pre>
  * &lt;simpleType name="itemEnum">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
@@ -47,7 +49,7 @@ public enum ItemEnum {
     SC,
     W,
     G,
-    $, 
+    $,
     UNKNOWN;
 
     public String value() {
@@ -57,6 +59,5 @@ public enum ItemEnum {
     public static ItemEnum fromValue(String v) {
         return valueOf(v);
     }
-    
 
 }

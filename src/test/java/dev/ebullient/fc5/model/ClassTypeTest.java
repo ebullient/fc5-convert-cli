@@ -17,33 +17,33 @@ public class ClassTypeTest extends ParsingTestBase {
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.classes.isEmpty(),
-            "Classes should not be empty, found " + compendium);
-        
+                "Classes should not be empty, found " + compendium);
+
         ClassType barbarian = compendium.classes.get(0);
         Assertions.assertAll(
-            () -> assertEquals("Barbarian", barbarian.name),
-            () -> assertEquals(12, barbarian.hitDice),
-            () -> assertEquals("Strength, Constitution, Animal Handling, Athletics, Intimidation, Nature, Perception, Survival", barbarian.proficiency.textContent),
-            () -> assertEquals(AbilityEnum.NONE, barbarian.spellAbility),
-            () -> assertEquals(2, barbarian.numSkills),
-            () -> assertNotEquals(Autolevel.NONE, barbarian.autolevel),
-            () -> assertEquals("light, medium, shields", barbarian.armor),
-            () -> assertEquals("simple, martial", barbarian.weapons),
-            () -> assertEquals("none", barbarian.tools),
-            () -> assertEquals("2d4x10", barbarian.wealth)
-        );
+                () -> assertEquals("Barbarian", barbarian.name),
+                () -> assertEquals(12, barbarian.hitDice),
+                () -> assertEquals(
+                        "Strength, Constitution, Animal Handling, Athletics, Intimidation, Nature, Perception, Survival",
+                        barbarian.proficiency.textContent),
+                () -> assertEquals(AbilityEnum.NONE, barbarian.spellAbility),
+                () -> assertEquals(2, barbarian.numSkills),
+                () -> assertNotEquals(Autolevel.NONE, barbarian.autolevel),
+                () -> assertEquals("light, medium, shields", barbarian.armor),
+                () -> assertEquals("simple, martial", barbarian.weapons),
+                () -> assertEquals("none", barbarian.tools),
+                () -> assertEquals("2d4x10", barbarian.wealth));
 
         List<Autolevel> autolevels = barbarian.autolevel;
         Assertions.assertAll(
-            () -> assertEquals(52, autolevels.size()),
-            () -> assertEquals(1, autolevels.get(1).level),
-            () -> assertFalse(autolevels.stream().anyMatch(x -> x.features.size() == 0))
-        );
+                () -> assertEquals(52, autolevels.size()),
+                () -> assertEquals(1, autolevels.get(1).level),
+                () -> assertFalse(autolevels.stream().anyMatch(x -> x.features.size() == 0)));
 
         autolevels.stream()
-            .map(x -> x.features.get(0))
-            .filter(y -> y.name.startsWith("Artillerist"))
-            .forEach(y -> Assertions.assertTrue(textContains(y.text, "## "),
-                    "Parse should handle interleaved names"));
+                .map(x -> x.features.get(0))
+                .filter(y -> y.name.startsWith("Artillerist"))
+                .forEach(y -> Assertions.assertTrue(textContains(y.text, "## "),
+                        "Parse should handle interleaved names"));
     }
 }

@@ -18,7 +18,7 @@ import picocli.CommandLine.ScopeType;
 
 @QuarkusMain
 @Command(name = "fc5-convert", mixinStandardHelpOptions = true, subcommands = {
-    Convert.class, Transform.class, Validate.class, Completion.class } )
+        Convert.class, Transform.class, Validate.class, Completion.class })
 public class ConvertCli implements QuarkusApplication, Callable<Integer> {
 
     List<Path> input;
@@ -26,7 +26,7 @@ public class ConvertCli implements QuarkusApplication, Callable<Integer> {
     @Parameters(description = "XML Source file(s)", scope = ScopeType.INHERIT)
     void setInput(List<File> inputFile) {
         input = new ArrayList<>(inputFile.size());
-        for(File f : inputFile) {
+        for (File f : inputFile) {
             input.add(f.toPath().toAbsolutePath().normalize());
         }
     }
@@ -41,8 +41,6 @@ public class ConvertCli implements QuarkusApplication, Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-
-
         return CommandLine.ExitCode.OK;
     }
 

@@ -251,7 +251,9 @@
             <xsl:apply-templates mode="secondStage" select="$monster/legendary" />
             <xsl:apply-templates mode="secondStage" select="$monster/reaction" />
             <xsl:apply-templates mode="secondStage" select="$monster/spells" />
-            <xsl:apply-templates mode="secondStage" select="$monster/slots" />
+            <xsl:for-each-group select="$monster/slots" group-by=".">
+              <xsl:apply-templates mode="secondStage" select="." />
+            </xsl:for-each-group>
             <xsl:apply-templates mode="secondStage" select="$monster/description" />
             <xsl:apply-templates mode="secondStage" select="$monster/environment" />
         </monster>

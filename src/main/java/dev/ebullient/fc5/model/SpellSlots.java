@@ -3,9 +3,11 @@ package dev.ebullient.fc5.model;
 import org.w3c.dom.Node;
 
 /**
- * <p>Java class for slotsType complex type.
+ * <p>
+ * Java class for slotsType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="slotsType">
@@ -32,7 +34,7 @@ public class SpellSlots {
 
     public SpellSlots(Node node) {
         textContent = node.getTextContent();
-        
+
         Node attribute = node.getAttributes().getNamedItem("optional");
         optional = attribute == null ? false : NodeParser.parseBoolean(attribute.getTextContent());
     }

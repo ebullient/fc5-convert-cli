@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Java class for classType complex type.
+ * <p>
+ * Java class for classType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="classType">
@@ -36,7 +38,7 @@ import java.util.Map;
  * &lt;/complexType>
  * </pre>
  */
-public class ClassType {
+public class ClassType implements BaseType {
     public static final String NONE = "none";
 
     final String name;
@@ -53,7 +55,7 @@ public class ClassType {
     public ClassType(Map<String, Object> elements) {
         name = NodeParser.getOrDefault(elements, "name", "unknown");
         hitDice = NodeParser.getOrDefault(elements, "hd", 8);
-        
+
         proficiency = NodeParser.getOrDefault(elements, "proficiency", Proficiency.ABILITY_AND_SKILL_LIST);
         proficiency.setFlavor("abilityAndSkillList");
 
@@ -65,7 +67,47 @@ public class ClassType {
         tools = NodeParser.getOrDefault(elements, "tools", NONE);
         wealth = NodeParser.getOrDefault(elements, "wealth", "");
     }
-    
+
+    public String getName() {
+        return name;
+    }
+
+    public int getHitDice() {
+        return hitDice;
+    }
+
+    public Proficiency getProficiency() {
+        return proficiency;
+    }
+
+    public AbilityEnum getSpellAbility() {
+        return spellAbility;
+    }
+
+    public int getNumSkills() {
+        return numSkills;
+    }
+
+    public List<Autolevel> getAutolevel() {
+        return autolevel;
+    }
+
+    public String getArmor() {
+        return armor;
+    }
+
+    public String getWeapons() {
+        return weapons;
+    }
+
+    public String getTools() {
+        return tools;
+    }
+
+    public String getWealth() {
+        return wealth;
+    }
+
     @Override
     public String toString() {
         return "ClassType [name=" + name + "]";

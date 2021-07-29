@@ -8,5 +8,5 @@ public class Roll {
     public Roll(String textContent) {
         this.textContent = textContent;
     }
-    
+
 }
