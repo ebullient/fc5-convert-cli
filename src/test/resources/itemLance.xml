@@ -2,6 +2,7 @@
    <item>
       <name>Lance</name>
       <type>M</type>
+      <magic>1</magic>
       <detail>martial Weapon, Melee Weapon</detail>
       <weight>6</weight>
       <text>Special: You have disadvantage when you use a lance to attack a target within 5 feet of you. Also, a lance requires two hands to wield when you aren't mounted.

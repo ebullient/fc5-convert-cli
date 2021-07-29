@@ -39,6 +39,7 @@ public class ItemTypeTest extends ParsingTestBase {
         Assertions.assertAll(
             () -> assertEquals("Lance", item.name),
             () -> assertEquals(ItemEnum.M, item.type),
+            () -> assertEquals(true, item.magic),
             () -> assertEquals("martial Weapon, Melee Weapon", item.detail),
             () -> assertEquals(6d, item.weight),
             () -> assertEquals(10.0, item.value),

@@ -1,10 +1,12 @@
 package dev.ebullient.fc5.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * <p>Java class for featureType complex type.
@@ -43,17 +45,64 @@ public class Feature {
         Node optionalAttribute = node.getAttributes().getNamedItem("optional");
         this.isOptional = optionalAttribute == null ? false : NodeParser.parseBoolean(optionalAttribute.getTextContent());
 
-        Map<String, Object> elements = NodeParser.parseNodeElements(node);
-        name = NodeParser.getOrDefault(elements, "name", "unknown");
-        text = NodeParser.getOrDefault(elements, "text", Text.NONE);
-        special = NodeParser.getOrDefault(elements, "special", Collections.emptyList());
-        modifier = NodeParser.getOrDefault(elements, "modifier", Collections.emptyList());
-        proficiency = NodeParser.getOrDefault(elements, "proficiency", Proficiency.STRING);
-        proficiency.setFlavor("string");
+        String nameText = null;
+        List<String> textStrings = new ArrayList<>();
+        List<String> specialList = null;
+        List<Modifier> modifierList = null;
+        Proficiency profContent = null;
+
+        NodeList children = node.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++ ) {
+            Node child = children.item(i);
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                switch(child.getNodeName()) {
+                    case "name" : {
+                        if ( nameText == null ) {
+                            nameText = child.getTextContent();
+                        } else {
+                            textStrings.add("## " + child.getTextContent());
+                        }
+                        break;
+                    }
+                    case "modifier" : {
+                        if ( modifierList == null ) {
+                            modifierList = new ArrayList<>();
+                        }
+                        modifierList.add(NodeParser.convertObject(NodeParser.parseNode(child), Modifier.NONE));
+                        break;
+                    }
+                    case "proficiency" : {
+                        if ( profContent != null ) {
+                            throw new IllegalArgumentException("Multiple proficiency definitions");
+                        }
+                        profContent = NodeParser.convertObject(NodeParser.parseNode(child), Proficiency.STRING);
+                        profContent.setFlavor("string");
+                        break;
+                    }
+                    case "special" : {
+                        if ( specialList == null ) {
+                            specialList = new ArrayList<>();
+                        }
+                        specialList.add(child.getTextContent());
+                        break;
+                    }
+                    case "text" : {
+                        textStrings.add(child.getTextContent());
+                        break;
+                    }
+                }
+            }
+        }
+
+        this.name = nameText;
+        this.modifier = modifierList == null ? Collections.emptyList() : modifierList;
+        this.proficiency = profContent;
+        this.special = specialList == null ? Collections.emptyList() : specialList;
+        this.text = new Text(textStrings);
     }
 
     @Override
     public String toString() {
-        return "FeatureType [nameOrTextOrSpecial=" + name + "]";
+        return "FeatureType [name=" + name + "]";
     }
 }

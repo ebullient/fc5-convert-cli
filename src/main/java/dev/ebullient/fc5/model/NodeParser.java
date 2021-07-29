@@ -14,18 +14,27 @@ public class NodeParser {
     private NodeParser() {}
 
     public static <T> T getOrDefault(Map<String, Object> elements, String key, T defaultValue) {
-        Object o = elements.get(key);
+        if ( defaultValue instanceof Text ) {
+            return (T) new Text(getOrDefault(elements, key, EMPTY_TEXT));
+        }
+        return convertObject(elements.get(key), defaultValue);
+    }
+
+    public static <T> T convertObject(Object o, T defaultValue) {
         if ( o == null ) {
             return defaultValue;
         }
         if ( defaultValue instanceof Double ) {
+            if ( o instanceof String && ((String) o).isBlank()) {
+                return defaultValue;
+            }
             return (T) Double.valueOf((String) o);
         }
         if ( defaultValue instanceof Integer ) {
+            if ( o instanceof String && ((String) o).isBlank()) {
+                return defaultValue;
+            }
             return (T) Integer.valueOf((String) o);
-        }
-        if ( defaultValue instanceof Text ) {
-            return (T) new Text(getOrDefault(elements, key, EMPTY_TEXT));
         }
         if ( defaultValue instanceof List && !(o instanceof List) ) {
             return (T) Collections.singletonList(o);
@@ -33,7 +42,7 @@ public class NodeParser {
         return (T) o;
     }
 
-    static Map<String, Object> parseNodeElements(Node parent) {
+    public static Map<String, Object> parseNodeElements(Node parent) {
         Map<String, Object> result = new HashMap<>();
         NodeList list = parent.getChildNodes();
 
@@ -54,7 +63,7 @@ public class NodeParser {
         return result;
     }
 
-    private static Object parseNode(Node node) {
+    public static Object parseNode(Node node) {
         switch(node.getNodeName()) {
             case "autolevel":
                 return new Autolevel(node);
@@ -69,7 +78,9 @@ public class NodeParser {
                 return new Modifier(node);
             case "proficiency" : 
                 return new Proficiency(node.getTextContent());
+            case "magic" :
             case "ritual" :
+            case "stealth" :
                 return parseBoolean(node.getTextContent());
             case "roll" :
                 return new Roll(node.getTextContent());
@@ -119,9 +130,9 @@ public class NodeParser {
             case "senses":
             case "skill":
             case "source" :
-            case "special": 
             case "speed" :
             case "str":
+            case "strength":
             case "text" :
             case "time" :
             case "tools" :
@@ -140,10 +151,17 @@ public class NodeParser {
     }
 
     public static Boolean parseBoolean(String value) {
-        if ("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value)) {
-            return true;
+        if ( value == null ) {
+            return false;
         }
-        return false;
+        switch(value.toLowerCase()) {
+            case "yes":
+            case "true":
+            case "1":
+                return true;
+            default:
+                return false;
+        }
     }
 
     private static List<Object> convertToList(String key, Object existing) {
