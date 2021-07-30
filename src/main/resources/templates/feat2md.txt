@@ -1,0 +1,9 @@
+---
+cssclass: ref-feat
+type: ref-feat
+tags: [{resource.tag}]
+aliases: ['{resource.name}']
+---
+# Feat: {resource.name}
+
+{resource.text}

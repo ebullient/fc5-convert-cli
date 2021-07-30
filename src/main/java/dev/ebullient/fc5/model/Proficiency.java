@@ -3,7 +3,11 @@ package dev.ebullient.fc5.model;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import io.quarkus.qute.TemplateData;
+
+@TemplateData
 public class Proficiency {
     public static final Proficiency ABILITY_AND_SKILL_LIST = new Proficiency("", "abilityAndSkillList") {
         @Override
@@ -41,4 +45,24 @@ public class Proficiency {
         this.flavor = flavor;
     }
 
+    public String getSavingThrows() {
+        if (ABILITY_AND_SKILL_LIST.flavor.equals(this.flavor)) {
+            return skills.stream()
+                    .filter(x -> AbilityEnum.isAbility(x))
+                    .collect(Collectors.joining(", "));
+        }
+        return "";
+    }
+
+    public String getSkillNames() {
+        if (ABILITY_AND_SKILL_LIST.flavor.equals(this.flavor)) {
+            return skills.stream()
+                    .filter(x -> !AbilityEnum.isAbility(x))
+                    .map(x -> "*" + x + "*")
+                    .collect(Collectors.joining(", "));
+        }
+        return skills.stream()
+                .map(x -> "*" + x + "*")
+                .collect(Collectors.joining(", "));
+    }
 }

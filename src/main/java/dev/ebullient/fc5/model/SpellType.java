@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * <p>
  * Java class for spellType complex type.
@@ -36,6 +38,7 @@ import java.util.Map;
  * 
  * 
  */
+@TemplateData
 public class SpellType implements BaseType {
 
     final String name;
@@ -68,6 +71,10 @@ public class SpellType implements BaseType {
 
     public String getName() {
         return name;
+    }
+
+    public String getTag() {
+        return "spell/" + MarkdownWriter.slugifier().slugify(name);
     }
 
     public int getLevel() {
@@ -106,8 +113,8 @@ public class SpellType implements BaseType {
         return source;
     }
 
-    public Text getText() {
-        return text;
+    public String getText() {
+        return String.join("\n", text.content);
     }
 
     public List<Roll> getRoll() {

@@ -1,8 +1,11 @@
 package dev.ebullient.fc5.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import io.quarkus.qute.TemplateData;
 
 /**
  * <p>
@@ -39,6 +42,7 @@ import java.util.Map;
  * &lt;/complexType>
  * </pre>
  */
+@TemplateData
 public class ItemType implements BaseType {
 
     final String name;
@@ -83,68 +87,69 @@ public class ItemType implements BaseType {
         return name;
     }
 
-    public ItemEnum getType() {
-        return type;
+    public String getTag() {
+        List<String> tags = new ArrayList<>();
+        tags.add("item/" + type.getCategoryTag());
+        if (isMagic()) {
+            tags.add("item/magic/" + magicItemType());
+        }
+        return String.join(", ", tags);
     }
 
-    public boolean isMagic() {
-        return magic;
+    public String getText() {
+        return String.join("\n", text.content);
+    }
+
+    public boolean isWeapon() {
+        return type.isWeapon();
+    }
+
+    public boolean isArmor() {
+        return type.isArmor();
     }
 
     public String getDetail() {
         return detail;
     }
 
+    public String getArmorClass() {
+        return "TODO armor class";
+    }
+
+    public String getDamage() {
+        return "TODO damaegs";
+    }
+
+    public String getProperty() {
+        return "TODO property";
+    }
+
+    public double getCost() {
+        return value;
+    }
+
     public double getWeight() {
         return weight;
     }
 
-    public Text getText() {
-        return text;
-    }
+    private String magicItemType() {
+        String tag = "";
+        if (detail.toLowerCase().contains("major")) {
+            tag += "major/";
+        } else if (detail.toLowerCase().contains("minor")) {
+            tag += "minor/";
+        }
 
-    public List<Roll> getRoll() {
-        return roll;
-    }
-
-    public double getValue() {
-        return value;
-    }
-
-    public List<Modifier> getModifier() {
-        return modifier;
-    }
-
-    public int getAc() {
-        return ac;
-    }
-
-    public int getStrength() {
-        return strength;
-    }
-
-    public boolean isStealth() {
-        return stealth;
-    }
-
-    public Roll getDmg1() {
-        return dmg1;
-    }
-
-    public Roll getDmg2() {
-        return dmg2;
-    }
-
-    public DamageEnum getDmgType() {
-        return dmgType;
-    }
-
-    public String getProperty() {
-        return property;
-    }
-
-    public String getRange() {
-        return range;
+        if (detail.toLowerCase().contains("very rare")) {
+            tag += "very-rare";
+        } else if (detail.toLowerCase().contains("rare")) {
+            tag += "rare";
+        } else if (detail.toLowerCase().contains("uncommon")) {
+            tag += "uncommon";
+        } else if (detail.toLowerCase().contains("common")) {
+            tag += "common";
+        }
+        return tag;
     }
 
     @Override

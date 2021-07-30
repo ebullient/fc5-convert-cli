@@ -1,5 +1,8 @@
 package dev.ebullient.fc5.model;
 
+import io.quarkus.qute.TemplateData;
+
+@TemplateData
 public class Roll {
     public static final Roll NONE = new Roll("");
 

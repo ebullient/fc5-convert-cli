@@ -1,7 +1,6 @@
 package dev.ebullient.fc5.model;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlType;
+import io.quarkus.qute.TemplateData;
 
 /**
  * <p>
@@ -25,8 +24,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "sizeEnum")
-@XmlEnum
+@TemplateData
 public enum SizeEnum {
 
     T,

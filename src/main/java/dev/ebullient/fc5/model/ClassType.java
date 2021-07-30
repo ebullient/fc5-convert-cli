@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * <p>
  * Java class for classType complex type.
@@ -38,6 +40,7 @@ import java.util.Map;
  * &lt;/complexType>
  * </pre>
  */
+@TemplateData
 public class ClassType implements BaseType {
     public static final String NONE = "none";
 
@@ -68,44 +71,48 @@ public class ClassType implements BaseType {
         wealth = NodeParser.getOrDefault(elements, "wealth", "");
     }
 
+    public List<Autolevel> getLevelFeatures() {
+        return autolevel;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public String getTag() {
+        return "class/" + MarkdownWriter.slugifier().slugify(name);
     }
 
     public int getHitDice() {
         return hitDice;
     }
 
-    public Proficiency getProficiency() {
-        return proficiency;
-    }
-
-    public AbilityEnum getSpellAbility() {
-        return spellAbility;
-    }
-
-    public int getNumSkills() {
-        return numSkills;
-    }
-
-    public List<Autolevel> getAutolevel() {
-        return autolevel;
+    public int getHitRollAverage() {
+        return hitDice / 2 + 1;
     }
 
     public String getArmor() {
         return armor;
     }
 
-    public String getWeapons() {
-        return weapons;
+    public String getSavingThrows() {
+        return proficiency.getSavingThrows();
+    }
+
+    public int getNumSkills() {
+        return numSkills;
+    }
+
+    public String getSkills() {
+        return proficiency.getSkillNames();
     }
 
     public String getTools() {
         return tools;
     }
 
-    public String getWealth() {
-        return wealth;
+    public String getWeapons() {
+        return weapons;
     }
 
     @Override

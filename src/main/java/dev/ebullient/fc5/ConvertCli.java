@@ -6,20 +6,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
-
-import io.quarkus.runtime.QuarkusApplication;
-import io.quarkus.runtime.annotations.QuarkusMain;
+import io.quarkus.picocli.runtime.annotations.TopCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.IFactory;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ScopeType;
 
-@QuarkusMain
+@TopCommand
 @Command(name = "fc5-convert", mixinStandardHelpOptions = true, subcommands = {
         Convert.class, Transform.class, Validate.class, Completion.class })
-public class ConvertCli implements QuarkusApplication, Callable<Integer> {
+public class ConvertCli implements Callable<Integer> {
 
     List<Path> input;
 
@@ -31,17 +27,8 @@ public class ConvertCli implements QuarkusApplication, Callable<Integer> {
         }
     }
 
-    @Inject
-    IFactory factory;
-
-    @Override
-    public int run(String... args) throws Exception {
-        return new CommandLine(this, factory).execute(args);
-    }
-
     @Override
     public Integer call() throws Exception {
         return CommandLine.ExitCode.OK;
     }
-
 }

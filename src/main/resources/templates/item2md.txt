@@ -1,0 +1,19 @@
+---
+cssclass: ref-item
+type: ref-item
+tags: [{resource.tag}]
+aliases: ['{resource.name}']
+---
+# Item: {resource.name}
+*{resource.detail}*
+
+{#if resource.isArmor }
+* **Armor Class**: {resource.armorClass}
+{#else if resource.isWeapon }
+* **Damage**: {resource.damage}
+* **Property**: {resource.property}
+{/if}
+* **Cost**: {resource.cost} gp
+* **Weight**: {resource.weight} lbs.
+
+{resource.text}

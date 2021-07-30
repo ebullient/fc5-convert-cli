@@ -1,5 +1,7 @@
 package dev.ebullient.fc5.model;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * <p>
  * Java class for categoryEnum.
@@ -21,6 +23,7 @@ package dev.ebullient.fc5.model;
  * </pre>
  * 
  */
+@TemplateData
 public enum CategoryEnum {
 
     BONUS("bonus"),

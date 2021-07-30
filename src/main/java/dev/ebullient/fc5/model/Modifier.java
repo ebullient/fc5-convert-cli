@@ -2,6 +2,8 @@ package dev.ebullient.fc5.model;
 
 import org.w3c.dom.Node;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * <p>
  * Java class for modifierType complex type.
@@ -19,6 +21,7 @@ import org.w3c.dom.Node;
  * &lt;/complexType>
  * </pre>
  */
+@TemplateData
 public class Modifier {
     public static final Modifier NONE = new Modifier();
 

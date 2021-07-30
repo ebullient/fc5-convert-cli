@@ -1,5 +1,7 @@
 package dev.ebullient.fc5.model;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * 
  * <pre>
@@ -22,6 +24,7 @@ package dev.ebullient.fc5.model;
  *  </xs:simpleType>
  * </pre>
  */
+@TemplateData
 public enum DamageEnum {
     B("bludgeoning"),
     P("piercing"),

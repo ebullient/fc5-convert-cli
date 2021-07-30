@@ -2,6 +2,8 @@ package dev.ebullient.fc5.model;
 
 import org.w3c.dom.Node;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * <p>
  * Java class for slotsType complex type.
@@ -21,6 +23,7 @@ import org.w3c.dom.Node;
  * 
  * 
  */
+@TemplateData
 public class SpellSlots {
     public static final SpellSlots NONE = new SpellSlots("");
 

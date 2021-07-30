@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.test.junit.QuarkusTest;
+
+@QuarkusTest
 public class FeatTypeTest extends ParsingTestBase {
 
     @Test
@@ -38,5 +41,12 @@ public class FeatTypeTest extends ParsingTestBase {
                 () -> assertEquals("Dexterity 13 or higher", feat.prerequisite),
                 () -> assertTrue(textContains(feat.text, "When you are wielding")),
                 () -> assertEquals(0, feat.modifier.size(), "Should not have found a modifier"));
+
+        String content = templates.renderFeat(feat);
+        System.out.println(content);
+        Assertions.assertAll(
+                () -> assertTrue(content.contains("# Feat: Defensive Duelist")),
+                () -> assertTrue(content.contains("When you are wielding a finesse weapo")),
+                () -> assertTrue(content.contains("aliases: ['Defensive Duelist']")));
     }
 }

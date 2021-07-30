@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ItemTypeTest extends ParsingTestBase {
+import io.quarkus.test.junit.QuarkusTest;
+
+@QuarkusTest
+class ItemTypeTest extends ParsingTestBase {
 
     @Test
     public void testJugItem() throws Exception {
@@ -24,6 +27,15 @@ public class ItemTypeTest extends ParsingTestBase {
                 () -> assertEquals(4d, item.weight),
                 () -> assertEquals(0.02, item.value),
                 () -> assertTrue(textContains(item.text, "A jug holds")));
+
+        String content = templates.renderItem(item);
+        System.out.println(content);
+        Assertions.assertAll(
+                () -> assertTrue(content.contains("# Item: Jug")),
+                () -> assertTrue(content.contains("Adventuring Gear")),
+                () -> assertTrue(content.contains("item/gear")),
+                () -> assertTrue(content.contains("aliases: ['Jug']")));
+
     }
 
     @Test
@@ -46,6 +58,16 @@ public class ItemTypeTest extends ParsingTestBase {
                 () -> assertEquals(Roll.NONE, item.dmg2),
                 () -> assertEquals(DamageEnum.P, item.dmgType),
                 () -> assertEquals("R,S,M", item.property));
+
+        String content = templates.renderItem(item);
+        System.out.println(content);
+        Assertions.assertAll(
+                () -> assertTrue(content.contains("# Item: Lance")),
+                () -> assertTrue(content.contains("martial Weapon, Melee Weapon")),
+                () -> assertTrue(content.contains("item/weapon/melee")),
+                () -> assertTrue(content.contains("Special: You have disadvantage")),
+                () -> assertTrue(content.contains("aliases: ['Lance']")));
+                
     }
 
     @Test
@@ -70,6 +92,15 @@ public class ItemTypeTest extends ParsingTestBase {
                 () -> assertEquals("A,LD,2H", crossbow.property),
                 () -> assertEquals("80/320", crossbow.range));
 
+        String content = templates.renderItem(crossbow);
+        System.out.println(content);
+        Assertions.assertAll(
+                () -> assertTrue(content.contains("# Item: Light Crossbow")),
+                () -> assertTrue(content.contains("simple Weapon, Ranged Weapon")),
+                () -> assertTrue(content.contains("item/weapon/ranged")),
+                () -> assertTrue(content.contains("aliases: ['Light Crossbow']")));
+
+
         ItemType longsword = compendium.items.get(1);
         Assertions.assertAll(
                 () -> assertEquals("Longsword of Life Stealing", longsword.name),
@@ -82,5 +113,14 @@ public class ItemTypeTest extends ParsingTestBase {
                 () -> assertEquals("1d10", longsword.dmg2.textContent),
                 () -> assertEquals(DamageEnum.S, longsword.dmgType),
                 () -> assertEquals("V,M", longsword.property));
+
+        String content2 = templates.renderItem(longsword);
+        System.out.println(content2);
+        Assertions.assertAll(
+                () -> assertTrue(content2.contains("# Item: Longsword of Life Stealing")),
+                () -> assertTrue(content2.contains("major, martial Weapon, Melee Weapon")),
+                () -> assertTrue(content2.contains("item/weapon/melee")),
+                () -> assertTrue(content2.contains("aliases: ['Longsword of Life Stealing']")));
+        
     }
 }

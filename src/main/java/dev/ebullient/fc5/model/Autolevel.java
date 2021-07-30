@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.w3c.dom.Node;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * <p>
  * Java class for autolevelType complex type.
@@ -29,6 +31,7 @@ import org.w3c.dom.Node;
  * &lt;/complexType>
  * </pre>
  */
+@TemplateData
 public class Autolevel {
     public static final Autolevel NONE = new Autolevel();
 
@@ -57,5 +60,9 @@ public class Autolevel {
         features = NodeParser.getOrDefault(elements, "feature", Collections.emptyList());
         slots = NodeParser.getOrDefault(elements, "slots", SpellSlots.NONE);
         counters = NodeParser.getOrDefault(elements, "counter", Collections.emptyList());
+    }
+
+    public List<Feature> getFeatures() {
+        return features;
     }
 }

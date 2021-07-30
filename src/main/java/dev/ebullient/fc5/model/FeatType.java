@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * <p>
  * Java class for featType complex type.
@@ -27,6 +29,7 @@ import java.util.Map;
  * &lt;/complexType>
  * </pre>
  */
+@TemplateData
 public class FeatType implements BaseType {
 
     final String name;
@@ -50,20 +53,12 @@ public class FeatType implements BaseType {
         return name;
     }
 
-    public String getPrerequisite() {
-        return prerequisite;
+    public String getTag() {
+        return "feat/" + MarkdownWriter.slugifier().slugify(name);
     }
 
-    public Text getText() {
-        return text;
-    }
-
-    public Proficiency getProficiency() {
-        return proficiency;
-    }
-
-    public List<Modifier> getModifier() {
-        return modifier;
+    public String getText() {
+        return String.join("\n", text.content);
     }
 
     @Override

@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * <p>
  * Java class for monsterType complex type.
@@ -55,6 +57,7 @@ import java.util.Map;
  * 
  * 
  */
+@TemplateData
 public class MonsterType implements BaseType {
     class AbilityScores {
         int strength;
@@ -136,6 +139,10 @@ public class MonsterType implements BaseType {
 
     public String getName() {
         return name;
+    }
+
+    public String getTag() {
+        return "monster/" + MarkdownWriter.slugifier().slugify(name);
     }
 
     public AbilityScores getScores() {

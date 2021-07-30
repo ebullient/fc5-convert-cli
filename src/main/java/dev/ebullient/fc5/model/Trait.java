@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * <p>
  * Java class for traitType complex type.
@@ -26,6 +28,7 @@ import java.util.Map;
  * &lt;/complexType>
  * </pre>
  */
+@TemplateData
 public class Trait {
 
     final String name;
@@ -38,5 +41,21 @@ public class Trait {
         text = NodeParser.getOrDefault(elements, "text", Text.NONE);
         attack = NodeParser.getOrDefault(elements, "attack", Collections.emptyList());
         special = NodeParser.getOrDefault(elements, "special", Collections.emptyList());
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getText() {
+        return String.join("\n", text.content);
+    }
+
+    public List<String> getAttack() {
+        return attack;
+    }
+
+    public List<String> getSpecial() {
+        return special;
     }
 }

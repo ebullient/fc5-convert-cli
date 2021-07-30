@@ -2,14 +2,16 @@ package dev.ebullient.fc5.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import dev.ebullient.fc5.Templates;
+import io.quarkus.test.junit.QuarkusTest;
 
+@QuarkusTest
 public class BackgroundTypeTest extends ParsingTestBase {
 
     @Test
@@ -53,13 +55,15 @@ public class BackgroundTypeTest extends ParsingTestBase {
                 () -> assertNotNull(background.proficiency.textContent),
                 () -> assertNotNull(background.proficiency.skills),
                 () -> assertEquals("Description", background.traits.get(0).name),
-                () -> assertEquals(1, background.traits.get(0).text.content.size()),
                 () -> assertEquals("Feature: Shelter of the Faithful", background.traits.get(1).name),
-                () -> assertEquals(1, background.traits.get(1).text.content.size()),
-                () -> assertEquals("Suggested Characteristics", background.traits.get(2).name),
-                () -> assertEquals(1, background.traits.get(2).text.content.size()));
+                () -> assertEquals("Suggested Characteristics", background.traits.get(2).name));
 
-        String content = Templates.background2md(background).render();
+        String content = templates.renderBackground(background);
         System.out.println(content);
+        Assertions.assertAll(
+                () -> assertTrue(content.contains("# Background: Acolyte")),
+                () -> assertTrue(content.contains("**Skill Proficiencies**")),
+                () -> assertTrue(content.contains("## Description")),
+                () -> assertTrue(content.contains("|---|------------------|")));
     }
 }

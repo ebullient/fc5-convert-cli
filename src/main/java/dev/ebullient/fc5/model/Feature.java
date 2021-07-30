@@ -7,6 +7,8 @@ import java.util.List;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * <p>
  * Java class for featureType complex type.
@@ -33,6 +35,7 @@ import org.w3c.dom.NodeList;
  * 
  * 
  */
+@TemplateData
 public class Feature {
 
     final String name;
@@ -100,6 +103,14 @@ public class Feature {
         this.proficiency = profContent;
         this.special = specialList == null ? Collections.emptyList() : specialList;
         this.text = new Text(textStrings);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getText() {
+        return String.join("\n", text.content);
     }
 
     @Override

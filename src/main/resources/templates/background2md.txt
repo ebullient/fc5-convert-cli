@@ -1,0 +1,15 @@
+---
+cssclass: ref-background
+type: ref-background
+tags: [{resource.tag}]
+aliases: ['{resource.name}']
+---
+# Background: {resource.name}
+
+* **Skill Proficiencies**: {resource.proficiency}
+
+{#for trait in resource.trait}
+## {trait.name}
+
+{trait.text}
+{/for}

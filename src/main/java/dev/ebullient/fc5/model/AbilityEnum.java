@@ -1,5 +1,7 @@
 package dev.ebullient.fc5.model;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * <pre>
  *  &lt;xs:simpleType name="abilityEnum">
@@ -15,6 +17,7 @@ package dev.ebullient.fc5.model;
  *  &lt;/xs:simpleType>
  * </pre>
  */
+@TemplateData
 public enum AbilityEnum {
     Strength,
     Dexterity,
@@ -33,5 +36,14 @@ public enum AbilityEnum {
             return NONE;
         }
         return valueOf(v);
+    }
+
+    static boolean isAbility(String v) {
+        try {
+            Enum.valueOf(AbilityEnum.class, v);
+            return true;
+        } catch (IllegalArgumentException e) {
+        }
+        return false;
     }
 }

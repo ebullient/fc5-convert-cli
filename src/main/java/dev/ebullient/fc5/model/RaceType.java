@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import io.quarkus.qute.TemplateData;
+
 /**
  * <p>
  * Java class for raceType complex type.
@@ -30,6 +32,7 @@ import java.util.Map;
  * &lt;/complexType>
  * </pre>
  */
+@TemplateData
 public class RaceType implements BaseType {
 
     final String name;
@@ -54,6 +57,10 @@ public class RaceType implements BaseType {
 
     public String getName() {
         return name;
+    }
+
+    public String getTag() {
+        return "race/" + MarkdownWriter.slugifier().slugify(name);
     }
 
     public SizeEnum getSize() {

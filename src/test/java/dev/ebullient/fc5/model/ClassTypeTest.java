@@ -10,6 +10,9 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.test.junit.QuarkusTest;
+
+@QuarkusTest
 public class ClassTypeTest extends ParsingTestBase {
     @Test
     public void testBarbarianClass() throws Exception {
@@ -45,5 +48,12 @@ public class ClassTypeTest extends ParsingTestBase {
                 .filter(y -> y.name.startsWith("Artillerist"))
                 .forEach(y -> Assertions.assertTrue(textContains(y.text, "## "),
                         "Parse should handle interleaved names"));
+
+        String content = templates.renderClass(barbarian);
+        System.out.println(content);
+        Assertions.assertAll(
+                () -> assertTrue(content.contains("# Class: Barbarian")),
+                () -> assertTrue(content.contains("* **Hit Points at Higher Levels:** 7(1d12) + CON")),
+                () -> assertTrue(content.contains("* **Saving Throws**: Strength, Constitution")));
     }
 }
