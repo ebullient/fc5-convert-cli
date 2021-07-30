@@ -61,7 +61,7 @@ public class BackgroundTypeTest extends ParsingTestBase {
         String content = templates.renderBackground(background);
         System.out.println(content);
         Assertions.assertAll(
-                () -> assertTrue(content.contains("# Background: Acolyte")),
+                () -> assertTrue(content.contains("# Acolyte")),
                 () -> assertTrue(content.contains("**Skill Proficiencies**")),
                 () -> assertTrue(content.contains("## Description")),
                 () -> assertTrue(content.contains("|---|------------------|")));

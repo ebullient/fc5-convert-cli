@@ -10,6 +10,9 @@ import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.test.junit.QuarkusTest;
+
+@QuarkusTest
 public class MonsterTypeTest extends ParsingTestBase {
 
     @Test
@@ -55,5 +58,14 @@ public class MonsterTypeTest extends ParsingTestBase {
 
                 () -> assertTrue(monster.description.startsWith("An ankheg resembles ")),
                 () -> assertEquals("grassland, forest", monster.environment));
+
+        String content = templates.renderMonster(monster);
+        System.out.println(content);
+        Assertions.assertAll(
+                () -> assertTrue(content.contains("# Ankheg")),
+                () -> assertTrue(content.contains(">*Large monstrosity, unaligned*")),
+                () -> assertTrue(content.contains(">|17 (+3)|11 (+0)|13 (+1)|1 (-5)|13 (+1)|6 (-2)|")),
+                () -> assertTrue(content.contains("> ***Acid Spray (Recharge 6).*** The ankheg spits")),
+                () -> assertTrue(content.contains("aliases: ['Ankheg']")));
     }
 }

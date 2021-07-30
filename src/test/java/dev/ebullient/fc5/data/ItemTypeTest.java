@@ -31,7 +31,7 @@ class ItemTypeTest extends ParsingTestBase {
         String content = templates.renderItem(item);
         System.out.println(content);
         Assertions.assertAll(
-                () -> assertTrue(content.contains("# Item: Jug")),
+                () -> assertTrue(content.contains("# Jug")),
                 () -> assertTrue(content.contains("Adventuring Gear")),
                 () -> assertTrue(content.contains("item/gear")),
                 () -> assertTrue(content.contains("aliases: ['Jug']")));
@@ -62,7 +62,7 @@ class ItemTypeTest extends ParsingTestBase {
         String content = templates.renderItem(item);
         System.out.println(content);
         Assertions.assertAll(
-                () -> assertTrue(content.contains("# Item: Lance")),
+                () -> assertTrue(content.contains("# Lance")),
                 () -> assertTrue(content.contains("martial Weapon, Melee Weapon")),
                 () -> assertTrue(content.contains("item/weapon/melee")),
                 () -> assertTrue(content.contains("Special: You have disadvantage")),
@@ -95,7 +95,7 @@ class ItemTypeTest extends ParsingTestBase {
         String content = templates.renderItem(crossbow);
         System.out.println(content);
         Assertions.assertAll(
-                () -> assertTrue(content.contains("# Item: Light Crossbow")),
+                () -> assertTrue(content.contains("# Light Crossbow")),
                 () -> assertTrue(content.contains("simple Weapon, Ranged Weapon")),
                 () -> assertTrue(content.contains("item/weapon/ranged")),
                 () -> assertTrue(content.contains("aliases: ['Light Crossbow']")));
@@ -116,7 +116,7 @@ class ItemTypeTest extends ParsingTestBase {
         String content2 = templates.renderItem(longsword);
         System.out.println(content2);
         Assertions.assertAll(
-                () -> assertTrue(content2.contains("# Item: Longsword of Life Stealing")),
+                () -> assertTrue(content2.contains("# Longsword of Life Stealing")),
                 () -> assertTrue(content2.contains("major, martial Weapon, Melee Weapon")),
                 () -> assertTrue(content2.contains("item/weapon/melee")),
                 () -> assertTrue(content2.contains("aliases: ['Longsword of Life Stealing']")));

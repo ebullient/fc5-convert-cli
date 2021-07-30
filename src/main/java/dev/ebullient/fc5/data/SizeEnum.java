@@ -27,20 +27,28 @@ import io.quarkus.qute.TemplateData;
 @TemplateData
 public enum SizeEnum {
 
-    T,
-    S,
-    M,
-    L,
-    H,
-    G,
-    UNKNOWN;
+    T("Tiny"),
+    S("Small"),
+    M("Medium"),
+    L("Large"),
+    H("Huge"),
+    G("Gargantuan"),
+    UNKNOWN("Unknown");
 
-    public String value() {
-        return name();
+    private final String prettyName;
+
+    private SizeEnum(String prettyName) {
+        this.prettyName = prettyName;
+    }
+    
+    public String prettyName() {
+        return prettyName;
     }
 
     public static SizeEnum fromValue(String v) {
+        if ( v == null || v.isBlank() ) {
+            return UNKNOWN;
+        }
         return valueOf(v);
     }
-
 }

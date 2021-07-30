@@ -1,0 +1,66 @@
+---
+cssclass: statblock
+type: statblock
+tags: [statblock, {resource.tag}]
+aliases: ['{resource.name}']
+---
+# {resource.name}
+
+<span class='nav'>[History](#History) [Notes](#Notes)</span>
+> # Monster
+>*{resource.size} {resource.type}, {resource.alignment}*
+>___
+> - **Armor Class** {resource.ac}
+> - **Hit Points** {resource.hp}
+> - **Speed** {resource.speed}
+>
+>|STR|DEX|CON|INT|WIS|CHA|
+>|:---:|:---:|:---:|:---:|:---:|:---:|
+>|{resource.scores}|
+>
+> - **Skills** {resource.skill}
+> - **Senses** {resource.senses}
+> - **Languages** {resource.languages}
+> - **Challenge** {resource.cr}
+>___
+>
+{#if resource.legendary}
+{#for trait in resource.trait}
+> ***{trait.name}.*** {trait.text}
+{/for}
+{/if}
+{#if resource.action}
+> ## Actions
+{#for action in resource.action}
+> ***{action.name}.*** {action.text}
+{/for}
+{/if}
+{#if resource.reaction}
+> ## Reactions
+{#for reaction in resource.reaction}
+> ***{reaction.name}.*** {reaction.text}
+{/for}
+{/if}
+{#if resource.legendary}
+> ## Legendary Actions
+{#for legendary in resource.legendary}
+> ***{legendary.name}.*** {legendary.text}
+{/for}
+{/if}
+
+## Description
+
+{resource.description}
+
+## Environment
+
+{resource.environment}
+
+## History
+
+<!-- ```dataview
+list from #log/monster/{resource.slug}
+``` -->
+
+## Notes
+

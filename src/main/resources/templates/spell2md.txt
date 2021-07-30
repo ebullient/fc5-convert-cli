@@ -1,0 +1,9 @@
+---
+cssclass: ref-spell
+type: ref-spell
+tags: [{resource.tag}]
+aliases: ['{resource.name}']
+---
+# {resource.name}
+
+{resource.text}

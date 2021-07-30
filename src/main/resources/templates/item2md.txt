@@ -4,7 +4,7 @@ type: ref-item
 tags: [{resource.tag}]
 aliases: ['{resource.name}']
 ---
-# Item: {resource.name}
+# {resource.name}
 *{resource.detail}*
 
 {#if resource.isArmor }

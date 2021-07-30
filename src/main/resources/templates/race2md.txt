@@ -1,0 +1,9 @@
+---
+cssclass: ref-race
+type: ref-race
+tags: [{resource.tag}]
+aliases: ['{resource.name}']
+---
+# {resource.name}
+
+{resource.text}

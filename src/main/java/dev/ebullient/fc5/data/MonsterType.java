@@ -66,6 +66,27 @@ public class MonsterType implements BaseType {
         int intelligence;
         int wisdom;
         int charisma;
+
+        private String toAbilityModifier(int value) {
+            int mod = (value - 10);
+            if ( mod % 2 != 0 ) {
+                mod -= 1; // round down
+            }
+            int modifier = mod / 2;
+            return String.format("%s (%s%s)", value, 
+                modifier >= 0 ? "+" : "",
+                modifier);
+        }
+
+        @Override
+        public String toString() {
+            return toAbilityModifier(strength) 
+            + "|" + toAbilityModifier(dexterity)
+            + "|" + toAbilityModifier(constitution) 
+            + "|" + toAbilityModifier(intelligence) 
+            + "|" + toAbilityModifier(wisdom) 
+            + "|" + toAbilityModifier(charisma);
+        }
     }
 
     final String name;
@@ -141,16 +162,20 @@ public class MonsterType implements BaseType {
         return name;
     }
 
+    public String getSlug() {
+        return MarkdownWriter.slugifier().slugify(name);
+    }
+
     public String getTag() {
-        return "monster/" + MarkdownWriter.slugifier().slugify(name);
+        return "monster/" + getSlug();
     }
 
-    public AbilityScores getScores() {
-        return scores;
+    public String getScores() {
+        return scores.toString();
     }
 
-    public SizeEnum getSize() {
-        return size;
+    public String getSize() {
+        return size.prettyName();
     }
 
     public String getType() {
