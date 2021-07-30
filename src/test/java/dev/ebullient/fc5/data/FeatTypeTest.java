@@ -45,8 +45,8 @@ public class FeatTypeTest extends ParsingTestBase {
         String content = templates.renderFeat(feat);
         System.out.println(content);
         Assertions.assertAll(
-                () -> assertTrue(content.contains("# Defensive Duelist")),
-                () -> assertTrue(content.contains("When you are wielding a finesse weapo")),
-                () -> assertTrue(content.contains("aliases: ['Defensive Duelist']")));
+                () -> assertContains(content, "# Defensive Duelist"),
+                () -> assertContains(content, "When you are wielding a finesse weapo"),
+                () -> assertContains(content, "aliases: ['Defensive Duelist']"));
     }
 }

@@ -12,4 +12,8 @@ public class Roll {
         this.textContent = textContent;
     }
 
+    @Override
+    public String toString() {
+        return textContent;
+    }
 }

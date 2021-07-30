@@ -26,12 +26,12 @@ import io.quarkus.qute.TemplateData;
 @TemplateData
 public enum CategoryEnum {
 
-    BONUS("bonus"),
-    ABILITY_SCORE("ability score"),
-    ABILITY_MODIFIER("ability modifier"),
-    SAVING_THROW("saving throw"),
-    SKILLS("skills"),
-    UNKNOWN("unknown");
+    BONUS("Bonus"),
+    ABILITY_SCORE("Ability Score"),
+    ABILITY_MODIFIER("Ability Modifier"),
+    SAVING_THROW("Saving Throw"),
+    SKILLS("Skills"),
+    UNKNOWN("Unknown");
 
     private final String value;
 
@@ -45,11 +45,14 @@ public enum CategoryEnum {
 
     public static CategoryEnum fromValue(String v) {
         for (CategoryEnum c : CategoryEnum.values()) {
-            if (c.value.equals(v)) {
+            if (c.value.toLowerCase().equals(v)) {
                 return c;
             }
         }
         return UNKNOWN;
     }
 
+    public String longName() {
+        return value;
+    }
 }

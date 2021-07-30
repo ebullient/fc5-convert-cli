@@ -1,5 +1,7 @@
 package dev.ebullient.fc5.data;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,5 +50,9 @@ public class ParsingTestBase {
 
     boolean rollContains(List<Roll> rollList, String roll) {
         return rollList.stream().anyMatch(x -> x.textContent.equals(roll));
+    }
+
+    void assertContains(String content, String expected) {
+        assertTrue(content.contains(expected), "content should contain " + expected);
     }
 }

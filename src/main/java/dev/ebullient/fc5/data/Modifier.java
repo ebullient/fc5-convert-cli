@@ -41,4 +41,12 @@ public class Modifier {
         }
         category = CategoryEnum.fromValue(attribute.getTextContent());
     }
+
+    public String getCategory() {
+        return category.longName();
+    }
+
+    public String getValue() {
+        return value.replace("ac", "AC");
+    }
 }

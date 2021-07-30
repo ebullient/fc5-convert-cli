@@ -26,36 +26,45 @@ import io.quarkus.qute.TemplateData;
  */
 @TemplateData
 public enum DamageEnum {
-    B("bludgeoning"),
-    P("piercing"),
-    S("slashing"),
-    A("acid"),
-    C("cold"),
-    F("fire"),
-    FC("force"),
-    L("lightning"),
-    N("necrotic"),
-    PS("poison"),
-    R("radiant"),
-    T("thunder"),
-    UNKNOWN("unknown");
+    bludgeoning("bludgeoning", "B"),
+    piercing("piercing", "P"),
+    slashing("slashing", "S"),
+    acid("acid", "A"),
+    cold("cold", "C"),
+    fire("fire", "F"),
+    force("force", "FC"),
+    lightning("lightning", "L"),
+    necrotic("necrotic", "N"),
+    poison("poison", "PS"),
+    radiant("radiant", "R"),
+    thunder("thunder", "T"),
+    unknown("unknown", "UNK");
 
-    private final String value;
+    private final String longName;
+    private final String xmlKey;
 
-    DamageEnum(String v) {
-        value = v;
+    private DamageEnum(String longName, String xmlKey) {
+        this.longName = longName;
+        this.xmlKey = xmlKey;
     }
 
-    public String value() {
-        return value;
+    public String getLongName() {
+        return longName;
+    }
+
+    public String getXmlKey() {
+        return xmlKey;
     }
 
     public static DamageEnum fromValue(String v) {
-        for (DamageEnum d : DamageEnum.values()) {
-            if (d.value.equals(v)) {
-                return d;
+        if (v == null || v.isBlank()) {
+            return unknown;
+        }
+        for (DamageEnum i : DamageEnum.values()) {
+            if (i.xmlKey.equals(v)) {
+                return i;
             }
         }
-        return UNKNOWN;
+        return unknown;
     }
 }

@@ -3,6 +3,8 @@ package dev.ebullient.fc5.data;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -22,19 +24,19 @@ class ItemTypeTest extends ParsingTestBase {
         ItemType item = compendium.items.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Jug", item.name),
-                () -> assertEquals(ItemEnum.G, item.type),
-                () -> assertEquals("Adventuring Gear", item.detail),
+                () -> assertEquals(ItemEnum.gear, item.type),
+                () -> assertEquals("adventuring gear", item.detail),
                 () -> assertEquals(4d, item.weight),
-                () -> assertEquals(0.02, item.value),
+                () -> assertEquals(0.02, item.cost),
                 () -> assertTrue(textContains(item.text, "A jug holds")));
 
         String content = templates.renderItem(item);
         System.out.println(content);
         Assertions.assertAll(
-                () -> assertTrue(content.contains("# Jug")),
-                () -> assertTrue(content.contains("Adventuring Gear")),
-                () -> assertTrue(content.contains("item/gear")),
-                () -> assertTrue(content.contains("aliases: ['Jug']")));
+                () -> assertContains(content, "# Jug"),
+                () -> assertContains(content, "adventuring gear"),
+                () -> assertContains(content, "item/gear"),
+                () -> assertContains(content, "aliases: ['Jug']"));
 
     }
 
@@ -49,24 +51,24 @@ class ItemTypeTest extends ParsingTestBase {
         ItemType item = compendium.items.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Lance", item.name),
-                () -> assertEquals(ItemEnum.M, item.type),
-                () -> assertEquals(true, item.magic),
-                () -> assertEquals("martial Weapon, Melee Weapon", item.detail),
+                () -> assertEquals(ItemEnum.melee, item.type),
+                () -> assertEquals(true, item.magicItem.isMagic),
+                () -> assertEquals("weapon (martial melee)", item.detail),
                 () -> assertEquals(6d, item.weight),
-                () -> assertEquals(10.0, item.value),
+                () -> assertEquals(10.0, item.cost),
                 () -> assertEquals("1d12", item.dmg1.textContent),
                 () -> assertEquals(Roll.NONE, item.dmg2),
-                () -> assertEquals(DamageEnum.P, item.dmgType),
-                () -> assertEquals("R,S,M", item.property));
+                () -> assertEquals(DamageEnum.piercing, item.dmgType),
+                () -> assertContainsProperties(item.properties, "R,S,M"));
 
         String content = templates.renderItem(item);
         System.out.println(content);
         Assertions.assertAll(
-                () -> assertTrue(content.contains("# Lance")),
-                () -> assertTrue(content.contains("martial Weapon, Melee Weapon")),
-                () -> assertTrue(content.contains("item/weapon/melee")),
-                () -> assertTrue(content.contains("Special: You have disadvantage")),
-                () -> assertTrue(content.contains("aliases: ['Lance']")));
+                () -> assertContains(content, "# Lance"),
+                () -> assertContains(content, "weapon (martial melee)"),
+                () -> assertContains(content, "item/weapon/martial/melee"),
+                () -> assertContains(content, "Special: You have disadvantage"),
+                () -> assertContains(content, "aliases: ['Lance']"));
 
     }
 
@@ -78,48 +80,99 @@ class ItemTypeTest extends ParsingTestBase {
         Assertions.assertFalse(compendium.items.isEmpty(),
                 "Items should not be empty, found " + compendium);
 
-        ItemType crossbow = compendium.items.get(0);
-        Assertions.assertAll(
-                () -> assertEquals("Light Crossbow", crossbow.name),
-                () -> assertEquals(ItemEnum.R, crossbow.type),
-                () -> assertEquals("simple Weapon, Ranged Weapon", crossbow.detail),
-                () -> assertEquals(5d, crossbow.weight),
-                () -> assertTrue(textContains(crossbow.text, "Source:")),
-                () -> assertEquals(25.0, crossbow.value),
-                () -> assertEquals("1d8", crossbow.dmg1.textContent),
-                () -> assertEquals(Roll.NONE, crossbow.dmg2),
-                () -> assertEquals(DamageEnum.P, crossbow.dmgType),
-                () -> assertEquals("A,LD,2H", crossbow.property),
-                () -> assertEquals("80/320", crossbow.range));
+        boolean carpet = false;
+        boolean crossbow = false;
+        boolean longsword = false;
+        boolean poison = false;
+        boolean scimitar = false;
+        boolean spikedarmor = false;
+        for (ItemType item : compendium.items) {
+            String content = templates.renderItem(item);
+            System.out.println(content);
+            if ("Light Crossbow".equals(item.name)) {
+                crossbow = true;
+                validateCrossbow(item, content);
+            } else if ("Longsword of Life Stealing".equals(item.name)) {
+                longsword = true;
+                validateLongsword(item, content);
+            } else if ("+3 Spiked Armor".equals(item.name)) {
+                spikedarmor = true;
+                assertContains(content, "item/armor/medium");
+                assertContains(content, "item/major");
+                assertContains(content, "*major legendary, armor (medium)*");
+                assertContains(content, "**Base Armor Class**: 14 + DEX (max of +2)");
+                assertContains(content, "- **Bonus**: AC +3");
+            } else if ("Double-Bladed Scimitar of Vengeance".equals(item.name)) {
+                scimitar = true;
+                assertContains(content, "item/weapon/martial/melee");
+                assertContains(content, "item/major/uncommon");
+                assertContains(content, "*major uncommon, cursed, weapon (martial melee)*");
+            } else if ("Carpet of Flying, 6 ft. × 9 ft.".equals(item.name)) {
+                carpet = true;
+                assertContains(content, "item/wondrous");
+                assertContains(content, "item/major");
+                assertContains(content, "*major, wondrous item*");
+            } else if ("Carrion Crawler Mucus".equals(item.name)) {
+                poison = true;
+                assertContains(content, "item/gear/poison");
+                assertContains(content, "item/major");
+                assertContains(content, "*major, adventuring gear, poison*");
+            }
+        }
 
-        String content = templates.renderItem(crossbow);
-        System.out.println(content);
-        Assertions.assertAll(
-                () -> assertTrue(content.contains("# Light Crossbow")),
-                () -> assertTrue(content.contains("simple Weapon, Ranged Weapon")),
-                () -> assertTrue(content.contains("item/weapon/ranged")),
-                () -> assertTrue(content.contains("aliases: ['Light Crossbow']")));
+        assertTrue(carpet, "Should have found a carpet");
+        assertTrue(crossbow, "Should have found a crossbow");
+        assertTrue(longsword, "Should have found a longsword");
+        assertTrue(poison, "Should have found a poison");
+        assertTrue(scimitar, "Should have found a scimitar");
+        assertTrue(spikedarmor, "Should have found a spikedarmor");
+    }
 
-        ItemType longsword = compendium.items.get(1);
+    private void validateLongsword(ItemType longsword, String content) {
         Assertions.assertAll(
                 () -> assertEquals("Longsword of Life Stealing", longsword.name),
-                () -> assertEquals(ItemEnum.M, longsword.type),
-                () -> assertEquals("major, martial Weapon, Melee Weapon", longsword.detail),
+                () -> assertEquals(ItemEnum.melee, longsword.type),
+                () -> assertEquals("major rare, weapon (martial melee)", longsword.detail),
                 () -> assertEquals(3d, longsword.weight),
                 () -> assertTrue(textContains(longsword.text, "Source:")),
                 () -> assertTrue(rollContains(longsword.roll, "3d6")),
                 () -> assertEquals("1d8", longsword.dmg1.textContent),
                 () -> assertEquals("1d10", longsword.dmg2.textContent),
-                () -> assertEquals(DamageEnum.S, longsword.dmgType),
-                () -> assertEquals("V,M", longsword.property));
+                () -> assertEquals(DamageEnum.slashing, longsword.dmgType),
+                () -> assertContainsProperties(longsword.properties, "V,M"));
 
-        String content2 = templates.renderItem(longsword);
-        System.out.println(content2);
         Assertions.assertAll(
-                () -> assertTrue(content2.contains("# Longsword of Life Stealing")),
-                () -> assertTrue(content2.contains("major, martial Weapon, Melee Weapon")),
-                () -> assertTrue(content2.contains("item/weapon/melee")),
-                () -> assertTrue(content2.contains("aliases: ['Longsword of Life Stealing']")));
+                () -> assertContains(content, "# Longsword of Life Stealing"),
+                () -> assertContains(content, "major rare, weapon (martial melee)"),
+                () -> assertContains(content, "item/weapon/martial/melee"),
+                () -> assertContains(content, "aliases: ['Longsword of Life Stealing']"));
+    }
 
+    private void validateCrossbow(ItemType crossbow, String content) {
+        Assertions.assertAll(
+                () -> assertEquals("Light Crossbow", crossbow.name),
+                () -> assertEquals(ItemEnum.ranged, crossbow.type),
+                () -> assertEquals("weapon (simple ranged)", crossbow.detail),
+                () -> assertEquals(5d, crossbow.weight),
+                () -> assertTrue(textContains(crossbow.text, "Source:")),
+                () -> assertEquals(25.0, crossbow.cost),
+                () -> assertEquals("1d8", crossbow.dmg1.textContent),
+                () -> assertEquals(Roll.NONE, crossbow.dmg2),
+                () -> assertEquals(DamageEnum.piercing, crossbow.dmgType),
+                () -> assertContainsProperties(crossbow.properties, "A,LD,2H"),
+                () -> assertEquals("80/320", crossbow.range));
+
+        Assertions.assertAll(
+                () -> assertContains(content, "# Light Crossbow"),
+                () -> assertContains(content, "weapon (simple ranged)"),
+                () -> assertContains(content, "item/weapon/simple/ranged"),
+                () -> assertContains(content, "aliases: ['Light Crossbow']"));
+    }
+
+    void assertContainsProperties(List<PropertyEnum> properties, String origXml) {
+        for (String key : origXml.split(",")) {
+            assertTrue(properties.stream().anyMatch(x -> key.equals(x.getXmlKey())),
+                    "Expected to find " + key + " in list " + properties);
+        }
     }
 }

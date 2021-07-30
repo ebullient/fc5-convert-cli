@@ -1,29 +1,82 @@
 <compendium>
-   <item>
-      <name>Light Crossbow</name>
-      <type>R</type>
-      <detail>simple Weapon, Ranged Weapon</detail>
-      <weight>5</weight>
-      <text>Source: Player's Handbook p. 149</text>
-      <value>25.0</value>
-      <dmg1>1d8</dmg1>
-      <dmgType>P</dmgType>
-      <property>A,LD,2H</property>
-      <range>80/320</range>
-   </item>
-   <item>
-      <name>Longsword of Life Stealing</name>
-      <type>M</type>
-      <detail>major, martial Weapon, Melee Weapon</detail>
-      <weight>3</weight>
-      <text>When you attack a creature with this magic weapon and roll a 20 on the attack roll, that target takes an extra 10 necrotic damage if it isn't a construct or an undead. You also gain 10 temporary hit points.
+  <item>
+    <name>Light Crossbow</name>
+    <type>R</type>
+    <detail>simple Weapon, Ranged Weapon</detail>
+    <weight>5</weight>
+    <text>Source: Player's Handbook p. 149</text>
+    <value>25.0</value>
+    <dmg1>1d8</dmg1>
+    <dmgType>P</dmgType>
+    <property>A,LD,2H</property>
+    <range>80/320</range>
+  </item>
+  <item>
+    <name>Longsword of Life Stealing</name>
+    <type>M</type>
+    <detail>major, martial Weapon, Melee Weapon</detail>
+    <weight>3</weight>
+    <text>When you attack a creature with this magic weapon and roll a 20 on the attack roll, that target takes an extra 10 necrotic damage if it isn't a construct or an undead. You also gain 10 temporary hit points.
 Note: According to the SRD, it is an extra 3d6 necrotic damage.
 Found On: Magic Item Table G
 Source: Dungeon Master's Guide p. 206</text>
-      <roll>3d6</roll>
-      <dmg1>1d8</dmg1>
-      <dmg2>1d10</dmg2>
-      <dmgType>S</dmgType>
-      <property>V,M</property>
-   </item>
+    <roll>3d6</roll>
+    <dmg1>1d8</dmg1>
+    <dmg2>1d10</dmg2>
+    <dmgType>S</dmgType>
+    <property>V,M</property>
+  </item>
+  <item>
+    <name>+3 Spiked Armor</name>
+    <type>MA</type>
+    <detail>major, Medium Armor</detail>
+    <weight>45</weight>
+    <text>Spiked armor is a rare type of medium armor made by dwarves. It consists of a leather coat and leggings covered with spikes that are usually made of metal.
+You have a +3 bonus to AC while wearing this armor.
+The wearer has disadvantage on Stealth (Dexterity) checks.
+Source: Dungeon Master's Guide p. 152</text>
+    <modifier category="bonus">ac +3</modifier>
+    <ac>14</ac>
+    <stealth>1</stealth>
+    <property/>
+  </item>
+  <item>
+    <name>Double-Bladed Scimitar of Vengeance</name>
+    <detail>major, Cursed item, martial Weapon, Melee Weapon</detail>
+    <type>M</type>
+    <weight>6</weight>
+    <property>S,2H,M</property>
+    <dmg1>2d4</dmg1>
+    <dmgType>S</dmgType>
+    <text>Special: If you attack with a double-bladed scimitar as part of the Attack action on your turn, you can use a bonus action immediately after to make a melee attack with it. This attack deals 1d4 slashing damage on a hit, instead of 2d4.
+You gain a +1 bonus to attack and damage rolls made with this magic weapon.
+Curse: This sword is cursed and possessed by a vengeful spirit. Becoming attuned to it extends the curse to you. As long as you remain cursed, you are unwilling to part with the sword, keeping it on your person at all times. While attuned to this weapon, you have disadvantage on attack rolls made with weapons other than this one.
+In addition, while the sword is on your person, you must succeed on a DC 15 Wisdom saving throw whenever you take damage in combat. On a failed save you must attack the creature that damaged you until you drop to 0 hit points or it does, or until you can't reach the creature to make a melee attack against it.
+You can break the curse in the usual ways. Alternatively, casting banishment on the sword forces the vengeful spirit to leave it. The sword then becomes a +1 weapon with no other properties.
+Found On: Magic Item Table F
+Source: Dungeon Master's Guide p. 206, Wayfinder's Guide to Eberron p. 74</text>
+    <roll>1d4</roll>
+    <roll>2d4</roll>
+  </item>
+  <item>
+    <name>Carpet of Flying, 6 ft. × 9 ft.</name>
+    <detail>Wondrous item, major</detail>
+    <type>W</type>
+    <magic>1</magic>
+    <weight></weight>
+    <property></property>
+    <text>You can speak the carpet's command word as an action to make the carpet hover and fly. It moves according to your spoken directions, provided that you are within 30 feet of it.
+A 6 ft. x 9 ft. carpet can carry up to 800 lb. at a fly speed of 30 feet. A carpet can carry up to twice this weight, but it flies at half speed if it carries more than its normal capacity.
+Source: Dungeon Master's Guide p. 157</text>
+  </item>
+  <item>
+    <name>Carrion Crawler Mucus</name>
+    <detail>major, Adventuring Gear, Poison</detail>
+    <type>G</type>
+    <weight></weight>
+    <value>200.0</value>
+    <property></property>
+    <text>This poison must be harvested from a dead or incapacitated carrion crawler. A creature subjected to this poison must succeed on a DC 13 Constitution saving throw or be poisoned for 1 minute. The poisoned creature is paralyzed. The creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.
+Source: Dungeon Master's Guide p. 258</text>
+  </item>
 </compendium>

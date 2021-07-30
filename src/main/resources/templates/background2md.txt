@@ -4,7 +4,7 @@ type: ref-background
 tags: [{resource.tag}]
 aliases: ['{resource.name}']
 ---
-# Background: {resource.name}
+# {resource.name}
 
 * **Skill Proficiencies**: {resource.proficiency}
 

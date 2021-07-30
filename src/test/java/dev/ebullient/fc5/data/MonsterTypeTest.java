@@ -62,10 +62,10 @@ public class MonsterTypeTest extends ParsingTestBase {
         String content = templates.renderMonster(monster);
         System.out.println(content);
         Assertions.assertAll(
-                () -> assertTrue(content.contains("# Ankheg")),
-                () -> assertTrue(content.contains(">*Large monstrosity, unaligned*")),
-                () -> assertTrue(content.contains(">|17 (+3)|11 (+0)|13 (+1)|1 (-5)|13 (+1)|6 (-2)|")),
-                () -> assertTrue(content.contains("> ***Acid Spray (Recharge 6).*** The ankheg spits")),
-                () -> assertTrue(content.contains("aliases: ['Ankheg']")));
+                () -> assertContains(content, "# Ankheg"),
+                () -> assertContains(content, "*Large monstrosity, Unaligned*"),
+                () -> assertContains(content, "|17 (+3)|11 (+0)|13 (+1)|1 (-5)|13 (+1)|6 (-2)|"),
+                () -> assertContains(content, "***Acid Spray (Recharge 6).*** The ankheg spits"),
+                () -> assertContains(content, "aliases: ['Ankheg']"));
     }
 }

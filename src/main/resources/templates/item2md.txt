@@ -1,19 +1,43 @@
 ---
 cssclass: ref-item
 type: ref-item
-tags: [{resource.tag}]
+tags:
+{#for tag in resource.tags}
+- {tag}
+{/for}
+{#for property in resource.properties}
+- item/property/{property.longName}
+{/for}
 aliases: ['{resource.name}']
 ---
 # {resource.name}
 *{resource.detail}*
 
 {#if resource.isArmor }
-* **Armor Class**: {resource.armorClass}
+- **Base Armor Class**: {resource.armorClass}
 {#else if resource.isWeapon }
-* **Damage**: {resource.damage}
-* **Property**: {resource.property}
+{#if resource.isVersatile }
+- **Damage**:
+  - One-handed: {resource.damage}
+  - Two-handed: {resource.damage2H}
+{#else}
+- **Damage**: {resource.damage}
 {/if}
-* **Cost**: {resource.cost} gp
-* **Weight**: {resource.weight} lbs.
+{/if}
+{#for modifier in resource.modifiers}
+- **{modifier.category}**: {modifier.value}
+{/for}
+{#if resource.properties }
+- **Properties**: {resource.propertiesString}
+{/if}
+{#if resource.strengthRequirement }
+- **Stealth**: Requires {resource.strengthRequirement} STR.
+{/if}
+{#if resource.stealthPenalty }
+- **Stealth**: The wearer has disadvantage on Stealth (DEX) checks.
+{/if}
+- **Cost**: {#if resource.cost }{resource.cost} gp{#else}——{/if}
+- **Weight**: {#if resource.weight }{resource.weight} lbs.{#else}——{/if}
 
 {resource.text}
+

@@ -4,47 +4,45 @@ type: statblock
 tags: [statblock, {resource.tag}]
 aliases: ['{resource.name}']
 ---
+<span class='nav'>[Description](#Description) [History](#History) [Notes](#Notes)</span>
 # {resource.name}
+*{resource.size} {resource.type}, {resource.alignment}*
 
-<span class='nav'>[History](#History) [Notes](#Notes)</span>
-> # Monster
->*{resource.size} {resource.type}, {resource.alignment}*
->___
-> - **Armor Class** {resource.ac}
-> - **Hit Points** {resource.hp}
-> - **Speed** {resource.speed}
->
->|STR|DEX|CON|INT|WIS|CHA|
->|:---:|:---:|:---:|:---:|:---:|:---:|
->|{resource.scores}|
->
-> - **Skills** {resource.skill}
-> - **Senses** {resource.senses}
-> - **Languages** {resource.languages}
-> - **Challenge** {resource.cr}
->___
->
-{#if resource.legendary}
+- **Armor Class** {resource.ac}
+- **Hit Points** {resource.hp}
+- **Speed** {resource.speed}
+
+|STR|DEX|CON|INT|WIS|CHA|
+|:---:|:---:|:---:|:---:|:---:|:---:|
+|{resource.scores}|
+
+- **Skills** {resource.skill}
+- **Senses** {resource.senses}
+- **Languages** {resource.languages}
+- **Challenge** {resource.cr}
+
+{#if resource.trait}
+## Traits
 {#for trait in resource.trait}
-> ***{trait.name}.*** {trait.text}
+***{trait.name}.*** {trait.text}
 {/for}
 {/if}
 {#if resource.action}
-> ## Actions
+## Actions
 {#for action in resource.action}
-> ***{action.name}.*** {action.text}
+***{action.name}.*** {action.text}
 {/for}
 {/if}
 {#if resource.reaction}
-> ## Reactions
+## Reactions
 {#for reaction in resource.reaction}
-> ***{reaction.name}.*** {reaction.text}
+***{reaction.name}.*** {reaction.text}
 {/for}
 {/if}
 {#if resource.legendary}
-> ## Legendary Actions
+## Legendary Actions
 {#for legendary in resource.legendary}
-> ***{legendary.name}.*** {legendary.text}
+***{legendary.name}.*** {legendary.text}
 {/for}
 {/if}
 

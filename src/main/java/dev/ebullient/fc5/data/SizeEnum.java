@@ -40,13 +40,13 @@ public enum SizeEnum {
     private SizeEnum(String prettyName) {
         this.prettyName = prettyName;
     }
-    
+
     public String prettyName() {
         return prettyName;
     }
 
     public static SizeEnum fromValue(String v) {
-        if ( v == null || v.isBlank() ) {
+        if (v == null || v.isBlank()) {
             return UNKNOWN;
         }
         return valueOf(v);

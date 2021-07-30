@@ -69,23 +69,23 @@ public class MonsterType implements BaseType {
 
         private String toAbilityModifier(int value) {
             int mod = (value - 10);
-            if ( mod % 2 != 0 ) {
+            if (mod % 2 != 0) {
                 mod -= 1; // round down
             }
             int modifier = mod / 2;
-            return String.format("%s (%s%s)", value, 
-                modifier >= 0 ? "+" : "",
-                modifier);
+            return String.format("%s (%s%s)", value,
+                    modifier >= 0 ? "+" : "",
+                    modifier);
         }
 
         @Override
         public String toString() {
-            return toAbilityModifier(strength) 
-            + "|" + toAbilityModifier(dexterity)
-            + "|" + toAbilityModifier(constitution) 
-            + "|" + toAbilityModifier(intelligence) 
-            + "|" + toAbilityModifier(wisdom) 
-            + "|" + toAbilityModifier(charisma);
+            return toAbilityModifier(strength)
+                    + "|" + toAbilityModifier(dexterity)
+                    + "|" + toAbilityModifier(constitution)
+                    + "|" + toAbilityModifier(intelligence)
+                    + "|" + toAbilityModifier(wisdom)
+                    + "|" + toAbilityModifier(charisma);
         }
     }
 
@@ -141,7 +141,7 @@ public class MonsterType implements BaseType {
             conditionImmune = NodeParser.getOrDefault(elements, "conditionImmune", "");
             senses = NodeParser.getOrDefault(elements, "senses", "");
             passive = NodeParser.getOrDefault(elements, "passive", 10);
-            languages = NodeParser.getOrDefault(elements, "languages", "Common");
+            languages = NodeParser.getOrDefault(elements, "languages", "--");
             cr = NodeParser.getOrDefault(elements, "cr", "0");
             trait = NodeParser.getOrDefault(elements, "trait", Collections.emptyList());
             action = NodeParser.getOrDefault(elements, "action", Collections.emptyList());
@@ -167,7 +167,7 @@ public class MonsterType implements BaseType {
     }
 
     public String getTag() {
-        return "monster/" + getSlug();
+        return "monster/" + getType();
     }
 
     public String getScores() {

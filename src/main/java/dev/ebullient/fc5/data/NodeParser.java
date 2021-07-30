@@ -78,7 +78,7 @@ public class NodeParser {
             case "dmg2":
                 return new Roll(node.getTextContent());
             case "dmgType":
-                return DamageEnum.valueOf(node.getTextContent());
+                return DamageEnum.fromValue(node.getTextContent());
             case "feature":
                 return new Feature(node);
             case "modifier":

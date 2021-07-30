@@ -2,7 +2,6 @@ package dev.ebullient.fc5.data;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 
@@ -61,9 +60,9 @@ public class BackgroundTypeTest extends ParsingTestBase {
         String content = templates.renderBackground(background);
         System.out.println(content);
         Assertions.assertAll(
-                () -> assertTrue(content.contains("# Acolyte")),
-                () -> assertTrue(content.contains("**Skill Proficiencies**")),
-                () -> assertTrue(content.contains("## Description")),
-                () -> assertTrue(content.contains("|---|------------------|")));
+                () -> assertContains(content, "# Acolyte"),
+                () -> assertContains(content, "**Skill Proficiencies**"),
+                () -> assertContains(content, "## Description"),
+                () -> assertContains(content, "|---|------------------|"));
     }
 }

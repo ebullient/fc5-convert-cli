@@ -3,6 +3,8 @@ package dev.ebullient.fc5.data;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -113,5 +115,17 @@ public class Text {
             }
             assert (i.next().equals(line)); // back to current line
         }
+    }
+
+    public MatchResult matches(Pattern pattern) {
+        Matcher matcher = pattern.matcher(String.join("\n", content));
+        if (matcher.find()) {
+            return matcher.toMatchResult();
+        }
+        return null;
+    }
+
+    public boolean contains(String string) {
+        return content.stream().anyMatch(x -> x.contains(string));
     }
 }

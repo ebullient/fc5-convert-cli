@@ -3,7 +3,6 @@ package dev.ebullient.fc5.data;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
@@ -52,8 +51,8 @@ public class ClassTypeTest extends ParsingTestBase {
         String content = templates.renderClass(barbarian);
         System.out.println(content);
         Assertions.assertAll(
-                () -> assertTrue(content.contains("# Class: Barbarian")),
-                () -> assertTrue(content.contains("* **Hit Points at Higher Levels:** 7(1d12) + CON")),
-                () -> assertTrue(content.contains("* **Saving Throws**: Strength, Constitution")));
+                () -> assertContains(content, "# Class: Barbarian"),
+                () -> assertContains(content, "* **Hit Points at Higher Levels:** 7(1d12) + CON"),
+                () -> assertContains(content, "* **Saving Throws**: Strength, Constitution"));
     }
 }
