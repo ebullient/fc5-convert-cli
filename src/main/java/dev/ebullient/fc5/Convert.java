@@ -12,9 +12,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.xml.sax.SAXException;
 
-import dev.ebullient.fc5.model.CompendiumType;
-import dev.ebullient.fc5.model.MarkdownWriter;
-import dev.ebullient.fc5.model.MarkdownWriter.WrappedIOException;
+import dev.ebullient.fc5.data.CompendiumType;
+import dev.ebullient.fc5.data.MarkdownWriter;
+import dev.ebullient.fc5.data.MarkdownWriter.WrappedIOException;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;

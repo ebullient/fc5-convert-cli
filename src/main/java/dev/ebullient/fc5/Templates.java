@@ -5,14 +5,14 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import dev.ebullient.fc5.model.BackgroundType;
-import dev.ebullient.fc5.model.ClassType;
-import dev.ebullient.fc5.model.FeatType;
-import dev.ebullient.fc5.model.ItemType;
-import dev.ebullient.fc5.model.MarkdownWriter.FileMap;
-import dev.ebullient.fc5.model.MonsterType;
-import dev.ebullient.fc5.model.RaceType;
-import dev.ebullient.fc5.model.SpellType;
+import dev.ebullient.fc5.data.BackgroundType;
+import dev.ebullient.fc5.data.ClassType;
+import dev.ebullient.fc5.data.FeatType;
+import dev.ebullient.fc5.data.ItemType;
+import dev.ebullient.fc5.data.MarkdownWriter.FileMap;
+import dev.ebullient.fc5.data.MonsterType;
+import dev.ebullient.fc5.data.RaceType;
+import dev.ebullient.fc5.data.SpellType;
 import io.quarkus.qute.Template;
 
 @ApplicationScoped
