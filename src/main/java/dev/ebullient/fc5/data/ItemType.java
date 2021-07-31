@@ -3,7 +3,6 @@ package dev.ebullient.fc5.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -58,7 +57,7 @@ public class ItemType implements BaseType {
     final Text text;
     final List<Roll> roll;
     final double cost;
-    final List<Modifier> modifier;
+    final List<Modifier> modifiers;
     final int ac;
     final int strength;
     final boolean stealth;
@@ -68,32 +67,32 @@ public class ItemType implements BaseType {
     final List<PropertyEnum> properties;
     final String range;
 
-    public ItemType(Map<String, Object> elements) {
-        name = NodeParser.getOrDefault(elements, "name", "unknown");
+    public ItemType(ParsingContext context) {
+        name = context.getOrFail(context.owner, "name", String.class);
 
-        type = ItemEnum.fromValue(NodeParser.getOrDefault(elements, "type", ""));
-        properties = PropertyEnum.fromPropertyString(NodeParser.getOrDefault(elements, "property", ""));
+        type = ItemEnum.fromValue(context.getOrDefault("type", ""));
+        properties = PropertyEnum.fromPropertyString(context.getOrDefault("property", ""));
 
-        weight = NodeParser.getOrDefault(elements, "weight", 0d);
-        cost = NodeParser.getOrDefault(elements, "value", 0d);
+        weight = context.getOrDefault("weight", 0d);
+        cost = context.getOrDefault("value", 0d);
 
-        text = NodeParser.getOrDefault(elements, "text", Text.NONE);
+        text = context.getOrDefault("text", Text.NONE);
 
-        dmg1 = NodeParser.getOrDefault(elements, "dmg1", Roll.NONE);
-        dmg2 = NodeParser.getOrDefault(elements, "dmg2", Roll.NONE);
-        dmgType = NodeParser.getOrDefault(elements, "dmgType", DamageEnum.unknown);
-        range = NodeParser.getOrDefault(elements, "range", "");
+        dmg1 = context.getOrDefault("dmg1", Roll.NONE);
+        dmg2 = context.getOrDefault("dmg2", Roll.NONE);
+        dmgType = context.getOrDefault("dmgType", DamageEnum.unknown);
+        range = context.getOrDefault("range", "");
 
-        ac = NodeParser.getOrDefault(elements, "ac", 0);
-        strength = NodeParser.getOrDefault(elements, "strength", 0);
-        stealth = NodeParser.getOrDefault(elements, "stealth", false);
+        ac = context.getOrDefault("ac", 0);
+        strength = context.getOrDefault("strength", 0);
+        stealth = context.getOrDefault("stealth", false);
 
-        modifier = NodeParser.getOrDefault(elements, "modifier", Collections.emptyList());
-        roll = NodeParser.getOrDefault(elements, "roll", Collections.emptyList());
+        modifiers = context.getOrDefault("modifier", Collections.emptyList());
+        roll = context.getOrDefault("roll", Collections.emptyList());
 
         // Figure out missing details
-        String tmpDetail = NodeParser.getOrDefault(elements, "detail", "");
-        magicItem = new MagicItem(name, tmpDetail, text, type, NodeParser.getOrDefault(elements, "magic", false));
+        String tmpDetail = context.getOrDefault("detail", "");
+        magicItem = new MagicItem(name, tmpDetail, text, type, context.getOrDefault("magic", false));
         tmpDetail = magicItem.updateDetails(tmpDetail);
         detail = type.updateDetails(tmpDetail);
     }
@@ -124,7 +123,7 @@ public class ItemType implements BaseType {
     }
 
     public List<Modifier> getModifiers() {
-        return modifier;
+        return modifiers;
     }
 
     public String getDetail() {

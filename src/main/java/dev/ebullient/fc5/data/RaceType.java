@@ -2,7 +2,6 @@ package dev.ebullient.fc5.data;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import io.quarkus.qute.TemplateData;
 
@@ -44,23 +43,25 @@ public class RaceType implements BaseType {
     final List<Trait> traits;
     final List<Modifier> modifiers;
 
-    public RaceType(Map<String, Object> elements) {
-        name = NodeParser.getOrDefault(elements, "name", "unknown");
-        size = NodeParser.getOrDefault(elements, "size", SizeEnum.UNKNOWN);
-        speed = NodeParser.getOrDefault(elements, "speed", 0);
-        ability = NodeParser.getOrDefault(elements, "ability", "");
-        spellAbility = NodeParser.getOrDefault(elements, "spellAbility", AbilityEnum.NONE);
-        proficiency = NodeParser.getOrDefault(elements, "proficiency", Proficiency.SKILL_LIST);
-        traits = NodeParser.getOrDefault(elements, "trait", Collections.emptyList());
-        modifiers = NodeParser.getOrDefault(elements, "modifier", Collections.emptyList());
+    public RaceType(ParsingContext context) {
+        name = context.getOrFail(context.owner, "name", String.class);
+
+        size = context.getOrDefault("size", SizeEnum.UNKNOWN);
+        speed = context.getOrDefault("speed", 0);
+        ability = context.getOrDefault("ability", "");
+        spellAbility = context.getOrDefault("spellAbility", AbilityEnum.NONE);
+        proficiency = context.getOrDefault("proficiency", Proficiency.SKILL_LIST);
+        proficiency.setFlavor(Proficiency.SKILL_LIST.flavor);
+        traits = context.getOrDefault("trait", Collections.emptyList());
+        modifiers = context.getOrDefault("modifier", Collections.emptyList());
     }
 
     public String getName() {
         return name;
     }
 
-    public String getTag() {
-        return "race/" + MarkdownWriter.slugifier().slugify(name);
+    public List<String> getTags() {
+        return Collections.singletonList("race/" + MarkdownWriter.slugifier().slugify(name));
     }
 
     public SizeEnum getSize() {
@@ -75,12 +76,12 @@ public class RaceType implements BaseType {
         return ability;
     }
 
-    public AbilityEnum getSpellAbility() {
-        return spellAbility;
+    public String getSpellAbility() {
+        return spellAbility == AbilityEnum.NONE ? "" : spellAbility.toString();
     }
 
-    public Proficiency getProficiency() {
-        return proficiency;
+    public String getSkills() {
+        return proficiency.getSkillNames();
     }
 
     public List<Trait> getTraits() {

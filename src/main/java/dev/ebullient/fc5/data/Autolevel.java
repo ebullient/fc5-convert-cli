@@ -2,9 +2,6 @@ package dev.ebullient.fc5.data;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-
-import org.w3c.dom.Node;
 
 import io.quarkus.qute.TemplateData;
 
@@ -49,17 +46,12 @@ public class Autolevel {
         counters = Collections.emptyList();
     }
 
-    public Autolevel(Node node) {
-        Node levelAttribute = node.getAttributes().getNamedItem("level");
-        this.level = Integer.valueOf(levelAttribute.getTextContent());
-
-        Node siAttribute = node.getAttributes().getNamedItem("scoreImprovement");
-        this.scoreImprovement = siAttribute == null ? false : NodeParser.parseBoolean(siAttribute.getTextContent());
-
-        Map<String, Object> elements = NodeParser.parseNodeElements(node);
-        features = NodeParser.getOrDefault(elements, "feature", Collections.emptyList());
-        slots = NodeParser.getOrDefault(elements, "slots", SpellSlots.NONE);
-        counters = NodeParser.getOrDefault(elements, "counter", Collections.emptyList());
+    public Autolevel(ParsingContext myElements) {
+        this.level = myElements.getOrDefault("level", 1);
+        this.scoreImprovement = myElements.getOrDefault("scoreImprovement", false);
+        this.features = myElements.getOrDefault("feature", Collections.emptyList());
+        this.slots = myElements.getOrDefault("slots", SpellSlots.NONE);
+        this.counters = myElements.getOrDefault("counter", Collections.emptyList());
     }
 
     public List<Feature> getFeatures() {

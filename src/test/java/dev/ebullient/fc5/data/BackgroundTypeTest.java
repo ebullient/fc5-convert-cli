@@ -58,7 +58,6 @@ public class BackgroundTypeTest extends ParsingTestBase {
                 () -> assertEquals("Suggested Characteristics", background.traits.get(2).name));
 
         String content = templates.renderBackground(background);
-        System.out.println(content);
         Assertions.assertAll(
                 () -> assertContains(content, "# Acolyte"),
                 () -> assertContains(content, "**Skill Proficiencies**"),

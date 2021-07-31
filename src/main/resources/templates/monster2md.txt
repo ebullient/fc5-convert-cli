@@ -1,7 +1,11 @@
 ---
 cssclass: statblock
 type: statblock
-tags: [statblock, {resource.tag}]
+tags:
+- statblock
+{#for tag in resource.tags}
+- {tag}
+{/for}
 aliases: ['{resource.name}']
 ---
 <span class='nav'>[Description](#Description) [History](#History) [Notes](#Notes)</span>

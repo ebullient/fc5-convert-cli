@@ -1,7 +1,5 @@
 package dev.ebullient.fc5.data;
 
-import org.w3c.dom.Node;
-
 import io.quarkus.qute.TemplateData;
 
 /**
@@ -25,21 +23,13 @@ import io.quarkus.qute.TemplateData;
  */
 @TemplateData
 public class SpellSlots {
-    public static final SpellSlots NONE = new SpellSlots("");
+    public static final SpellSlots NONE = new SpellSlots("", true);
 
     final String textContent;
     final boolean optional;
 
-    private SpellSlots(String textContent) {
+    public SpellSlots(String textContent, boolean optional) {
         this.textContent = textContent;
-        optional = true;
+        this.optional = optional;
     }
-
-    public SpellSlots(Node node) {
-        textContent = node.getTextContent();
-
-        Node attribute = node.getAttributes().getNamedItem("optional");
-        optional = attribute == null ? false : NodeParser.parseBoolean(attribute.getTextContent());
-    }
-
 }

@@ -60,7 +60,6 @@ public class MonsterTypeTest extends ParsingTestBase {
                 () -> assertEquals("grassland, forest", monster.environment));
 
         String content = templates.renderMonster(monster);
-        System.out.println(content);
         Assertions.assertAll(
                 () -> assertContains(content, "# Ankheg"),
                 () -> assertContains(content, "*Large monstrosity, Unaligned*"),

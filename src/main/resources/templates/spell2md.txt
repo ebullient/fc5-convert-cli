@@ -1,9 +1,22 @@
 ---
 cssclass: ref-spell
 type: ref-spell
-tags: [{resource.tag}]
+tags:
+{#for tag in resource.tags}
+- {tag}
+{/for}
 aliases: ['{resource.name}']
 ---
 # {resource.name}
+*{resource.level} {resource.school}{#if resource.ritual} (ritual){/if}*
+
+- **Casting time:** {resource.time}{#if resource.ritual} unless cast as a ritual{/if}
+- **Range:** {resource.range}
+- **Duration:** {resource.range}
+- **Components:** {resource.range}
 
 {resource.text}
+
+### Classes
+
+{resource.classes}

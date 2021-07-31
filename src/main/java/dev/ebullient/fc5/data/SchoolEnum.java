@@ -29,22 +29,37 @@ import io.quarkus.qute.TemplateData;
 @TemplateData
 public enum SchoolEnum {
 
-    A,
-    C,
-    D,
-    EN,
-    EV,
-    I,
-    N,
-    T,
-    UNKNOWN;
+    abjuration("abjuration", "A"),
+    conjuration("conjuration", "C"),
+    divination("divination", "D"),
+    enchantment("enchantment", "EN"),
+    evocation("evocation", "EV"),
+    illusion("illusion", "I"),
+    necromancy("necromancy", "N"),
+    transmutation("transmutation", "T");
 
-    public String value() {
-        return name();
+    private final String longName;
+    private final String xmlKey;
+
+    private SchoolEnum(String longName, String xmlType) {
+        this.longName = longName;
+        this.xmlKey = xmlType;
     }
 
-    public static SchoolEnum fromValue(String v) {
-        return valueOf(v);
+    public static SchoolEnum fromXmlType(String v) {
+        if (v == null || v.isBlank()) {
+            return null;
+        }
+        for (SchoolEnum p : SchoolEnum.values()) {
+            if (p.xmlKey.equals(v)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    public String longName() {
+        return longName;
     }
 
 }

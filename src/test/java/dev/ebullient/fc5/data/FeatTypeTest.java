@@ -43,7 +43,6 @@ public class FeatTypeTest extends ParsingTestBase {
                 () -> assertEquals(0, feat.modifier.size(), "Should not have found a modifier"));
 
         String content = templates.renderFeat(feat);
-        System.out.println(content);
         Assertions.assertAll(
                 () -> assertContains(content, "# Defensive Duelist"),
                 () -> assertContains(content, "When you are wielding a finesse weapo"),

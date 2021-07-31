@@ -49,10 +49,12 @@ public class Transform implements Callable<Integer> {
     void setOutputPath(File outputDir) {
         output = outputDir.toPath().toAbsolutePath().normalize();
         if (!output.toFile().exists()) {
-            throw new ParameterException(spec.commandLine(), "Specified output path does not exist: " + output.toString());
+            throw new ParameterException(spec.commandLine(),
+                    "Specified output path does not exist: " + output.toString());
         }
         if (!output.toFile().isDirectory()) {
-            throw new ParameterException(spec.commandLine(), "Specified output path is not a directory: " + output.toString());
+            throw new ParameterException(spec.commandLine(),
+                    "Specified output path is not a directory: " + output.toString());
         }
     }
 
@@ -65,10 +67,10 @@ public class Transform implements Callable<Integer> {
 
         final StreamSource xsltSource;
         if (xslt == null) {
-            System.out.println("💡 Using default XSLT filter");
+            Log.out().println("💡 Using default XSLT filter");
             xsltSource = new StreamSource(this.getClass().getResourceAsStream("/filterMerge-2.0.xslt"));
         } else {
-            System.out.println("💡 Using XLST " + xslt.toAbsolutePath());
+            Log.out().println("💡 Using XLST " + xslt.toAbsolutePath());
             xsltSource = new StreamSource(xslt.toFile());
         }
 
@@ -80,7 +82,7 @@ public class Transform implements Callable<Integer> {
 
         for (Path sourcePath : parent.input) {
             String systemId = sourcePath.toString();
-            System.out.printf("Transform %40s ... ", sourcePath.getFileName());
+            Log.out().printf("Transform %40s ... ", sourcePath.getFileName());
 
             String filename = sourcePath.getFileName().toString();
             if (suffix != null) {
@@ -97,10 +99,9 @@ public class Transform implements Callable<Integer> {
                     transformer.transform(new DOMSource(doc, systemId), new StreamResult(target));
                 }
 
-                System.out.printf("✅ wrote %s\n", targetFile.getAbsolutePath());
+                Log.out().printf("✅ wrote %s\n", targetFile.getAbsolutePath());
             } catch (IOException | SAXException | TransformerException e) {
-                System.out.println("⛔️ ");
-                System.out.println("Exception: " + e.getMessage());
+                Log.out().println("⛔️ Exception: " + e.getMessage());
                 allOk = false;
             }
             db.reset();

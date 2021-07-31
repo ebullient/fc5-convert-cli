@@ -1,14 +1,17 @@
 ---
 cssclass: ref-background
 type: ref-background
-tags: [{resource.tag}]
+tags:
+{#for tag in resource.tags}
+- {tag}
+{/for}
 aliases: ['{resource.name}']
 ---
 # {resource.name}
 
 * **Skill Proficiencies**: {resource.proficiency}
-
 {#for trait in resource.trait}
+
 ## {trait.name}
 
 {trait.text}

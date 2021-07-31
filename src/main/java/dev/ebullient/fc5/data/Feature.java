@@ -1,11 +1,7 @@
 package dev.ebullient.fc5.data;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import io.quarkus.qute.TemplateData;
 
@@ -45,64 +41,15 @@ public class Feature {
     final Proficiency proficiency;
     final boolean isOptional;
 
-    public Feature(Node node) {
-        Node optionalAttribute = node.getAttributes().getNamedItem("optional");
-        this.isOptional = optionalAttribute == null ? false : NodeParser.parseBoolean(optionalAttribute.getTextContent());
+    public Feature(ParsingContext context) {
+        name = context.getOrFail(context.owner, "name", String.class);
 
-        String nameText = null;
-        List<String> textStrings = new ArrayList<>();
-        List<String> specialList = null;
-        List<Modifier> modifierList = null;
-        Proficiency profContent = null;
-
-        NodeList children = node.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-            if (child.getNodeType() == Node.ELEMENT_NODE) {
-                switch (child.getNodeName()) {
-                    case "name": {
-                        if (nameText == null) {
-                            nameText = child.getTextContent();
-                        } else {
-                            textStrings.add("## " + child.getTextContent());
-                        }
-                        break;
-                    }
-                    case "modifier": {
-                        if (modifierList == null) {
-                            modifierList = new ArrayList<>();
-                        }
-                        modifierList.add(NodeParser.convertObject(NodeParser.parseNode(child), Modifier.NONE));
-                        break;
-                    }
-                    case "proficiency": {
-                        if (profContent != null) {
-                            throw new IllegalArgumentException("Multiple proficiency definitions");
-                        }
-                        profContent = NodeParser.convertObject(NodeParser.parseNode(child), Proficiency.STRING);
-                        profContent.setFlavor("string");
-                        break;
-                    }
-                    case "special": {
-                        if (specialList == null) {
-                            specialList = new ArrayList<>();
-                        }
-                        specialList.add(child.getTextContent());
-                        break;
-                    }
-                    case "text": {
-                        textStrings.add(child.getTextContent());
-                        break;
-                    }
-                }
-            }
-        }
-
-        this.name = nameText;
-        this.modifier = modifierList == null ? Collections.emptyList() : modifierList;
-        this.proficiency = profContent;
-        this.special = specialList == null ? Collections.emptyList() : specialList;
-        this.text = new Text(textStrings);
+        this.text = context.getOrDefault("text", Text.NONE);
+        this.special = context.getOrDefault("special", Collections.emptyList());
+        this.modifier = context.getOrDefault("modifier", Collections.emptyList());
+        this.proficiency = context.getOrDefault("proficiency", Proficiency.STRING);
+        proficiency.setFlavor(Proficiency.STRING.flavor);
+        this.isOptional = context.getOrDefault("optional", false);
     }
 
     public String getName() {

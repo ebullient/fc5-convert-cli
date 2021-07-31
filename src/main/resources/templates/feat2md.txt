@@ -1,7 +1,10 @@
 ---
 cssclass: ref-feat
 type: ref-feat
-tags: [{resource.tag}]
+tags:
+{#for tag in resource.tags}
+- {tag}
+{/for}
 aliases: ['{resource.name}']
 ---
 # {resource.name}

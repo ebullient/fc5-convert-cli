@@ -2,8 +2,8 @@ package dev.ebullient.fc5.data;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
+import dev.ebullient.fc5.Log;
 import io.quarkus.qute.TemplateData;
 
 /**
@@ -116,44 +116,45 @@ public class MonsterType implements BaseType {
     final String description;
     final String environment;
 
-    public MonsterType(Map<String, Object> elements) {
+    public MonsterType(ParsingContext context) {
+        name = context.getOrFail(context.owner, "name", String.class);
+
         try {
-            name = NodeParser.getOrDefault(elements, "name", "unknown");
-            size = NodeParser.getOrDefault(elements, "size", SizeEnum.UNKNOWN);
-            type = NodeParser.getOrDefault(elements, "type", "");
-            alignment = NodeParser.getOrDefault(elements, "alignment", "");
-            ac = NodeParser.getOrDefault(elements, "ac", "");
-            hp = NodeParser.getOrDefault(elements, "hp", "");
-            speed = NodeParser.getOrDefault(elements, "speed", "");
+            size = context.getOrDefault("size", SizeEnum.UNKNOWN);
+            type = context.getOrDefault("type", "");
+            alignment = context.getOrDefault("alignment", "");
+            ac = context.getOrDefault("ac", "");
+            hp = context.getOrDefault("hp", "");
+            speed = context.getOrDefault("speed", "");
 
-            scores.strength = NodeParser.getOrDefault(elements, "str", 10);
-            scores.dexterity = NodeParser.getOrDefault(elements, "dex", 10);
-            scores.constitution = NodeParser.getOrDefault(elements, "con", 10);
-            scores.intelligence = NodeParser.getOrDefault(elements, "int", 10);
-            scores.wisdom = NodeParser.getOrDefault(elements, "wis", 10);
-            scores.charisma = NodeParser.getOrDefault(elements, "cha", 10);
+            scores.strength = context.getOrDefault("str", 10);
+            scores.dexterity = context.getOrDefault("dex", 10);
+            scores.constitution = context.getOrDefault("con", 10);
+            scores.intelligence = context.getOrDefault("int", 10);
+            scores.wisdom = context.getOrDefault("wis", 10);
+            scores.charisma = context.getOrDefault("cha", 10);
 
-            save = NodeParser.getOrDefault(elements, "save", "");
-            skill = NodeParser.getOrDefault(elements, "skill", Collections.emptyList());
-            resist = NodeParser.getOrDefault(elements, "resist", "");
-            vulnerable = NodeParser.getOrDefault(elements, "vulnerable", "");
-            immune = NodeParser.getOrDefault(elements, "immune", "");
-            conditionImmune = NodeParser.getOrDefault(elements, "conditionImmune", "");
-            senses = NodeParser.getOrDefault(elements, "senses", "");
-            passive = NodeParser.getOrDefault(elements, "passive", 10);
-            languages = NodeParser.getOrDefault(elements, "languages", "--");
-            cr = NodeParser.getOrDefault(elements, "cr", "0");
-            trait = NodeParser.getOrDefault(elements, "trait", Collections.emptyList());
-            action = NodeParser.getOrDefault(elements, "action", Collections.emptyList());
-            legendary = NodeParser.getOrDefault(elements, "legendary", Collections.emptyList());
-            reaction = NodeParser.getOrDefault(elements, "reaction", Collections.emptyList());
+            save = context.getOrDefault("save", "");
+            skill = context.getOrDefault("skill", Collections.emptyList());
+            resist = context.getOrDefault("resist", "");
+            vulnerable = context.getOrDefault("vulnerable", "");
+            immune = context.getOrDefault("immune", "");
+            conditionImmune = context.getOrDefault("conditionImmune", "");
+            senses = context.getOrDefault("senses", "");
+            passive = context.getOrDefault("passive", 10);
+            languages = context.getOrDefault("languages", "--");
+            cr = context.getOrDefault("cr", "0");
+            trait = context.getOrDefault("trait", Collections.emptyList());
+            action = context.getOrDefault("action", Collections.emptyList());
+            legendary = context.getOrDefault("legendary", Collections.emptyList());
+            reaction = context.getOrDefault("reaction", Collections.emptyList());
 
-            spells = NodeParser.getOrDefault(elements, "spells", "");
-            slots = NodeParser.getOrDefault(elements, "slots", SpellSlots.NONE);
-            description = NodeParser.getOrDefault(elements, "description", "");
-            environment = NodeParser.getOrDefault(elements, "environment", "");
+            spells = context.getOrDefault("spells", "");
+            slots = context.getOrDefault("slots", SpellSlots.NONE);
+            description = context.getOrDefault("description", "");
+            environment = context.getOrDefault("environment", "");
         } catch (ClassCastException ex) {
-            System.err.println("Error parsing monster " + NodeParser.getOrDefault(elements, "name", "unknown"));
+            Log.err().println("Error parsing monster " + name);
             throw ex;
         }
     }
@@ -166,8 +167,8 @@ public class MonsterType implements BaseType {
         return MarkdownWriter.slugifier().slugify(name);
     }
 
-    public String getTag() {
-        return "monster/" + getType();
+    public List<String> getTags() {
+        return Collections.singletonList("monster/" + getType());
     }
 
     public String getScores() {

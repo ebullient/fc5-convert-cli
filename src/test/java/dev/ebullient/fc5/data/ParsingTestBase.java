@@ -11,48 +11,37 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.junit.jupiter.api.BeforeEach;
 
 import dev.ebullient.fc5.Templates;
 
 public class ParsingTestBase {
     final static Path output = Paths.get(System.getProperty("user.dir")).toAbsolutePath().resolve("target");
 
-    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-    DocumentBuilder db;
+    protected CompendiumXmlReader reader = new CompendiumXmlReader();
 
     @Inject
-    Templates templates;
+    protected Templates templates;
 
-    @BeforeEach
-    void getDocumentBuilder() throws Exception {
-        db = dbf.newDocumentBuilder();
+    protected CompendiumType doParse(String input) throws Exception {
+        return reader.parseXMLInputStream(new ByteArrayInputStream(input.getBytes()));
     }
 
-    CompendiumType doParse(String input) throws Exception {
-        return CompendiumType.readCompendium(db,
-                new ByteArrayInputStream(input.getBytes()), null);
-    }
-
-    CompendiumType doParseInputResource(String resourceName) throws Exception {
+    protected CompendiumType doParseInputResource(String resourceName) throws Exception {
         File file = new File("src/test/resources/" + resourceName);
         try (InputStream is = new FileInputStream(file)) {
-            return CompendiumType.readCompendium(db, is, null);
+            return reader.parseXMLInputStream(is);
         }
     }
 
-    boolean textContains(Text textField, String content) {
+    protected boolean textContains(Text textField, String content) {
         return String.join("", textField.content).contains(content);
     }
 
-    boolean rollContains(List<Roll> rollList, String roll) {
+    protected boolean rollContains(List<Roll> rollList, String roll) {
         return rollList.stream().anyMatch(x -> x.textContent.equals(roll));
     }
 
-    void assertContains(String content, String expected) {
+    protected void assertContains(String content, String expected) {
         assertTrue(content.contains(expected), "content should contain " + expected);
     }
 }

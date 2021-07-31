@@ -31,7 +31,6 @@ class ItemTypeTest extends ParsingTestBase {
                 () -> assertTrue(textContains(item.text, "A jug holds")));
 
         String content = templates.renderItem(item);
-        System.out.println(content);
         Assertions.assertAll(
                 () -> assertContains(content, "# Jug"),
                 () -> assertContains(content, "adventuring gear"),
@@ -62,7 +61,6 @@ class ItemTypeTest extends ParsingTestBase {
                 () -> assertContainsProperties(item.properties, "R,S,M"));
 
         String content = templates.renderItem(item);
-        System.out.println(content);
         Assertions.assertAll(
                 () -> assertContains(content, "# Lance"),
                 () -> assertContains(content, "weapon (martial melee)"),
@@ -88,7 +86,6 @@ class ItemTypeTest extends ParsingTestBase {
         boolean spikedarmor = false;
         for (ItemType item : compendium.items) {
             String content = templates.renderItem(item);
-            System.out.println(content);
             if ("Light Crossbow".equals(item.name)) {
                 crossbow = true;
                 validateCrossbow(item, content);

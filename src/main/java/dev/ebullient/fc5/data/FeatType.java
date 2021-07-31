@@ -2,7 +2,6 @@ package dev.ebullient.fc5.data;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import io.quarkus.qute.TemplateData;
 
@@ -38,23 +37,24 @@ public class FeatType implements BaseType {
     final Proficiency proficiency;
     final List<Modifier> modifier;
 
-    public FeatType(Map<String, Object> elements) {
-        name = NodeParser.getOrDefault(elements, "name", "unknown");
-        prerequisite = NodeParser.getOrDefault(elements, "prerequisite", "");
-        text = NodeParser.getOrDefault(elements, "text", Text.NONE);
+    public FeatType(ParsingContext context) {
+        name = context.getOrFail(context.owner, "name", String.class);
 
-        proficiency = NodeParser.getOrDefault(elements, "proficiency", Proficiency.ABILITY_AND_SKILL_LIST);
+        prerequisite = context.getOrDefault("prerequisite", "");
+        text = context.getOrDefault("text", Text.NONE);
+
+        proficiency = context.getOrDefault("proficiency", Proficiency.ABILITY_AND_SKILL_LIST);
         proficiency.setFlavor("abilityAndSkillList");
 
-        modifier = NodeParser.getOrDefault(elements, "modifier", Collections.emptyList());
+        modifier = context.getOrDefault("modifier", Collections.emptyList());
     }
 
     public String getName() {
         return name;
     }
 
-    public String getTag() {
-        return "feat/" + MarkdownWriter.slugifier().slugify(name);
+    public List<String> getTags() {
+        return Collections.singletonList("feat/" + MarkdownWriter.slugifier().slugify(name));
     }
 
     public String getText() {

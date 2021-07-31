@@ -2,7 +2,6 @@ package dev.ebullient.fc5.data;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import io.quarkus.qute.TemplateData;
 
@@ -55,20 +54,21 @@ public class ClassType implements BaseType {
     final String tools;
     final String wealth;
 
-    public ClassType(Map<String, Object> elements) {
-        name = NodeParser.getOrDefault(elements, "name", "unknown");
-        hitDice = NodeParser.getOrDefault(elements, "hd", 8);
+    public ClassType(ParsingContext context) {
+        name = context.getOrFail(context.owner, "name", String.class);
 
-        proficiency = NodeParser.getOrDefault(elements, "proficiency", Proficiency.ABILITY_AND_SKILL_LIST);
+        hitDice = context.getOrDefault("hd", 8);
+
+        proficiency = context.getOrDefault("proficiency", Proficiency.ABILITY_AND_SKILL_LIST);
         proficiency.setFlavor("abilityAndSkillList");
 
-        spellAbility = NodeParser.getOrDefault(elements, "spellAbility", AbilityEnum.NONE);
-        numSkills = NodeParser.getOrDefault(elements, "numSkills", 0);
-        autolevel = NodeParser.getOrDefault(elements, "autolevel", Collections.emptyList());
-        armor = NodeParser.getOrDefault(elements, "armor", NONE);
-        weapons = NodeParser.getOrDefault(elements, "weapons", NONE);
-        tools = NodeParser.getOrDefault(elements, "tools", NONE);
-        wealth = NodeParser.getOrDefault(elements, "wealth", "");
+        spellAbility = context.getOrDefault("spellAbility", AbilityEnum.NONE);
+        numSkills = context.getOrDefault("numSkills", 0);
+        autolevel = context.getOrDefault("autolevel", Collections.emptyList());
+        armor = context.getOrDefault("armor", NONE);
+        weapons = context.getOrDefault("weapons", NONE);
+        tools = context.getOrDefault("tools", NONE);
+        wealth = context.getOrDefault("wealth", "");
     }
 
     public List<Autolevel> getLevelFeatures() {
@@ -79,8 +79,8 @@ public class ClassType implements BaseType {
         return name;
     }
 
-    public String getTag() {
-        return "class/" + MarkdownWriter.slugifier().slugify(name);
+    public List<String> getTags() {
+        return Collections.singletonList("class/" + MarkdownWriter.slugifier().slugify(name));
     }
 
     public int getHitDice() {

@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.test.junit.QuarkusTest;
+
+@QuarkusTest
 public class RaceTypeTest extends ParsingTestBase {
 
     @Test
@@ -32,5 +35,8 @@ public class RaceTypeTest extends ParsingTestBase {
                 () -> assertEquals("Breath Weapon", race.traits.get(5).name),
                 () -> assertEquals("Damage Resistance", race.traits.get(6).name),
                 () -> assertEquals("Languages", race.traits.get(7).name));
+
+        String content = templates.renderRace(race);
+        System.out.println(content);
     }
 }

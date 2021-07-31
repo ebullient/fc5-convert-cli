@@ -62,6 +62,8 @@ public class Proficiency {
                     .collect(Collectors.joining(", "));
         }
         return skills.stream()
+                .filter(x -> x == null)
+                .filter(x -> x.isBlank())
                 .map(x -> "*" + x + "*")
                 .collect(Collectors.joining(", "));
     }

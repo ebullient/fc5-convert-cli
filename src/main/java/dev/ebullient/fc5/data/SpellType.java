@@ -1,8 +1,10 @@
 package dev.ebullient.fc5.data;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.quarkus.qute.TemplateData;
 
@@ -50,75 +52,89 @@ public class SpellType implements BaseType {
     final String components;
     final String duration;
     final String classes;
+    final List<String> classSlugs;
     final String source;
     final Text text;
     final List<Roll> roll;
 
-    public SpellType(Map<String, Object> elements) {
-        name = NodeParser.getOrDefault(elements, "name", "unknown");
-        level = NodeParser.getOrDefault(elements, "level", 0);
-        school = NodeParser.getOrDefault(elements, "school", SchoolEnum.UNKNOWN);
-        ritual = NodeParser.getOrDefault(elements, "ritual", false);
-        time = NodeParser.getOrDefault(elements, "time", "");
-        range = NodeParser.getOrDefault(elements, "range", "");
-        components = NodeParser.getOrDefault(elements, "components", "");
-        duration = NodeParser.getOrDefault(elements, "duration", "");
-        classes = NodeParser.getOrDefault(elements, "classes", "");
-        source = NodeParser.getOrDefault(elements, "source", "");
-        text = NodeParser.getOrDefault(elements, "text", Text.NONE);
-        roll = NodeParser.getOrDefault(elements, "roll", Collections.emptyList());
+    public SpellType(ParsingContext context) {
+        name = context.getOrFail(context.owner, "name", String.class);
+        school = context.getOrFail(context.owner, "school", SchoolEnum.class);
+
+        level = context.getOrDefault("level", 0);
+        ritual = context.getOrDefault("ritual", false);
+        time = context.getOrDefault("time", "");
+        range = context.getOrDefault("range", "");
+        components = context.getOrDefault("components", "");
+        duration = context.getOrDefault("duration", "");
+        source = context.getOrDefault("source", "");
+        text = context.getOrDefault("text", Text.NONE);
+        roll = context.getOrDefault("roll", Collections.emptyList());
+
+        classes = context.getOrDefault("classes", "");
+        classSlugs = Stream.of(classes.split("\\s*,\\s*"))
+                .map(x -> slugify(x)).collect(Collectors.toList());
     }
 
     public String getName() {
         return name;
     }
 
-    public String getTag() {
-        return "spell/" + MarkdownWriter.slugifier().slugify(name);
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public SchoolEnum getSchool() {
-        return school;
-    }
-
-    public boolean isRitual() {
-        return ritual;
-    }
-
-    public String getTime() {
-        return time;
-    }
-
-    public String getRange() {
-        return range;
-    }
-
-    public String getComponents() {
-        return components;
-    }
-
-    public String getDuration() {
-        return duration;
+    public List<String> getTags() {
+        List<String> tags = new ArrayList<>();
+        tags.add("spell/school/" + school.longName());
+        classSlugs.forEach(x -> tags.add("spell/class/" + x));
+        if (ritual) {
+            tags.add("spell/ritual");
+        }
+        return tags;
     }
 
     public String getClasses() {
         return classes;
     }
 
-    public String getSource() {
-        return source;
+    public String getDuration() {
+        return duration;
+    }
+
+    public String getLevel() {
+        switch (level) {
+            case 0:
+                return "Cantrip";
+            case 1:
+                return "1st level";
+            case 2:
+                return "2nd level";
+            case 3:
+                return "3rd level";
+            default:
+                return level + "st level";
+        }
+    }
+
+    public String getRange() {
+        return range;
+    }
+
+    public boolean getRitual() {
+        return ritual;
+    }
+
+    public String getSchool() {
+        return school.longName();
+    }
+
+    public String getTime() {
+        return time;
     }
 
     public String getText() {
         return String.join("\n", text.content);
     }
 
-    public List<Roll> getRoll() {
-        return roll;
+    String slugify(String text) {
+        return MarkdownWriter.slugifier().slugify(text);
     }
 
     @Override

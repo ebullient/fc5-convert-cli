@@ -49,7 +49,6 @@ public class ClassTypeTest extends ParsingTestBase {
                         "Parse should handle interleaved names"));
 
         String content = templates.renderClass(barbarian);
-        System.out.println(content);
         Assertions.assertAll(
                 () -> assertContains(content, "# Class: Barbarian"),
                 () -> assertContains(content, "* **Hit Points at Higher Levels:** 7(1d12) + CON"),

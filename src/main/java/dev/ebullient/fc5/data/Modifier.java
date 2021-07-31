@@ -1,7 +1,5 @@
 package dev.ebullient.fc5.data;
 
-import org.w3c.dom.Node;
-
 import io.quarkus.qute.TemplateData;
 
 /**
@@ -33,13 +31,12 @@ public class Modifier {
         category = CategoryEnum.UNKNOWN;
     }
 
-    public Modifier(Node node) {
-        value = node.getTextContent();
-        Node attribute = node.getAttributes().getNamedItem("category");
-        if (attribute == null) {
+    public Modifier(String value, CategoryEnum category) {
+        if (category == CategoryEnum.UNKNOWN) {
             throw new IllegalArgumentException("Modifier " + value + " is missing required category");
         }
-        category = CategoryEnum.fromValue(attribute.getTextContent());
+        this.value = value;
+        this.category = category;
     }
 
     public String getCategory() {

@@ -2,7 +2,6 @@ package dev.ebullient.fc5.data;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import io.quarkus.qute.TemplateData;
 
@@ -36,11 +35,12 @@ public class Trait {
     final List<String> attack;
     final List<String> special;
 
-    public Trait(Map<String, Object> elements) {
-        name = NodeParser.getOrDefault(elements, "name", "unknown");
-        text = NodeParser.getOrDefault(elements, "text", Text.NONE);
-        attack = NodeParser.getOrDefault(elements, "attack", Collections.emptyList());
-        special = NodeParser.getOrDefault(elements, "special", Collections.emptyList());
+    public Trait(ParsingContext context) {
+        name = context.getOrDefault("name", "");
+
+        text = context.getOrDefault("text", Text.NONE);
+        attack = context.getOrDefault("attack", Collections.emptyList());
+        special = context.getOrDefault("special", Collections.emptyList());
     }
 
     public String getName() {

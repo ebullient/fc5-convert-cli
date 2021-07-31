@@ -9,8 +9,10 @@ import java.util.concurrent.Callable;
 import io.quarkus.picocli.runtime.annotations.TopCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ScopeType;
+import picocli.CommandLine.Spec;
 
 @TopCommand
 @Command(name = "fc5-convert", mixinStandardHelpOptions = true, subcommands = {
@@ -18,6 +20,9 @@ import picocli.CommandLine.ScopeType;
 public class ConvertCli implements Callable<Integer> {
 
     List<Path> input;
+
+    @Spec
+    private CommandSpec spec;
 
     @Parameters(description = "XML Source file(s)", scope = ScopeType.INHERIT)
     void setInput(List<File> inputFile) {

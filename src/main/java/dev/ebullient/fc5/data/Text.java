@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import dev.ebullient.fc5.Log;
 import io.quarkus.qute.TemplateData;
 
 @TemplateData
@@ -59,11 +60,11 @@ public class Text {
 
             return lines;
         } catch (Exception e) {
-            System.err.println("Unable to convert entry to markdown: " + e.getMessage());
-            System.err.println("Source text: ");
-            System.err.println(e);
-            System.err.println("Details: ");
-            e.printStackTrace();
+            Log.err().println("Unable to convert entry to markdown: " + e.getMessage());
+            Log.err().println("Source text: ");
+            Log.err().println(e);
+            Log.err().println("Details: ");
+            e.printStackTrace(Log.err());
             throw e;
         }
     }
@@ -87,7 +88,7 @@ public class Text {
             if (tableMode != newTableMode) {
                 insertLine(i, String.join("|", line.replaceAll("[^|]", "-")));
             }
-        } else if (tableMode && tableMode != newTableMode) {
+        } else if (tableMode && tableMode != newTableMode && !(line.startsWith("##") || line.startsWith("Source:"))) {
             insertBlankLine(i, line);
         }
         return newTableMode;
@@ -107,8 +108,9 @@ public class Text {
 
     void insertBlankLineAbove(ListIterator<String> i, String line) {
         if (i.previousIndex() > 1) {
-            assert (i.previous().equals(line)); // this line
             String previous = i.previous();
+            assert (previous.equals(line)); // this line
+            previous = i.previous();
             assert (i.next().equals(previous)); // move cursor
             if (!previous.trim().isBlank()) {
                 i.add("");

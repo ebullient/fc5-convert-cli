@@ -2,7 +2,6 @@ package dev.ebullient.fc5.data;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import io.quarkus.qute.TemplateData;
 
@@ -33,13 +32,13 @@ public class BackgroundType implements BaseType {
     final List<Trait> traits;
     final Proficiency proficiency;
 
-    public BackgroundType(Map<String, Object> elements) {
-        name = NodeParser.getOrDefault(elements, "name", "unknown");
+    public BackgroundType(ParsingContext context) {
+        name = context.getOrFail(context.owner, "name", String.class);
 
-        proficiency = NodeParser.getOrDefault(elements, "proficiency", Proficiency.SKILL_LIST);
+        proficiency = context.getOrDefault("proficiency", Proficiency.SKILL_LIST);
         proficiency.setFlavor("skillList");
 
-        traits = NodeParser.getOrDefault(elements, "trait", Collections.emptyList());
+        traits = context.getOrDefault("trait", Collections.emptyList());
     }
 
     public String getName() {
@@ -50,8 +49,8 @@ public class BackgroundType implements BaseType {
         return traits;
     }
 
-    public String getTag() {
-        return "background/" + MarkdownWriter.slugifier().slugify(name);
+    public List<String> getTags() {
+        return Collections.singletonList("background/" + MarkdownWriter.slugifier().slugify(name));
     }
 
     public String getProficiency() {

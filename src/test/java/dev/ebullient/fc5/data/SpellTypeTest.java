@@ -3,11 +3,16 @@ package dev.ebullient.fc5.data;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.test.junit.QuarkusTest;
+
+@QuarkusTest
 public class SpellTypeTest extends ParsingTestBase {
 
     @Test
@@ -18,11 +23,18 @@ public class SpellTypeTest extends ParsingTestBase {
         Assertions.assertFalse(compendium.spells.isEmpty(),
                 "Spells should not be empty, found " + compendium);
 
+        List<String> tags = Arrays.asList(
+                "spell/school/conjuration",
+                "spell/class/artificer",
+                "spell/class/sorcerer",
+                "spell/class/wizard");
+
         SpellType spell = compendium.spells.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Acid Splash", spell.name),
                 () -> assertEquals(0, spell.level),
-                () -> assertEquals(SchoolEnum.C, spell.school),
+                () -> assertEquals(tags, spell.getTags()),
+                () -> assertEquals(SchoolEnum.conjuration, spell.school),
                 () -> assertEquals(false, spell.ritual),
                 () -> assertEquals("1 action", spell.time),
                 () -> assertEquals("60 feet", spell.range),
@@ -34,6 +46,9 @@ public class SpellTypeTest extends ParsingTestBase {
                 () -> assertTrue(rollContains(spell.roll, "2d6")),
                 () -> assertTrue(rollContains(spell.roll, "3d6")),
                 () -> assertTrue(rollContains(spell.roll, "4d6")));
+
+        String content = templates.renderSpell(spell);
+        System.out.println(content);
     }
 
     @Test
@@ -44,11 +59,23 @@ public class SpellTypeTest extends ParsingTestBase {
         Assertions.assertFalse(compendium.spells.isEmpty(),
                 "Spells should not be empty, found " + compendium);
 
+        List<String> tags = Arrays.asList(
+                "spell/school/abjuration",
+                "spell/class/artificer",
+                "spell/class/fighter-eldritch-knight",
+                "spell/class/paladin-watchers",
+                "spell/class/ranger",
+                "spell/class/sorcerer-clockwork-soul",
+                "spell/class/wizard",
+                "spell/class/wizard-ritual-caster",
+                "spell/ritual");
+
         SpellType spell = compendium.spells.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Alarm", spell.name),
                 () -> assertEquals(1, spell.level),
-                () -> assertEquals(SchoolEnum.A, spell.school),
+                () -> assertEquals(tags, spell.getTags()),
+                () -> assertEquals(SchoolEnum.abjuration, spell.school),
                 () -> assertEquals(true, spell.ritual),
                 () -> assertEquals("1 minute", spell.time),
                 () -> assertEquals("30 feet", spell.range),
@@ -59,5 +86,8 @@ public class SpellTypeTest extends ParsingTestBase {
                         spell.classes),
                 () -> assertTrue(textContains(spell.text, "You set an alarm against unwanted intrusion.")),
                 () -> assertEquals(Collections.emptyList(), spell.roll));
+
+        String content = templates.renderSpell(spell);
+        System.out.println(content);
     }
 }
