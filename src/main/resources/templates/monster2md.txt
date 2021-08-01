@@ -8,7 +8,6 @@ tags:
 {/for}
 aliases: ['{resource.name}']
 ---
-<span class='nav'>[Description](#Description) [History](#History) [Notes](#Notes)</span>
 # {resource.name}
 *{resource.size} {resource.type}, {resource.alignment}*
 
@@ -57,12 +56,4 @@ aliases: ['{resource.name}']
 ## Environment
 
 {resource.environment}
-
-## History
-
-<!-- ```dataview
-list from #log/monster/{resource.slug}
-``` -->
-
-## Notes
 

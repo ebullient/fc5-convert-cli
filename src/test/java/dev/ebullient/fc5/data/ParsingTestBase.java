@@ -42,6 +42,6 @@ public class ParsingTestBase {
     }
 
     protected void assertContains(String content, String expected) {
-        assertTrue(content.contains(expected), "content should contain " + expected);
+        assertTrue(content.contains(expected), "content should contain " + expected + ". Found:\n" + content);
     }
 }

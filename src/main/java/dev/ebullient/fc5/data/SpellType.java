@@ -94,6 +94,10 @@ public class SpellType implements BaseType {
         return classes;
     }
 
+    public String getComponents() {
+        return components;
+    }
+
     public String getDuration() {
         return duration;
     }
@@ -101,7 +105,7 @@ public class SpellType implements BaseType {
     public String getLevel() {
         switch (level) {
             case 0:
-                return "Cantrip";
+                return "cantrip";
             case 1:
                 return "1st level";
             case 2:

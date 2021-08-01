@@ -149,6 +149,7 @@ public class CompendiumXmlReader {
         FeatureContextElement(XMLStreamReader reader, Deque<ParsingContext> contextStack,
                 CompendiumType compendiumType) {
             super(reader, contextStack, compendiumType);
+            myElements.put("optional", parseBoolean(attributes.get("optional")));
         }
 
         @Override
@@ -161,7 +162,7 @@ public class CompendiumXmlReader {
             contextStack.pop(); // pop this nested context
             ParsingContext parentContext = contextStack.peek();
 
-            myElements.put("optional", parseBoolean(attributes.get("optional")));
+            myElements.put("level", parentContext.elements.get("level"));
             parentContext.put(name, new Feature(myElements));
         }
     }
@@ -170,15 +171,14 @@ public class CompendiumXmlReader {
         AutolevelContextElement(XMLStreamReader reader, Deque<ParsingContext> contextStack,
                 CompendiumType compendiumType) {
             super(reader, contextStack, compendiumType);
+            myElements.put("level", attributes.get("level"));
+            myElements.put("scoreImprovement", parseBoolean(attributes.get("scoreImprovement")));
         }
 
         @Override
         public void endElement(XMLStreamReader reader, Deque<ParsingContext> contextStack) throws Exception {
             contextStack.pop(); // pop this nested context
             ParsingContext parentContext = contextStack.peek();
-
-            myElements.put("level", attributes.get("level"));
-            myElements.put("scoreImprovement", parseBoolean(attributes.get("scoreImprovement")));
             parentContext.put(name, new Autolevel(myElements));
         }
     }

@@ -48,7 +48,12 @@ public class SpellTypeTest extends ParsingTestBase {
                 () -> assertTrue(rollContains(spell.roll, "4d6")));
 
         String content = templates.renderSpell(spell);
-        System.out.println(content);
+        Assertions.assertAll(
+                () -> assertContains(content, "spell/class/artificer"),
+                () -> assertContains(content, "# Acid Splash"),
+                () -> assertContains(content, "*conjuration cantrip*"),
+                () -> assertContains(content, "- **Casting time:** 1 action"),
+                () -> assertContains(content, "- **Components:** V, S"));
     }
 
     @Test
@@ -88,6 +93,12 @@ public class SpellTypeTest extends ParsingTestBase {
                 () -> assertEquals(Collections.emptyList(), spell.roll));
 
         String content = templates.renderSpell(spell);
-        System.out.println(content);
+        Assertions.assertAll(
+                () -> assertContains(content, "# Alarm"),
+                () -> assertContains(content, "*1st level abjuration (ritual)*"),
+                () -> assertContains(content, "- **Casting time:** 1 minute unless cast as a ritual"),
+                () -> assertContains(content,
+                        "Artificer, Fighter (Eldritch Knight), Paladin (Watchers), Ranger, Sorcerer (Clockwork Soul), Wizard, Wizard (Ritual Caster)"),
+                () -> assertContains(content, "### Classes"));
     }
 }

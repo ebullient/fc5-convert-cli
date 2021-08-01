@@ -8,12 +8,12 @@ tags:
 aliases: ['{resource.name}']
 ---
 # {resource.name}
-*{resource.level} {resource.school}{#if resource.ritual} (ritual){/if}*
+*{#if resource.level == "cantrip"}{resource.school} {resource.level}{#else}{resource.level} {resource.school}{/if}{#if resource.ritual} (ritual){/if}*
 
 - **Casting time:** {resource.time}{#if resource.ritual} unless cast as a ritual{/if}
 - **Range:** {resource.range}
 - **Duration:** {resource.range}
-- **Components:** {resource.range}
+- **Components:** {resource.components}
 
 {resource.text}
 

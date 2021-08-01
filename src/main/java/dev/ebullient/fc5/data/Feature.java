@@ -40,6 +40,7 @@ public class Feature {
     final List<Modifier> modifier;
     final Proficiency proficiency;
     final boolean isOptional;
+    final int level;
 
     public Feature(ParsingContext context) {
         name = context.getOrFail(context.owner, "name", String.class);
@@ -50,6 +51,8 @@ public class Feature {
         this.proficiency = context.getOrDefault("proficiency", Proficiency.STRING);
         proficiency.setFlavor(Proficiency.STRING.flavor);
         this.isOptional = context.getOrDefault("optional", false);
+
+        this.level = context.getOrDefault("level", 0);
     }
 
     public String getName() {
@@ -58,6 +61,10 @@ public class Feature {
 
     public String getText() {
         return String.join("\n", text.content);
+    }
+
+    public int getLevel() {
+        return level;
     }
 
     @Override

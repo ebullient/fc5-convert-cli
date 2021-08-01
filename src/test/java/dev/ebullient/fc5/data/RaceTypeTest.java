@@ -37,6 +37,11 @@ public class RaceTypeTest extends ParsingTestBase {
                 () -> assertEquals("Languages", race.traits.get(7).name));
 
         String content = templates.renderRace(race);
-        System.out.println(content);
+        Assertions.assertAll(
+                () -> assertContains(content, "# Dragonborn"),
+                () -> assertContains(content, "- race/dragonborn"),
+                () -> assertContains(content, "- **Ability Score Increase**: Str 2, Cha 1"),
+                () -> assertContains(content, "|-------|-------------|--------------|"),
+                () -> assertContains(content, "## Breath Weapon"));
     }
 }
