@@ -1,5 +1,6 @@
 package dev.ebullient.fc5.data;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
@@ -7,7 +8,6 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import dev.ebullient.fc5.Log;
 import io.quarkus.qute.TemplateData;
@@ -15,42 +15,44 @@ import io.quarkus.qute.TemplateData;
 @TemplateData
 public class Text {
     public static final Text NONE = new Text(Collections.emptyList());
-    final Pattern linebreaks = Pattern.compile("[\n\r\u0085\u2028\u2029]");
 
     final List<String> content;
 
     public Text(List<String> text) {
-        this.content = text.stream()
-                .map(x -> convertToMarkdown(x))
-                .flatMap(x -> x.stream())
-                .collect(Collectors.toList());
-    }
-
-    private List<String> convertToMarkdown(String textContent) {
-        try {
-            String[] text = linebreaks.matcher(textContent).replaceAll("\n").split("\n");
-
-            List<String> lines = Stream.of(text)
-                    .map(x -> x.replaceAll("•", "-"))
+        if (text.isEmpty()) {
+            this.content = Collections.emptyList();
+        } else {
+            List<String> collectedText = text.stream()
+                    .filter(x -> !x.isBlank())
+                    .flatMap(x -> Arrays.asList(x.split("\n")).stream())
                     .map(x -> x.trim())
                     .collect(Collectors.toList());
+            content = convertToMarkdown(collectedText);
+        }
+    }
 
-            ListIterator<String> i = lines.listIterator();
+    private List<String> convertToMarkdown(List<String> textContent) {
+        try {
+            ListIterator<String> i = textContent.listIterator();
 
             boolean listMode = false;
             boolean tableMode = false;
 
             while (i.hasNext()) {
-                String line = i.next().replaceAll("Skill Proficiencies:", "**Skill Proficiencies:**")
-                        .replaceAll("Languages:", "**Languages:**").replaceAll("Equipment:", "**Equipment:**")
-                        .trim();
-                i.set(line);
+                String line = i.next();
+
+                if (!line.isBlank()) {
+                    line = line
+                            .replaceAll("•", "-")
+                            .replaceAll("- ([^:]+):", "- **$1:**");
+                    i.set(line);
+                }
 
                 listMode = handleList(i, line, listMode);
                 tableMode = handleTable(i, line, tableMode);
 
                 if (line.startsWith("##") || line.startsWith("Source:")) {
-                    insertBlankLineAbove(i, line);
+                    insertBlankLineAbove(i);
                 }
 
                 if (!listMode && !tableMode) {
@@ -58,7 +60,7 @@ public class Text {
                 }
             }
 
-            return lines;
+            return textContent;
         } catch (Exception e) {
             Log.err().println("Unable to convert entry to markdown: " + e.getMessage());
             Log.err().println("Source text: ");
@@ -72,7 +74,7 @@ public class Text {
     boolean handleList(ListIterator<String> i, String line, boolean listMode) {
         boolean newListMode = line.startsWith("-");
         if (listMode != newListMode) {
-            insertBlankLineAbove(i, line);
+            insertBlankLineAbove(i);
         }
         return newListMode;
     }
@@ -81,14 +83,14 @@ public class Text {
         boolean newTableMode = line.indexOf('|') >= 0;
         if (newTableMode) {
             if (tableMode != newTableMode) {
-                insertBlankLineAbove(i, line);
+                insertBlankLineAbove(i);
             }
             line = "|" + line + "|";
             i.set(line);
             if (tableMode != newTableMode) {
                 insertLine(i, String.join("|", line.replaceAll("[^|]", "-")));
             }
-        } else if (tableMode && tableMode != newTableMode && !(line.startsWith("##") || line.startsWith("Source:"))) {
+        } else if (tableMode && tableMode != newTableMode) {
             insertBlankLine(i, line);
         }
         return newTableMode;
@@ -96,8 +98,9 @@ public class Text {
 
     void insertLine(ListIterator<String> i, String newLine) {
         i.add(newLine);
-        assert (i.previous().equals(newLine));
-        assert (i.next().equals(newLine));
+        // reset the cursors around the new line for later checks
+        i.previous();
+        i.next();
     }
 
     void insertBlankLine(ListIterator<String> i, String line) {
@@ -106,16 +109,17 @@ public class Text {
         }
     }
 
-    void insertBlankLineAbove(ListIterator<String> i, String line) {
+    void insertBlankLineAbove(ListIterator<String> i) {
         if (i.previousIndex() > 1) {
+            // Move the cursor backwards two
+            i.previous();
             String previous = i.previous();
-            assert (previous.equals(line)); // this line
-            previous = i.previous();
-            assert (i.next().equals(previous)); // move cursor
-            if (!previous.trim().isBlank()) {
+            // use next to put it in the right place to add
+            i.next();
+            if (!previous.isBlank()) {
                 i.add("");
             }
-            assert (i.next().equals(line)); // back to current line
+            i.next(); // move cursor back to current line
         }
     }
 
