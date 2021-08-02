@@ -33,8 +33,9 @@ I also use [Obsidian](https://obsidian.md) to keep track of my notes. The goal i
     ```
     This will create `target/CoreRulebooks-merged.xml`
 
-5. Convert the merged XML document to markdown (🚧 in progress 🚧)
+5. Convert the merged XML document to markdown (🚧 in progress 🚧). For testing/tooling around purposes, you can tool around with test files:
     ```
     java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar convert --help
+    java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar convert -o target/reference target/reference src/test/resources/backgroundAcolyte.xml
     java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar convert -o target/reference target/CoreRulebooks-merged.xml
     ```
