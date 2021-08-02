@@ -15,7 +15,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import picocli.CommandLine;
 
 @QuarkusTest
-//@Disabled
+@Disabled
 public class XmlReadTest extends ParsingTestBase {
 
     @Test
