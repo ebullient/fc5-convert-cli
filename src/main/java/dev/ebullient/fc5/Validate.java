@@ -41,12 +41,12 @@ public class Validate implements Callable<Integer> {
 
         for (Path source : parent.input) {
             try {
-                Log.out().printf("Validate %80s ... ", source.getFileName());
+                Log.outPrintf("Validate %80s ... ", source.getFileName());
                 validator.validate(new StreamSource(source.toFile()));
-                Log.out().println("✅ "); // end line
+                Log.outPrintln("✅ "); // end line
             } catch (IOException | SAXException e) {
-                Log.out().println("⛔️ "); // end line
-                Log.out().println("Exception: " + e.getMessage());
+                Log.outPrintln("⛔️ "); // end line
+                Log.outPrintln("Exception: " + e.getMessage());
                 allOk = false;
             }
         }

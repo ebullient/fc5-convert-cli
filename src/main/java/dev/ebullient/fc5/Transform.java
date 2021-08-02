@@ -67,10 +67,10 @@ public class Transform implements Callable<Integer> {
 
         final StreamSource xsltSource;
         if (xslt == null) {
-            Log.out().println("💡 Using default XSLT filter");
+            Log.outPrintln("💡 Using default XSLT filter");
             xsltSource = new StreamSource(this.getClass().getResourceAsStream("/filterMerge-2.0.xslt"));
         } else {
-            Log.out().println("💡 Using XLST " + xslt.toAbsolutePath());
+            Log.outPrintln("💡 Using XLST " + xslt.toAbsolutePath());
             xsltSource = new StreamSource(xslt.toFile());
         }
 
@@ -82,7 +82,7 @@ public class Transform implements Callable<Integer> {
 
         for (Path sourcePath : parent.input) {
             String systemId = sourcePath.toString();
-            Log.out().printf("Transform %40s ... ", sourcePath.getFileName());
+            Log.outPrintf("Transform %40s ... ", sourcePath.getFileName());
 
             String filename = sourcePath.getFileName().toString();
             if (suffix != null) {
@@ -99,9 +99,9 @@ public class Transform implements Callable<Integer> {
                     transformer.transform(new DOMSource(doc, systemId), new StreamResult(target));
                 }
 
-                Log.out().printf("✅ wrote %s\n", targetFile.getAbsolutePath());
+                Log.outPrintf("✅ wrote %s\n", targetFile.getAbsolutePath());
             } catch (IOException | SAXException | TransformerException e) {
-                Log.out().println("⛔️ Exception: " + e.getMessage());
+                Log.outPrintln("⛔️ Exception: " + e.getMessage());
                 allOk = false;
             }
             db.reset();

@@ -8,6 +8,7 @@ import java.util.Map;
 
 import dev.ebullient.fc5.Log;
 
+@SuppressWarnings("unchecked")
 public class ParsingContext {
     private static final List<String> EMPTY_STRING_LIST = Collections.emptyList();
 
@@ -92,7 +93,7 @@ public class ParsingContext {
 
     private List<Object> convertToList(String key, Object existing) {
         if (existing instanceof List) {
-            return (List) existing;
+            return (List<Object>) existing;
         } else {
             List<Object> newList = new ArrayList<>();
             newList.add(existing);

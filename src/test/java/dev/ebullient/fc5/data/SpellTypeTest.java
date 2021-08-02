@@ -25,6 +25,7 @@ public class SpellTypeTest extends ParsingTestBase {
 
         List<String> tags = Arrays.asList(
                 "spell/school/conjuration",
+                "spell/level/cantrip",
                 "spell/class/artificer",
                 "spell/class/sorcerer",
                 "spell/class/wizard");
@@ -66,6 +67,7 @@ public class SpellTypeTest extends ParsingTestBase {
 
         List<String> tags = Arrays.asList(
                 "spell/school/abjuration",
+                "spell/level/1",
                 "spell/class/artificer",
                 "spell/class/fighter-eldritch-knight",
                 "spell/class/paladin-watchers",

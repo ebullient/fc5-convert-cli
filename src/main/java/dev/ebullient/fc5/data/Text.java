@@ -45,6 +45,10 @@ public class Text {
                     line = line
                             .replaceAll("•", "-")
                             .replaceAll("- ([^:]+):", "- **$1:**");
+                    int pos = line.indexOf('.');
+                    if (pos > 0 && pos + 10 < line.length() && line.substring(0, pos).split(" ").length < 4) {
+                        line = line.replaceAll("^(.+?\\.)", "**$1**");
+                    }
                     i.set(line);
                 }
 

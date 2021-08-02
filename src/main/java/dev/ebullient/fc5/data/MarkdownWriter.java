@@ -37,10 +37,13 @@ public class MarkdownWriter {
     }
 
     public <T extends BaseType> void writeFiles(List<T> elements, String typeName) throws IOException {
+        if (elements.isEmpty()) {
+            return;
+        }
         List<FileMap> fileMappings = new ArrayList<>();
         String dirName = typeName.toLowerCase();
 
-        Log.out().println("⏱ Writing " + typeName);
+        Log.outPrintln("⏱ Writing " + typeName);
         elements.forEach(x -> {
             FileMap fileMap = new FileMap(x.getName(), slugifier().slugify(x.getName()));
             try {
@@ -73,6 +76,7 @@ public class MarkdownWriter {
             fileMappings.add(fileMap);
         });
         writeFile(new FileMap(typeName, dirName), dirName, templates.renderIndex(typeName, fileMappings));
+        Log.outPrintln("  ✅ " + (fileMappings.size() + 1) + " files.");
     }
 
     void writeFile(FileMap fileMap, String type, String content) throws IOException {
@@ -82,7 +86,7 @@ public class MarkdownWriter {
         Path target = targetDir.resolve(fileMap.fileName);
 
         Files.write(target, content.getBytes(StandardCharsets.UTF_8));
-        Log.out().println("✅ Generated " + target);
+        Log.debugf("      %s", target);
     }
 
     @TemplateData

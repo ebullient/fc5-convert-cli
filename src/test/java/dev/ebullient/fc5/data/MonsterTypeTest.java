@@ -56,7 +56,7 @@ public class MonsterTypeTest extends ParsingTestBase {
                 () -> assertEquals(Collections.emptyList(), monster.legendary),
                 () -> assertEquals(Collections.emptyList(), monster.reaction),
 
-                () -> assertTrue(monster.description.startsWith("An ankheg resembles ")),
+                () -> assertTrue(monster.getDescription().startsWith("An ankheg resembles ")),
                 () -> assertEquals("grassland, forest", monster.environment));
 
         String content = templates.renderMonster(monster);

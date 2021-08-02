@@ -1,7 +1,10 @@
 package dev.ebullient.fc5.data;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import dev.ebullient.fc5.Log;
 import io.quarkus.qute.TemplateData;
@@ -59,6 +62,8 @@ import io.quarkus.qute.TemplateData;
  */
 @TemplateData
 public class MonsterType implements BaseType {
+    static final Pattern TYPE_DETAIL = Pattern.compile("(.+?) \\((.+?)\\)");
+
     class AbilityScores {
         int strength;
         int dexterity;
@@ -113,7 +118,7 @@ public class MonsterType implements BaseType {
     final List<Trait> reaction;
     final String spells;
     final SpellSlots slots;
-    final String description;
+    final Text description;
     final String environment;
 
     public MonsterType(ParsingContext context) {
@@ -151,8 +156,9 @@ public class MonsterType implements BaseType {
 
             spells = context.getOrDefault("spells", "");
             slots = context.getOrDefault("slots", SpellSlots.NONE);
-            description = context.getOrDefault("description", "");
             environment = context.getOrDefault("environment", "");
+
+            description = new Text(Collections.singletonList(context.getOrDefault("description", "")));
         } catch (ClassCastException ex) {
             Log.err().println("Error parsing monster " + name);
             throw ex;
@@ -164,11 +170,22 @@ public class MonsterType implements BaseType {
     }
 
     public String getSlug() {
-        return MarkdownWriter.slugifier().slugify(name);
+        return slugify(name);
     }
 
     public List<String> getTags() {
-        return Collections.singletonList("monster/" + getType());
+        List<String> result = new ArrayList<>();
+        result.add("monster/" + slugify(size.prettyName()));
+
+        Matcher m = TYPE_DETAIL.matcher(type);
+        if (m.matches()) {
+            for (String detail : m.group(2).split("\\s*,\\s*")) {
+                result.add("monster/" + slugify(m.group(1)) + "/" + slugify(detail));
+            }
+        } else {
+            result.add("monster/" + slugify(type));
+        }
+        return result;
     }
 
     public String getScores() {
@@ -205,6 +222,10 @@ public class MonsterType implements BaseType {
 
     public List<String> getSkill() {
         return skill;
+    }
+
+    public String getSkillString() {
+        return String.join(", ", skill);
     }
 
     public String getResist() {
@@ -264,11 +285,15 @@ public class MonsterType implements BaseType {
     }
 
     public String getDescription() {
-        return description;
+        return String.join("\n", description.content);
     }
 
     public String getEnvironment() {
         return environment;
+    }
+
+    String slugify(String text) {
+        return MarkdownWriter.slugifier().slugify(text);
     }
 
     @Override

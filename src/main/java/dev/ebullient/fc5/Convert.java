@@ -54,14 +54,14 @@ public class Convert implements Callable<Integer> {
         boolean allOk = true;
 
         MarkdownWriter writer = new MarkdownWriter(output, tpl);
-        Log.out().println("💡 Writing files to " + output);
+        Log.outPrintln("💡 Writing files to " + output);
 
         for (Path sourcePath : parent.input) {
-            Log.out().println("⏱ Reading " + sourcePath.getFileName());
+            Log.outPrintln("⏱ Reading " + sourcePath.getFileName());
 
             try (InputStream is = new BufferedInputStream(new FileInputStream(sourcePath.toFile()))) {
                 CompendiumType compendium = reader.parseXMLInputStream(is);
-                Log.out().println("✅ Done.");
+                Log.outPrintln("  ✅ Done.");
 
                 writer.writeFiles(compendium.getBackgrounds(), "Backgrounds");
                 writer.writeFiles(compendium.getClasses(), "Classes");
@@ -73,9 +73,9 @@ public class Convert implements Callable<Integer> {
             } catch (IOException | WrappedIOException e) {
                 allOk = false;
                 if (e instanceof WrappedIOException) {
-                    Log.out().println("⛔️ Exception: " + e.getCause().getMessage());
+                    Log.outPrintln("⛔️ Exception: " + e.getCause().getMessage());
                 } else {
-                    Log.out().println("⛔️ Exception: " + e.getMessage());
+                    Log.outPrintln("⛔️ Exception: " + e.getMessage());
                 }
             }
         }

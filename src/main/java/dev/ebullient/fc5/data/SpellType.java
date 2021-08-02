@@ -83,6 +83,7 @@ public class SpellType implements BaseType {
     public List<String> getTags() {
         List<String> tags = new ArrayList<>();
         tags.add("spell/school/" + school.longName());
+        tags.add("spell/level/" + (level == 0 ? "cantrip" : level));
         classSlugs.forEach(x -> tags.add("spell/class/" + x));
         if (ritual) {
             tags.add("spell/ritual");
