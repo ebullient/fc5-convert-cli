@@ -27,8 +27,7 @@ public class ParsingTestBase {
     }
 
     protected CompendiumType doParseInputResource(String resourceName) throws Exception {
-        File file = new File("src/test/resources/" + resourceName);
-        try (InputStream is = new FileInputStream(file)) {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourceName)) {
             return reader.parseXMLInputStream(is);
         }
     }
