@@ -8,10 +8,10 @@ import io.quarkus.qute.TemplateData;
 /**
  * <p>
  * Java class for autolevelType complex type.
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="autolevelType">
  *   &lt;complexContent>
@@ -47,11 +47,12 @@ public class Autolevel {
     }
 
     public Autolevel(ParsingContext myElements) {
-        this.level = myElements.getOrDefault("level", 1);
-        this.scoreImprovement = myElements.getOrDefault("scoreImprovement", false);
-        this.features = myElements.getOrDefault("feature", Collections.emptyList());
-        this.slots = myElements.getOrDefault("slots", SpellSlots.NONE);
-        this.counters = myElements.getOrDefault("counter", Collections.emptyList());
+        String name = myElements.owner + " autolevel";
+        this.level = myElements.getOrDefault(name, "level", 1);
+        this.scoreImprovement = myElements.getOrDefault(name, "scoreImprovement", false);
+        this.features = myElements.getOrDefault(name, "feature", Collections.emptyList());
+        this.slots = myElements.getOrDefault(name, "slots", SpellSlots.NONE);
+        this.counters = myElements.getOrDefault(name, "counter", Collections.emptyList());
     }
 
     public List<Feature> getFeatures() {

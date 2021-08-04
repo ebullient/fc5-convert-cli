@@ -8,10 +8,10 @@ import io.quarkus.qute.TemplateData;
 /**
  * <p>
  * Java class for traitType complex type.
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="traitType">
  *   &lt;complexContent>
@@ -36,11 +36,11 @@ public class Trait {
     final List<String> special;
 
     public Trait(ParsingContext context) {
-        name = context.getOrDefault("name", "");
-
-        text = context.getOrDefault("text", Text.NONE);
-        attack = context.getOrDefault("attack", Collections.emptyList());
-        special = context.getOrDefault("special", Collections.emptyList());
+        String owner = context.owner + " trait";
+        name = context.getOrDefault(owner, "name", "");
+        text = context.getOrDefault(owner, "text", Text.NONE);
+        attack = context.getOrDefault(owner, "attack", Collections.emptyList());
+        special = context.getOrDefault(owner, "special", Collections.emptyList());
     }
 
     public String getName() {

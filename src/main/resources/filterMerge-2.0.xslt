@@ -69,6 +69,46 @@
         </xsl:copy>
     </xsl:template>
 
+    <!-- Add elements for rarity, classification (major, minor), and attunement -->
+    <xsl:template mode="firstStage" match="item[./detail]">
+        <xsl:variable name="details" select="./detail" />
+        <xsl:copy>
+            <xsl:apply-templates mode="firstStage" select="@* | node()"/>
+            <xsl:analyze-string select="$details" regex=".*?((rarity varies|legendary|(very )?rare|(un)?common)( \(\+\d\))?).*?">
+              <xsl:matching-substring>
+                <xsl:element name="rarity"><xsl:value-of select="regex-group(1)" /></xsl:element>
+              </xsl:matching-substring>
+            </xsl:analyze-string>
+            <xsl:analyze-string select="$details" regex=".*?(major|minor).*?">
+              <xsl:matching-substring>
+                <xsl:element name="classification"><xsl:value-of select="regex-group(1)" /></xsl:element>
+              </xsl:matching-substring>
+            </xsl:analyze-string>
+            <xsl:analyze-string select="$details" regex=".*(\(.*?attunement.*?\)).*">
+                <xsl:matching-substring>
+                    <xsl:element name="attunement"><xsl:value-of select="regex-group(1)" /></xsl:element>
+                </xsl:matching-substring>
+            </xsl:analyze-string>
+        </xsl:copy>
+    </xsl:template>
+
+    <!-- Strip rarity / classification / attunement / type from detail string-->
+    <xsl:template mode="firstStage" match="detail">
+        <xsl:variable name="noClassifier" select="replace(., '(major|minor),? ?', '')" />
+        <xsl:variable name="noRarity" select="replace($noClassifier, '(or )?(rarity varies|legendary|(very )?rare|(un)?common)( \(\+\d\))?,? ?', '')" />
+        <xsl:variable name="noAttunement" select="replace($noRarity, '(\(.*?attunement.*?\)),? ?', '')" />
+        <xsl:variable name="noType" select="replace($noAttunement, '(([Hh]eavy|[Mm]edium|[Ll]ight) Armor|([Ss]imple|[Mm]artial|[Mm]elee|[Rr]anged) [Ww]eapon|[Aa]mmunition|[Ss]hield|[Aa]dventuring [Gg]ear|[Ww]ondrous [Ii]tem),? ?', '')" />
+        <xsl:variable name="danglingComma" select="replace($noType, ',\s*$', '')" />
+        <xsl:element name="detail"><xsl:value-of select="$danglingComma" /></xsl:element>
+    </xsl:template>
+
+    <!-- consistency for magic value -->
+    <xsl:template mode="firstStage" match="magic">
+        <xsl:if test="matches(., '^(YES|1)$')">
+          <magic>YES</magic>
+        </xsl:if>
+    </xsl:template>
+
     <!-- Second Stage -->
 
     <xsl:template mode="secondStage" match="@* | node()">
@@ -121,6 +161,7 @@
             <xsl:apply-templates mode="secondStage" select="$class/hd" />
             <xsl:apply-templates mode="secondStage" select="$class/proficiency" />
             <xsl:apply-templates mode="secondStage" select="$class/spellAbility" />
+            <xsl:apply-templates mode="secondStage" select="$class/slotsReset" />
             <xsl:apply-templates mode="secondStage" select="$class/numSkills" />
             <xsl:apply-templates mode="secondStage" select="$class/armor" />
             <xsl:apply-templates mode="secondStage" select="$class/weapons" />
@@ -143,7 +184,7 @@
         </feat>
     </xsl:template>
 
-    <!-- Merge / extend items -->
+    <!-- Merge / extend items (second stage) -->
 
     <xsl:template name="items-extendable">
         <xsl:param name="items" />
@@ -191,6 +232,10 @@
             <xsl:apply-templates mode="secondStage" select="$item/name" />
             <xsl:apply-templates mode="secondStage" select="$item/type" />
             <xsl:apply-templates mode="secondStage" select="$item/magic" />
+            <!-- custom elements used to gather/establish classification, rarity, and attunement for the detail string -->
+            <xsl:apply-templates mode="secondStage" select="$item/rarity" />
+            <xsl:apply-templates mode="secondStage" select="$item/classification" />
+            <xsl:apply-templates mode="secondStage" select="$item/attunement" />
             <xsl:apply-templates mode="secondStage" select="$item/detail" />
             <xsl:apply-templates mode="secondStage" select="$item/weight" />
             <xsl:apply-templates mode="secondStage" select="$item/text" />
@@ -252,7 +297,7 @@
             <xsl:apply-templates mode="secondStage" select="$monster/reaction" />
             <xsl:apply-templates mode="secondStage" select="$monster/spells" />
             <xsl:for-each-group select="$monster/slots" group-by=".">
-              <xsl:apply-templates mode="secondStage" select="." />
+                <xsl:copy-of select="current-group( )[1]"/>
             </xsl:for-each-group>
             <xsl:apply-templates mode="secondStage" select="$monster/description" />
             <xsl:apply-templates mode="secondStage" select="$monster/environment" />
@@ -354,6 +399,8 @@
     <!--empty template suppresses this attribute-->
     <xsl:template mode="finalStage" match="@die" />
     <xsl:template mode="finalStage" match="@num" />
+    <!-- <xsl:template mode="finalStage" match="rarity" />
+    <xsl:template mode="finalStage" match="classification" /> -->
 
     <!--Convert spellClass elements into comma separated string-->
     <xsl:template mode="finalStage" match="spellClass">

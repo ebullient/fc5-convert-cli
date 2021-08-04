@@ -195,21 +195,21 @@ public class CompendiumXmlReader {
             case "roll":
                 return new Roll(content);
             case "dmgType":
-                return DamageEnum.fromValue(content);
+                return DamageEnum.fromXmlValue(content);
             case "modifier":
                 CategoryEnum category = CategoryEnum.fromValue(element.attributes.get("category"));
                 return new Modifier(content, category);
             case "proficiency":
                 return new Proficiency(content);
             case "school":
-                return SchoolEnum.fromXmlType(content);
+                return SchoolEnum.fromXmlValue(content);
             case "slots":
                 boolean optional = parseBoolean(element.attributes.get("optional"));
                 return new SpellSlots(content, optional);
             case "size":
-                return SizeEnum.fromValue(content);
+                return SizeEnum.fromXmlValue(content);
             case "spellAbility":
-                return AbilityEnum.fromValue(content);
+                return AbilityEnum.fromXmlValue(content);
             default:
                 return content;
         }

@@ -48,13 +48,38 @@ public class Log {
         }
     }
 
+    public static void errorf(String format, Object... args) {
+        error(null, String.format(format, args));
+    }
+
+    public static void errorf(Throwable th, String format, Object... args) {
+        error(th, String.format(format, args));
+    }
+
+    public static void error(String errorMsg) {
+        error(null, errorMsg);
+    }
+
+    public static void error(Throwable ex, String errorMsg) {
+        if (colors == null) {
+            Log.err.println(errorMsg);
+        } else {
+            Log.err.println(colors.ansi().text("⛔️ @|fg(red) " + errorMsg + "|@"));
+        }
+        Log.err.flush();
+        if (ex != null && isVerbose()) {
+            ex.printStackTrace(err);
+        }
+    }
+
     public static void outPrintf(String format, Object... args) {
         String output = String.format(format, args);
         if (colors == null) {
             Log.out.print(output);
         } else {
-            Log.out.print(colors.ansi().new Text(output, colors));
+            Log.out.print(colors.ansi().text(output));
         }
+        Log.out.flush();
     }
 
     public static void outPrintln(String output) {
@@ -63,14 +88,7 @@ public class Log {
         } else {
             Log.out.println(colors.ansi().new Text(output, colors));
         }
-    }
-
-    public static void errPrintln(String errorMsg) {
-        if (colors == null) {
-            Log.err.println(errorMsg);
-        } else {
-            Log.err.println(colors.ansi().new Text(errorMsg, colors));
-        }
+        Log.out.flush();
     }
 
     public static PrintWriter err() {

@@ -24,7 +24,7 @@ class ItemTypeTest extends ParsingTestBase {
         ItemType item = compendium.items.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Jug", item.name),
-                () -> assertEquals(ItemEnum.gear, item.type),
+                () -> assertEquals(ItemEnum.GEAR, item.type),
                 () -> assertEquals("adventuring gear", item.detail),
                 () -> assertEquals(4d, item.weight),
                 () -> assertEquals(0.02, item.cost),
@@ -50,14 +50,14 @@ class ItemTypeTest extends ParsingTestBase {
         ItemType item = compendium.items.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Lance", item.name),
-                () -> assertEquals(ItemEnum.melee, item.type),
+                () -> assertEquals(ItemEnum.MELEE_WEAPON, item.type),
                 () -> assertEquals(true, item.magicItem.isMagic),
                 () -> assertEquals("weapon (martial melee)", item.detail),
                 () -> assertEquals(6d, item.weight),
                 () -> assertEquals(10.0, item.cost),
                 () -> assertEquals("1d12", item.dmg1.textContent),
                 () -> assertEquals(Roll.NONE, item.dmg2),
-                () -> assertEquals(DamageEnum.piercing, item.dmgType),
+                () -> assertEquals(DamageEnum.PIERCING, item.dmgType),
                 () -> assertContainsProperties(item.properties, "R,S,M"));
 
         String content = templates.renderItem(item);
@@ -96,14 +96,14 @@ class ItemTypeTest extends ParsingTestBase {
                 spikedarmor = true;
                 assertContains(content, "item/armor/medium");
                 assertContains(content, "item/major");
-                assertContains(content, "*major legendary, armor (medium)*");
+                assertContains(content, "*major, legendary, armor (medium)*");
                 assertContains(content, "**Base Armor Class**: 14 + DEX (max of +2)");
                 assertContains(content, "- **Bonus**: AC +3");
             } else if ("Double-Bladed Scimitar of Vengeance".equals(item.name)) {
                 scimitar = true;
                 assertContains(content, "item/weapon/martial/melee");
                 assertContains(content, "item/major/uncommon");
-                assertContains(content, "*major uncommon, cursed, weapon (martial melee)*");
+                assertContains(content, "*major, uncommon, cursed, weapon (martial melee)*");
             } else if ("Carpet of Flying, 6 ft. × 9 ft.".equals(item.name)) {
                 carpet = true;
                 assertContains(content, "item/wondrous");
@@ -128,19 +128,19 @@ class ItemTypeTest extends ParsingTestBase {
     private void validateLongsword(ItemType longsword, String content) {
         Assertions.assertAll(
                 () -> assertEquals("Longsword of Life Stealing", longsword.name),
-                () -> assertEquals(ItemEnum.melee, longsword.type),
-                () -> assertEquals("major rare, weapon (martial melee)", longsword.detail),
+                () -> assertEquals(ItemEnum.MELEE_WEAPON, longsword.type),
+                () -> assertEquals("major, rare, weapon (martial melee)", longsword.detail),
                 () -> assertEquals(3d, longsword.weight),
                 () -> assertTrue(textContains(longsword.text, "Source:")),
                 () -> assertTrue(rollContains(longsword.roll, "3d6")),
                 () -> assertEquals("1d8", longsword.dmg1.textContent),
                 () -> assertEquals("1d10", longsword.dmg2.textContent),
-                () -> assertEquals(DamageEnum.slashing, longsword.dmgType),
+                () -> assertEquals(DamageEnum.SLASHING, longsword.dmgType),
                 () -> assertContainsProperties(longsword.properties, "V,M"));
 
         Assertions.assertAll(
                 () -> assertContains(content, "# Longsword of Life Stealing"),
-                () -> assertContains(content, "major rare, weapon (martial melee)"),
+                () -> assertContains(content, "major, rare, weapon (martial melee)"),
                 () -> assertContains(content, "item/weapon/martial/melee"),
                 () -> assertContains(content, "aliases: ['Longsword of Life Stealing']"));
     }
@@ -148,14 +148,14 @@ class ItemTypeTest extends ParsingTestBase {
     private void validateCrossbow(ItemType crossbow, String content) {
         Assertions.assertAll(
                 () -> assertEquals("Light Crossbow", crossbow.name),
-                () -> assertEquals(ItemEnum.ranged, crossbow.type),
+                () -> assertEquals(ItemEnum.RANGED_WEAPON, crossbow.type),
                 () -> assertEquals("weapon (simple ranged)", crossbow.detail),
                 () -> assertEquals(5d, crossbow.weight),
                 () -> assertTrue(textContains(crossbow.text, "Source:")),
                 () -> assertEquals(25.0, crossbow.cost),
                 () -> assertEquals("1d8", crossbow.dmg1.textContent),
                 () -> assertEquals(Roll.NONE, crossbow.dmg2),
-                () -> assertEquals(DamageEnum.piercing, crossbow.dmgType),
+                () -> assertEquals(DamageEnum.PIERCING, crossbow.dmgType),
                 () -> assertContainsProperties(crossbow.properties, "A,LD,2H"),
                 () -> assertEquals("80/320", crossbow.range));
 
@@ -168,7 +168,7 @@ class ItemTypeTest extends ParsingTestBase {
 
     void assertContainsProperties(List<PropertyEnum> properties, String origXml) {
         for (String key : origXml.split(",")) {
-            assertTrue(properties.stream().anyMatch(x -> key.equals(x.getXmlKey())),
+            assertTrue(properties.stream().anyMatch(x -> key.equals(x.getXmlValue())),
                     "Expected to find " + key + " in list " + properties);
         }
     }

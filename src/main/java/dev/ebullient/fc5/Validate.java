@@ -15,13 +15,18 @@ import org.xml.sax.SAXException;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
+import picocli.CommandLine.Spec;
 
 @Command(name = "validate", mixinStandardHelpOptions = true, header = "Validate XML files against a schema definition")
 public class Validate implements Callable<Integer> {
 
     Path xsd;
+
+    @Spec
+    private CommandSpec spec;
 
     @ParentCommand
     private ConvertCli parent;
@@ -33,20 +38,25 @@ public class Validate implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        Log.prepareStreams(spec);
         boolean allOk = true;
 
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         Schema schema = factory.newSchema(xsd.toFile());
         Validator validator = schema.newValidator();
 
+        if (parent.input == null || parent.input.isEmpty()) {
+            throw new CommandLine.MissingParameterException(spec.commandLine(), spec.args(),
+                    "Must specify an input file to validate");
+        }
+
         for (Path source : parent.input) {
             try {
-                Log.outPrintf("Validate %80s ... ", source.getFileName());
+                Log.outPrintln("⏱ Validate " + source);
                 validator.validate(new StreamSource(source.toFile()));
-                Log.outPrintln("✅ "); // end line
+                Log.outPrintln("  ✅ OK"); // end line
             } catch (IOException | SAXException e) {
-                Log.outPrintln("⛔️ "); // end line
-                Log.outPrintln("Exception: " + e.getMessage());
+                Log.error(e, "  Exception: " + e.getMessage());
                 allOk = false;
             }
         }

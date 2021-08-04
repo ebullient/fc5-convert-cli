@@ -6,16 +6,15 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import dev.ebullient.fc5.Log;
 import io.quarkus.qute.TemplateData;
 
 /**
  * <p>
  * Java class for monsterType complex type.
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="monsterType">
  *   &lt;complexContent>
@@ -57,8 +56,8 @@ import io.quarkus.qute.TemplateData;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
+ *
+ *
  */
 @TemplateData
 public class MonsterType implements BaseType {
@@ -102,7 +101,7 @@ public class MonsterType implements BaseType {
     final String ac;
     final String hp;
     final String speed;
-    final String save;
+    final List<String> save;
     final List<String> skill;
     final String resist;
     final String vulnerable;
@@ -124,45 +123,40 @@ public class MonsterType implements BaseType {
     public MonsterType(ParsingContext context) {
         name = context.getOrFail(context.owner, "name", String.class);
 
-        try {
-            size = context.getOrDefault("size", SizeEnum.UNKNOWN);
-            type = context.getOrDefault("type", "");
-            alignment = context.getOrDefault("alignment", "");
-            ac = context.getOrDefault("ac", "");
-            hp = context.getOrDefault("hp", "");
-            speed = context.getOrDefault("speed", "");
+        size = context.getOrDefault(name, "size", SizeEnum.UNKNOWN);
+        type = context.getOrDefault(name, "type", "");
+        alignment = context.getOrDefault(name, "alignment", "");
+        ac = context.getOrDefault(name, "ac", "");
+        hp = context.getOrDefault(name, "hp", "");
+        speed = context.getOrDefault(name, "speed", "");
 
-            scores.strength = context.getOrDefault("str", 10);
-            scores.dexterity = context.getOrDefault("dex", 10);
-            scores.constitution = context.getOrDefault("con", 10);
-            scores.intelligence = context.getOrDefault("int", 10);
-            scores.wisdom = context.getOrDefault("wis", 10);
-            scores.charisma = context.getOrDefault("cha", 10);
+        scores.strength = context.getOrDefault(name, "str", 10);
+        scores.dexterity = context.getOrDefault(name, "dex", 10);
+        scores.constitution = context.getOrDefault(name, "con", 10);
+        scores.intelligence = context.getOrDefault(name, "int", 10);
+        scores.wisdom = context.getOrDefault(name, "wis", 10);
+        scores.charisma = context.getOrDefault(name, "cha", 10);
 
-            save = context.getOrDefault("save", "");
-            skill = context.getOrDefault("skill", Collections.emptyList());
-            resist = context.getOrDefault("resist", "");
-            vulnerable = context.getOrDefault("vulnerable", "");
-            immune = context.getOrDefault("immune", "");
-            conditionImmune = context.getOrDefault("conditionImmune", "");
-            senses = context.getOrDefault("senses", "");
-            passive = context.getOrDefault("passive", 10);
-            languages = context.getOrDefault("languages", "--");
-            cr = context.getOrDefault("cr", "0");
-            trait = context.getOrDefault("trait", Collections.emptyList());
-            action = context.getOrDefault("action", Collections.emptyList());
-            legendary = context.getOrDefault("legendary", Collections.emptyList());
-            reaction = context.getOrDefault("reaction", Collections.emptyList());
+        save = context.getOrDefault(name, "save", Collections.emptyList());
+        skill = context.getOrDefault(name, "skill", Collections.emptyList());
+        resist = context.getOrDefault(name, "resist", "");
+        vulnerable = context.getOrDefault(name, "vulnerable", "");
+        immune = context.getOrDefault(name, "immune", "");
+        conditionImmune = context.getOrDefault(name, "conditionImmune", "");
+        senses = context.getOrDefault(name, "senses", "");
+        passive = context.getOrDefault(name, "passive", 10);
+        languages = context.getOrDefault(name, "languages", "--");
+        cr = context.getOrDefault(name, "cr", "0");
+        trait = context.getOrDefault(name, "trait", Collections.emptyList());
+        action = context.getOrDefault(name, "action", Collections.emptyList());
+        legendary = context.getOrDefault(name, "legendary", Collections.emptyList());
+        reaction = context.getOrDefault(name, "reaction", Collections.emptyList());
 
-            spells = context.getOrDefault("spells", "");
-            slots = context.getOrDefault("slots", SpellSlots.NONE);
-            environment = context.getOrDefault("environment", "");
+        spells = context.getOrDefault(name, "spells", "");
+        slots = context.getOrDefault(name, "slots", SpellSlots.NONE);
+        environment = context.getOrDefault(name, "environment", "");
 
-            description = new Text(Collections.singletonList(context.getOrDefault("description", "")));
-        } catch (ClassCastException ex) {
-            Log.err().println("Error parsing monster " + name);
-            throw ex;
-        }
+        description = new Text(Collections.singletonList(context.getOrDefault(name, "description", "")));
     }
 
     public String getName() {
@@ -175,7 +169,7 @@ public class MonsterType implements BaseType {
 
     public List<String> getTags() {
         List<String> result = new ArrayList<>();
-        result.add("monster/" + slugify(size.prettyName()));
+        result.add("monster/" + slugify(size.value()));
 
         Matcher m = TYPE_DETAIL.matcher(type);
         if (m.matches()) {
@@ -193,7 +187,7 @@ public class MonsterType implements BaseType {
     }
 
     public String getSize() {
-        return size.prettyName();
+        return size.value();
     }
 
     public String getType() {
@@ -217,7 +211,7 @@ public class MonsterType implements BaseType {
     }
 
     public String getSave() {
-        return save;
+        return String.join(", ", save);
     }
 
     public List<String> getSkill() {

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<compendium version="5">
+  <monster>
+    <name>My Beast</name>
+    <size>M</size>
+    <type>madethisup</type>
+    <alignment>evil</alignment>
+    <ac>10 (natural)</ac>
+    <hp>1 (1d8)</hp>
+    <speed>30 ft.</speed>
+    <init>3</init>
+    <str>10</str>
+    <dex>10</dex>
+    <con>10</con>
+    <int>10</int>
+    <wis>10</wis>
+    <cha>10</cha>
+    <save>Strength +1</save>
+    <skill>Acrobatics +2</skill>
+    <vulnerable>fire</vulnerable>
+    <resist>cold</resist>
+    <immune>poison</immune>
+    <conditionImmune>stunned</conditionImmune>
+    <senses>darkvision</senses>
+    <passive>16</passive>
+    <languages>Common</languages>
+    <cr>5</cr>
+    <trait>
+      <name>My Trait</name>
+      <text>What it is</text>
+      <recharge>D3</recharge>
+      <attack>||1d6+%8</attack>
+    </trait>
+    <action>
+      <name>My action</name>
+      <text>description</text>
+      <recharge>SHORT</recharge>
+      <attack>|2|1d6+6</attack>
+    </action>
+    <reaction>
+      <name>My reaction</name>
+      <text>things</text>
+      <recharge>3/DAY</recharge>
+      <attack>nite|2|1d4</attack>
+    </reaction>
+    <legendary>
+      <name>legendary</name>
+      <text>thing</text>
+      <recharge>D6</recharge>
+    </legendary>
+    <description>big baddie?</description>
+    <environment>Grassland, Mountain</environment>
+  </monster>
+  <feat>
+    <name>My Feat</name>
+    <prerequisite>STR 13</prerequisite>
+    <special>Fighting Style: Dueling</special>
+    <proficiency>Intelligence Saving Throws, Arcana</proficiency>
+    <text>Ha HA</text>
+    <modifier category="Bonus">Weapon Damage +1</modifier>
+  </feat>
+  <item>
+    <name>My Rare Item</name>
+    <type>W</type>
+    <detail>major rare (requires attunement)</detail>
+    <text>description</text>
+    <weight>3.0</weight>
+    <value>3.0</value>
+    <magic>YES</magic>
+    <roll>1d20+6</roll>
+    <modifier category="Bonus">Proficiency Bonus +2</modifier>
+  </item>
+  <item>
+    <name>My Item</name>
+    <type>S</type>
+    <detail>minor very rare, (requires attunement)</detail>
+    <text>description</text>
+    <weight>3.0</weight>
+    <value>3.0</value>
+    <magic>YES</magic>
+    <roll>1d20+6</roll>
+    <modifier category="Bonus">Proficiency Bonus +2</modifier>
+  </item>
+  <spell>
+    <name>My Spell</name>
+    <level>4</level>
+    <ritual>YES</ritual>
+    <time>1 minute</time>
+    <range>Everywhere</range>
+    <components>S (1 feather)</components>
+    <duration>30 minutes</duration>
+    <text>See all the things</text>
+    <classes>Warlock</classes>
+  </spell>
+</compendium>

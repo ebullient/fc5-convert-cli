@@ -24,7 +24,7 @@ import io.quarkus.qute.TemplateData;
  * 
  */
 @TemplateData
-public enum CategoryEnum {
+public enum CategoryEnum implements ConvertedEnumType {
 
     BONUS("Bonus"),
     ABILITY_SCORE("Ability Score"),
@@ -33,26 +33,36 @@ public enum CategoryEnum {
     SKILLS("Skills"),
     UNKNOWN("Unknown");
 
-    private final String value;
+    private final String longName;
 
     CategoryEnum(String v) {
-        value = v;
+        longName = v;
+    }
+
+    public String getXmlValue() {
+        return longName;
     }
 
     public String value() {
-        return value;
+        return longName;
     }
 
     public static CategoryEnum fromValue(String v) {
-        for (CategoryEnum c : CategoryEnum.values()) {
-            if (c.value.toLowerCase().equals(v)) {
-                return c;
-            }
+        if (v == null || v.isEmpty()) {
+            return UNKNOWN;
         }
-        return UNKNOWN;
-    }
-
-    public String longName() {
-        return value;
+        switch (v.toLowerCase()) {
+            case "bonus":
+                return BONUS;
+            case "ability score":
+                return ABILITY_SCORE;
+            case "ability modifier":
+                return ABILITY_MODIFIER;
+            case "saving throw":
+                return SAVING_THROW;
+            case "skills":
+                return SKILLS;
+        }
+        throw new IllegalArgumentException("Invalid/Unknown category " + v);
     }
 }

@@ -8,10 +8,10 @@ import io.quarkus.qute.TemplateData;
 /**
  * <p>
  * Java class for featureType complex type.
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="featureType">
  *   &lt;complexContent>
@@ -28,8 +28,8 @@ import io.quarkus.qute.TemplateData;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
+ *
+ *
  */
 @TemplateData
 public class Feature {
@@ -45,14 +45,13 @@ public class Feature {
     public Feature(ParsingContext context) {
         name = context.getOrFail(context.owner, "name", String.class);
 
-        this.text = context.getOrDefault("text", Text.NONE);
-        this.special = context.getOrDefault("special", Collections.emptyList());
-        this.modifier = context.getOrDefault("modifier", Collections.emptyList());
-        this.proficiency = context.getOrDefault("proficiency", Proficiency.STRING);
-        proficiency.setFlavor(Proficiency.STRING.flavor);
-        this.isOptional = context.getOrDefault("optional", false);
+        this.text = context.getOrDefault(name, "text", Text.NONE);
+        this.special = context.getOrDefault(name, "special", Collections.emptyList());
+        this.modifier = context.getOrDefault(name, "modifier", Collections.emptyList());
+        proficiency = context.getOrDefault(name, "proficiency", Proficiency.NONE);
+        this.isOptional = context.getOrDefault(name, "optional", false);
 
-        this.level = context.getOrDefault("level", 0);
+        this.level = context.getOrDefault(name, "level", 0);
     }
 
     public String getName() {

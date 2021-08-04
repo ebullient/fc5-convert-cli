@@ -5,9 +5,6 @@ tags:
 {#for tag in resource.tags}
 - {tag}
 {/for}
-{#for property in resource.properties}
-- item/property/{property.longName}
-{/for}
 aliases: ['{resource.name}']
 ---
 # {resource.name}

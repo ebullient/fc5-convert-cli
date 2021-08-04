@@ -8,10 +8,10 @@ import io.quarkus.qute.TemplateData;
 /**
  * <p>
  * Java class for raceType complex type.
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="raceType">
  *   &lt;complexContent>
@@ -46,14 +46,13 @@ public class RaceType implements BaseType {
     public RaceType(ParsingContext context) {
         name = context.getOrFail(context.owner, "name", String.class);
 
-        size = context.getOrDefault("size", SizeEnum.UNKNOWN);
-        speed = context.getOrDefault("speed", 0);
-        ability = context.getOrDefault("ability", "");
-        spellAbility = context.getOrDefault("spellAbility", AbilityEnum.NONE);
-        proficiency = context.getOrDefault("proficiency", Proficiency.SKILL_LIST);
-        proficiency.setFlavor(Proficiency.SKILL_LIST.flavor);
-        traits = context.getOrDefault("trait", Collections.emptyList());
-        modifiers = context.getOrDefault("modifier", Collections.emptyList());
+        size = context.getOrDefault(name, "size", SizeEnum.UNKNOWN);
+        speed = context.getOrDefault(name, "speed", 0);
+        ability = context.getOrDefault(name, "ability", "");
+        spellAbility = context.getOrDefault(name, "spellAbility", AbilityEnum.NONE);
+        proficiency = context.getOrDefault(name, "proficiency", Proficiency.NONE);
+        traits = context.getOrDefault(name, "trait", Collections.emptyList());
+        modifiers = context.getOrDefault(name, "modifier", Collections.emptyList());
     }
 
     public String getName() {

@@ -12,10 +12,10 @@ import io.quarkus.qute.TemplateData;
 /**
  * <p>
  * Java class for classType complex type.
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="classType">
  *   &lt;complexContent>
@@ -45,7 +45,7 @@ import io.quarkus.qute.TemplateData;
  */
 @TemplateData
 public class ClassType implements BaseType {
-    public static final String NONE = "none";
+    public static final String NONE = "——";
 
     final String name;
     final int hitDice;
@@ -61,18 +61,16 @@ public class ClassType implements BaseType {
     public ClassType(ParsingContext context) {
         name = context.getOrFail(context.owner, "name", String.class);
 
-        hitDice = context.getOrDefault("hd", 8);
+        hitDice = context.getOrDefault(name, "hd", 8);
 
-        proficiency = context.getOrDefault("proficiency", Proficiency.ABILITY_AND_SKILL_LIST);
-        proficiency.setFlavor("abilityAndSkillList");
-
-        spellAbility = context.getOrDefault("spellAbility", AbilityEnum.NONE);
-        numSkills = context.getOrDefault("numSkills", 0);
-        autolevel = context.getOrDefault("autolevel", Collections.emptyList());
-        armor = context.getOrDefault("armor", NONE);
-        weapons = context.getOrDefault("weapons", NONE);
-        tools = context.getOrDefault("tools", NONE);
-        wealth = context.getOrDefault("wealth", "");
+        proficiency = context.getOrDefault(name, "proficiency", Proficiency.NONE);
+        spellAbility = context.getOrDefault(name, "spellAbility", AbilityEnum.NONE);
+        numSkills = context.getOrDefault(name, "numSkills", 0);
+        autolevel = context.getOrDefault(name, "autolevel", Collections.emptyList());
+        armor = context.getOrDefault(name, "armor", NONE);
+        weapons = context.getOrDefault(name, "weapons", NONE);
+        tools = context.getOrDefault(name, "tools", NONE);
+        wealth = context.getOrDefault(name, "wealth", "");
     }
 
     public List<Autolevel> getLevelFeatures() {
@@ -126,7 +124,7 @@ public class ClassType implements BaseType {
                 .map(x -> new Section(x))
                 .collect(Collectors.toList());
 
-        // Find named groups (to derive sections later), e.g. 
+        // Find named groups (to derive sections later), e.g.
         // Primal Path -> Primal Path: Path of the Berserker -> Path of the Berserker: Frenzy
         List<Section> groups = new ArrayList<>();
 

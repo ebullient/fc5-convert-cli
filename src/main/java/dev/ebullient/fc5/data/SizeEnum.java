@@ -25,30 +25,43 @@ import io.quarkus.qute.TemplateData;
  * 
  */
 @TemplateData
-public enum SizeEnum {
+public enum SizeEnum implements ConvertedEnumType {
 
-    T("Tiny"),
-    S("Small"),
-    M("Medium"),
-    L("Large"),
-    H("Huge"),
-    G("Gargantuan"),
-    UNKNOWN("Unknown");
+    TINY("Tiny", "T"),
+    SMALL("Small", "S"),
+    MEDIUM("Medium", "M"),
+    LARGE("Large", "L"),
+    HUGE("Huge", "H"),
+    GARGANTUAN("Gargantuan", "G"),
+    UNKNOWN("Unknown", "");
 
-    private final String prettyName;
+    private final String longName;
+    private final String xmlValue;
 
-    private SizeEnum(String prettyName) {
-        this.prettyName = prettyName;
+    private SizeEnum(String longName, String xmlValue) {
+        this.longName = longName;
+        this.xmlValue = xmlValue;
     }
 
-    public String prettyName() {
-        return prettyName;
+    @Override
+    public String value() {
+        return longName;
     }
 
-    public static SizeEnum fromValue(String v) {
+    @Override
+    public String getXmlValue() {
+        return xmlValue;
+    }
+
+    public static SizeEnum fromXmlValue(String v) {
         if (v == null || v.isBlank()) {
             return UNKNOWN;
         }
-        return valueOf(v);
+        for (SizeEnum i : SizeEnum.values()) {
+            if (i.xmlValue.equals(v)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("Invalid/Unknown size " + v);
     }
 }

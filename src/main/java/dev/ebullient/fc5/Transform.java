@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -38,7 +39,7 @@ public class Transform implements Callable<Integer> {
     private CommandSpec spec;
 
     @ParentCommand
-    private ConvertCli parent;
+    ConvertCli parent;
 
     @Option(names = "-t", description = "XSLT file")
     void setXsltFile(File xsltFile) {
@@ -48,13 +49,9 @@ public class Transform implements Callable<Integer> {
     @Option(names = "-o", description = "Output directory", required = true)
     void setOutputPath(File outputDir) {
         output = outputDir.toPath().toAbsolutePath().normalize();
-        if (!output.toFile().exists()) {
+        if (output.toFile().exists() && output.toFile().isFile()) {
             throw new ParameterException(spec.commandLine(),
-                    "Specified output path does not exist: " + output.toString());
-        }
-        if (!output.toFile().isDirectory()) {
-            throw new ParameterException(spec.commandLine(),
-                    "Specified output path is not a directory: " + output.toString());
+                    "Specified output path exists and is a file: " + output.toString());
         }
     }
 
@@ -79,6 +76,9 @@ public class Transform implements Callable<Integer> {
 
         TransformerFactory transformerFactory = new net.sf.saxon.BasicTransformerFactory();
         Transformer transformer = transformerFactory.newTransformer(xsltSource);
+
+        Path targetDir = Paths.get(output.toString());
+        targetDir.toFile().mkdirs();
 
         for (Path sourcePath : parent.input) {
             String systemId = sourcePath.toString();

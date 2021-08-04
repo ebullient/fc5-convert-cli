@@ -11,10 +11,10 @@ import io.quarkus.qute.TemplateData;
 /**
  * <p>
  * Java class for spellType complex type.
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="spellType">
  *   &lt;complexContent>
@@ -37,8 +37,8 @@ import io.quarkus.qute.TemplateData;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
+ *
+ *
  */
 @TemplateData
 public class SpellType implements BaseType {
@@ -59,19 +59,19 @@ public class SpellType implements BaseType {
 
     public SpellType(ParsingContext context) {
         name = context.getOrFail(context.owner, "name", String.class);
-        school = context.getOrFail(context.owner, "school", SchoolEnum.class);
 
-        level = context.getOrDefault("level", 0);
-        ritual = context.getOrDefault("ritual", false);
-        time = context.getOrDefault("time", "");
-        range = context.getOrDefault("range", "");
-        components = context.getOrDefault("components", "");
-        duration = context.getOrDefault("duration", "");
-        source = context.getOrDefault("source", "");
-        text = context.getOrDefault("text", Text.NONE);
-        roll = context.getOrDefault("roll", Collections.emptyList());
+        school = context.getOrDefault(name, "school", SchoolEnum.None);
+        level = context.getOrDefault(name, "level", 0);
+        ritual = context.getOrDefault(name, "ritual", false);
+        time = context.getOrDefault(name, "time", "");
+        range = context.getOrDefault(name, "range", "");
+        components = context.getOrDefault(name, "components", "");
+        duration = context.getOrDefault(name, "duration", "");
+        source = context.getOrDefault(name, "source", "");
+        text = context.getOrDefault(name, "text", Text.NONE);
+        roll = context.getOrDefault(name, "roll", Collections.emptyList());
 
-        classes = context.getOrDefault("classes", "");
+        classes = context.getOrDefault(name, "classes", "");
         classSlugs = Stream.of(classes.split("\\s*,\\s*"))
                 .map(x -> slugify(x)).collect(Collectors.toList());
     }
@@ -82,7 +82,7 @@ public class SpellType implements BaseType {
 
     public List<String> getTags() {
         List<String> tags = new ArrayList<>();
-        tags.add("spell/school/" + school.longName());
+        tags.add("spell/school/" + school.value());
         tags.add("spell/level/" + (level == 0 ? "cantrip" : level));
         classSlugs.forEach(x -> tags.add("spell/class/" + x));
         if (ritual) {
@@ -108,13 +108,13 @@ public class SpellType implements BaseType {
             case 0:
                 return "cantrip";
             case 1:
-                return "1st level";
+                return "1st-level";
             case 2:
-                return "2nd level";
+                return "2nd-level";
             case 3:
-                return "3rd level";
+                return "3rd-level";
             default:
-                return level + "st level";
+                return level + "th-level";
         }
     }
 
@@ -127,7 +127,7 @@ public class SpellType implements BaseType {
     }
 
     public String getSchool() {
-        return school.longName();
+        return school.value();
     }
 
     public String getTime() {

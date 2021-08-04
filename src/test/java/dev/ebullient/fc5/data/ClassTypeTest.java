@@ -52,7 +52,7 @@ public class ClassTypeTest extends ParsingTestBase {
         Assertions.assertAll(
                 () -> assertContains(content, "# Barbarian"),
                 () -> assertContains(content, "- **Hit Points at Higher Levels:** 7(1d12) + CON"),
-                () -> assertContains(content, "- **Saving Throws**: Strength, Constitution"),
+                () -> assertContains(content, "- **Saving Throws**: Strength Saving Throws, Constitution Saving Throws"),
                 () -> assertContains(content, "#### Tiger (Level 14)"));
     }
 }

@@ -8,10 +8,10 @@ import io.quarkus.qute.TemplateData;
 /**
  * <p>
  * Java class for featType complex type.
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="featType">
  *   &lt;complexContent>
@@ -40,13 +40,11 @@ public class FeatType implements BaseType {
     public FeatType(ParsingContext context) {
         name = context.getOrFail(context.owner, "name", String.class);
 
-        prerequisite = context.getOrDefault("prerequisite", "");
-        text = context.getOrDefault("text", Text.NONE);
+        prerequisite = context.getOrDefault(name, "prerequisite", "");
+        text = context.getOrDefault(name, "text", Text.NONE);
 
-        proficiency = context.getOrDefault("proficiency", Proficiency.ABILITY_AND_SKILL_LIST);
-        proficiency.setFlavor("abilityAndSkillList");
-
-        modifier = context.getOrDefault("modifier", Collections.emptyList());
+        proficiency = context.getOrDefault(name, "proficiency", Proficiency.NONE);
+        modifier = context.getOrDefault(name, "modifier", Collections.emptyList());
     }
 
     public String getName() {

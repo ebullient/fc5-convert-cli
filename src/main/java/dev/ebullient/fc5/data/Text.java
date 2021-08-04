@@ -45,9 +45,21 @@ public class Text {
                     line = line
                             .replaceAll("•", "-")
                             .replaceAll("- ([^:]+):", "- **$1:**");
+
+                    // Find the short sentence-like headings. They are the first few words,
+                    // always followed by a lot more text (after the period), and have at least
+                    // two capital letters 
                     int pos = line.indexOf('.');
-                    if (pos > 0 && pos + 10 < line.length() && line.substring(0, pos).split(" ").length < 4) {
-                        line = line.replaceAll("^(.+?\\.)", "**$1**");
+                    if (pos > 0 && pos + 10 < line.length()) { // There are at least 10 characters following
+                        String sentence = line.substring(0, pos);
+                        String[] words = sentence.split(" ");
+                        int capitals = line.substring(0, pos).split("(?=\\p{Lu})").length;
+                        // the sentence does not contain a :, AND
+                        // there is only one word, OR there are no more than 5 words with at least two capital letters
+                        if (!sentence.contains(":")
+                                && (words.length == 1 || (words.length <= 5 && capitals >= 2))) {
+                            line = line.replaceAll("^(.+?\\.)", "**$1**");
+                        }
                     }
                     i.set(line);
                 }

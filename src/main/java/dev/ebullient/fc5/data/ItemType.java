@@ -12,11 +12,11 @@ import io.quarkus.qute.TemplateData;
 /**
  * <p>
  * Java class for itemType complex type.
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within
  * this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="itemType">
  *   &lt;complexContent>
@@ -70,29 +70,29 @@ public class ItemType implements BaseType {
     public ItemType(ParsingContext context) {
         name = context.getOrFail(context.owner, "name", String.class);
 
-        type = ItemEnum.fromValue(context.getOrDefault("type", ""));
-        properties = PropertyEnum.fromPropertyString(context.getOrDefault("property", ""));
+        type = ItemEnum.fromXmlValue(context.getOrDefault(name, "type", ""));
+        properties = PropertyEnum.fromXmlValue(context.getOrDefault(name, "property", ""));
 
-        weight = context.getOrDefault("weight", 0d);
-        cost = context.getOrDefault("value", 0d);
+        weight = context.getOrDefault(name, "weight", 0d);
+        cost = context.getOrDefault(name, "value", 0d);
 
-        text = context.getOrDefault("text", Text.NONE);
+        text = context.getOrDefault(name, "text", Text.NONE);
 
-        dmg1 = context.getOrDefault("dmg1", Roll.NONE);
-        dmg2 = context.getOrDefault("dmg2", Roll.NONE);
-        dmgType = context.getOrDefault("dmgType", DamageEnum.unknown);
-        range = context.getOrDefault("range", "");
+        dmg1 = context.getOrDefault(name, "dmg1", Roll.NONE);
+        dmg2 = context.getOrDefault(name, "dmg2", Roll.NONE);
+        dmgType = context.getOrDefault(name, "dmgType", DamageEnum.UNKNOWN);
+        range = context.getOrDefault(name, "range", "");
 
-        ac = context.getOrDefault("ac", 0);
-        strength = context.getOrDefault("strength", 0);
-        stealth = context.getOrDefault("stealth", false);
+        ac = context.getOrDefault(name, "ac", 0);
+        strength = context.getOrDefault(name, "strength", 0);
+        stealth = context.getOrDefault(name, "stealth", false);
 
-        modifiers = context.getOrDefault("modifier", Collections.emptyList());
-        roll = context.getOrDefault("roll", Collections.emptyList());
+        modifiers = context.getOrDefault(name, "modifier", Collections.emptyList());
+        roll = context.getOrDefault(name, "roll", Collections.emptyList());
 
         // Figure out missing details
-        String tmpDetail = context.getOrDefault("detail", "");
-        magicItem = new MagicItem(name, tmpDetail, text, type, context.getOrDefault("magic", false));
+        String tmpDetail = context.getOrDefault(name, "detail", "");
+        magicItem = new MagicItem(name, tmpDetail, text, type, context.getOrDefault(name, "magic", false));
         tmpDetail = magicItem.updateDetails(tmpDetail);
         detail = type.updateDetails(tmpDetail);
     }
@@ -106,6 +106,9 @@ public class ItemType implements BaseType {
         tags.add(type.getItemTag(detail, text));
         if (magicItem.hasTag()) {
             tags.add(magicItem.classificationTag());
+        }
+        for (PropertyEnum p : properties) {
+            tags.add("item/property/" + p.value().toLowerCase());
         }
         return tags;
     }
@@ -136,9 +139,9 @@ public class ItemType implements BaseType {
         // - If you wear light armor, you add your Dexterity modifier to the base number from your armor type to determine your Armor Class.
         // - If you wear medium armor, you add your Dexterity modifier, to a maximum of +2, to the base number from your armor type to determine your Armor Class.
         // - Heavy armor doesn’t let you add your Dexterity modifier to your Armor Class, but it also doesn’t penalize you if your Dexterity modifier is negative.
-        if (type == ItemEnum.lightArmor) {
+        if (type == ItemEnum.LIGHT_ARMOR) {
             result.append(" + DEX");
-        } else if (type == ItemEnum.mediumArmor) {
+        } else if (type == ItemEnum.MEDIUM_ARMOR) {
             result.append(" + DEX (max of +2)");
         }
         return result.toString();
@@ -153,15 +156,15 @@ public class ItemType implements BaseType {
     }
 
     public boolean isVersatile() {
-        return properties.contains(PropertyEnum.versatile);
+        return properties.contains(PropertyEnum.VERSATILE);
     }
 
     public String getDamage() {
-        return dmg1 + " " + dmgType.getLongName();
+        return dmg1 + " " + dmgType.value();
     }
 
     public String getDamage2H() {
-        return dmg2 + " " + dmgType.getLongName();
+        return dmg2 + " " + dmgType.value();
     }
 
     public List<PropertyEnum> getProperties() {
@@ -194,18 +197,18 @@ public class ItemType implements BaseType {
             Rarity tmpRarity = Rarity.find(detail);
             Classification tmpClassification = Classification.find(detail);
 
-            boolean hasRarity = tmpRarity != Rarity.none;
-            boolean hasClassification = tmpClassification != Classification.none;
+            boolean hasRarity = tmpRarity != Rarity.NONE;
+            boolean hasClassification = tmpClassification != Classification.NONE;
 
             if (type.canBeMagic() && (magic || hasRarity || hasClassification)) {
                 if (name.startsWith("+")) {
                     hasRarity = true;
                     if (name.startsWith("+1")) {
-                        tmpRarity = Rarity.rare;
+                        tmpRarity = Rarity.RARE;
                     } else if (name.startsWith("+2")) {
-                        tmpRarity = Rarity.veryRare;
+                        tmpRarity = Rarity.VERY_RARE;
                     } else if (name.startsWith("+3")) {
-                        tmpRarity = Rarity.legendary;
+                        tmpRarity = Rarity.LEGENDARY;
                     }
                 }
 
@@ -220,51 +223,51 @@ public class ItemType implements BaseType {
                             }
                         case "B":
                             if (!hasRarity) {
-                                tmpRarity = Rarity.uncommon;
+                                tmpRarity = Rarity.UNCOMMON;
                                 hasRarity = true;
                             }
                         case "C":
                             if (!hasRarity) {
-                                tmpRarity = Rarity.rare;
+                                tmpRarity = Rarity.RARE;
                                 hasRarity = true;
                             }
                         case "D":
                             if (!hasRarity) {
-                                tmpRarity = Rarity.veryRare;
+                                tmpRarity = Rarity.VERY_RARE;
                                 hasRarity = true;
                             }
                         case "E":
                             if (!hasRarity) {
-                                tmpRarity = Rarity.legendary;
+                                tmpRarity = Rarity.LEGENDARY;
                                 hasRarity = true;
                             }
                             if (!hasClassification) {
-                                tmpClassification = Classification.minor;
+                                tmpClassification = Classification.MINOR;
                                 hasClassification = true;
                             }
                             break;
                         case "F":
                             if (!hasRarity) {
-                                tmpRarity = Rarity.uncommon;
+                                tmpRarity = Rarity.UNCOMMON;
                                 hasRarity = true;
                             }
                         case "G":
                             if (!hasRarity) {
-                                tmpRarity = Rarity.rare;
+                                tmpRarity = Rarity.RARE;
                                 hasRarity = true;
                             }
                         case "H":
                             if (!hasRarity) {
-                                tmpRarity = Rarity.veryRare;
+                                tmpRarity = Rarity.VERY_RARE;
                                 hasRarity = true;
                             }
                         case "I":
                             if (!hasRarity) {
-                                tmpRarity = Rarity.legendary;
+                                tmpRarity = Rarity.LEGENDARY;
                                 hasRarity = true;
                             }
                             if (!hasClassification) {
-                                tmpClassification = Classification.major;
+                                tmpClassification = Classification.MAJOR;
                                 hasClassification = true;
                             }
                             break;
@@ -273,19 +276,19 @@ public class ItemType implements BaseType {
             }
 
             if (!hasClassification && hasRarity) {
-                if (tmpRarity == Rarity.legendary) {
-                    tmpClassification = Classification.major;
+                if (tmpRarity == Rarity.LEGENDARY) {
+                    tmpClassification = Classification.MAJOR;
                     hasClassification = true;
-                } else if (tmpRarity == Rarity.rare || tmpRarity == Rarity.veryRare) { // rare or very rare
+                } else if (tmpRarity == Rarity.RARE || tmpRarity == Rarity.VERY_RARE) { // rare or very rare
                     if (type.isConsumable()) {
-                        tmpClassification = Classification.minor;
+                        tmpClassification = Classification.MINOR;
                         hasClassification = true;
                     } else {
-                        tmpClassification = Classification.major;
+                        tmpClassification = Classification.MAJOR;
                         hasClassification = true;
                     }
-                } else if (tmpRarity == Rarity.uncommon || tmpRarity == Rarity.common) {
-                    tmpClassification = Classification.minor;
+                } else if (tmpRarity == Rarity.UNCOMMON || tmpRarity == Rarity.common) {
+                    tmpClassification = Classification.MINOR;
                     hasClassification = true;
                 }
             }
@@ -296,7 +299,7 @@ public class ItemType implements BaseType {
         }
 
         public boolean hasTag() {
-            return rarity != Rarity.none || classification != Classification.none;
+            return rarity != Rarity.NONE || classification != Classification.NONE;
         }
 
         String updateDetails(String detail) {
@@ -306,8 +309,8 @@ public class ItemType implements BaseType {
 
                 StringBuilder builder = new StringBuilder();
                 builder.append(classification);
-                if (rarity != Rarity.none) {
-                    builder.append(" ").append(rarity);
+                if (rarity != Rarity.NONE) {
+                    builder.append(", ").append(rarity);
                 }
                 if (!detail.isBlank()) {
                     builder.append(", ").append(detail);
@@ -320,12 +323,12 @@ public class ItemType implements BaseType {
         private String classificationTag() {
             StringBuilder sb = new StringBuilder();
             sb.append("item");
-            if (classification != Classification.none) {
+            if (classification != Classification.NONE) {
                 sb.append("/").append(classification.toString());
             }
-            if (rarity == Rarity.veryRare) {
+            if (rarity == Rarity.VERY_RARE) {
                 sb.append("/very-rare");
-            } else if (rarity != Rarity.none) {
+            } else if (rarity != Rarity.NONE) {
                 sb.append("/").append(rarity.toString());
             }
 
@@ -334,58 +337,51 @@ public class ItemType implements BaseType {
     }
 
     enum Rarity {
-        none,
+        NONE,
         common,
-        uncommon,
-        rare,
-        veryRare,
-        legendary;
+        UNCOMMON,
+        RARE,
+        VERY_RARE,
+        LEGENDARY;
 
         public String toString() {
-            switch (this) {
-                case veryRare:
-                    return "very rare";
-                case none:
-                    return "";
-                default:
-                    return name();
-            }
+            return this == NONE ? "" : name().toLowerCase().replace("_", " ");
         }
 
         public static Rarity find(String content) {
             String detail = content.toLowerCase();
             if (detail.contains("legendary")) {
-                return legendary;
+                return LEGENDARY;
             } else if (detail.contains("very rare")) {
-                return veryRare;
+                return VERY_RARE;
             } else if (detail.contains("rare")) {
-                return rare;
+                return RARE;
             } else if (detail.contains("uncommon")) {
-                return uncommon;
+                return UNCOMMON;
             } else if (detail.contains("common")) {
                 return common;
             }
-            return none;
+            return NONE;
         }
     }
 
     enum Classification {
-        none,
-        major,
-        minor;
+        NONE,
+        MAJOR,
+        MINOR;
 
         public String toString() {
-            return this == none ? "" : name();
+            return this == NONE ? "" : name().toLowerCase();
         }
 
         public static Classification find(String content) {
             String detail = content.toLowerCase();
             if (detail.contains("major")) {
-                return major;
+                return MAJOR;
             } else if (detail.contains("minor")) {
-                return minor;
+                return MINOR;
             }
-            return none;
+            return NONE;
         }
     }
 }

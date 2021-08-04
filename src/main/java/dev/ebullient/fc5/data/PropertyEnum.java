@@ -16,25 +16,40 @@ import io.quarkus.qute.TemplateData;
  * </pre>
  */
 @TemplateData
-public enum PropertyEnum {
-    ammunition("Ammunition", "A"),
-    finesse("Finesse", "F"),
-    heavy("Heavy", "H"),
-    light("Light", "L"),
-    loading("Loading", "LD"),
-    reach("Reach", "R"),
-    special("Special", "S"),
-    thrown("Thrown", "T"),
-    twoHanded("Two-handed", "2H"),
-    versatile("Versatile", "V"),
-    m("m", "M");
+public enum PropertyEnum implements ConvertedEnumType {
+    AMMUNITION("Ammunition", "A"),
+    FINESSE("Finesse", "F"),
+    HEAVY("Heavy", "H"),
+    LIGHT("Light", "L"),
+    LOADING("Loading", "LD"),
+    REACH("Reach", "R"),
+    SPECIAL("Special", "S"),
+    THROWN("Thrown", "T"),
+    TWO_HANDED("Two-handed", "2H"),
+    VERSATILE("Versatile", "V"),
+    MARTIAL("Martial", "M"),
+    UNKNOWN("Unknown", "");
 
     private final String longName;
-    private final String xmlKey;
+    private final String xmlValue;
 
     private PropertyEnum(String longName, String xmlType) {
         this.longName = longName;
-        this.xmlKey = xmlType;
+        this.xmlValue = xmlType;
+    }
+
+    @Override
+    public String value() {
+        return longName;
+    }
+
+    @Override
+    public String getXmlValue() {
+        return xmlValue;
+    }
+
+    public String getMarkdownLink() {
+        return String.format("[%s](%s)", longName, "/reference/item/weapon-properties.md#" + longName);
     }
 
     public static PropertyEnum fromXmlType(String v) {
@@ -42,14 +57,14 @@ public enum PropertyEnum {
             return null;
         }
         for (PropertyEnum p : PropertyEnum.values()) {
-            if (p.xmlKey.equals(v)) {
+            if (p.xmlValue.equals(v)) {
                 return p;
             }
         }
-        return null;
+        throw new IllegalArgumentException("Invalid/Unknown property " + v);
     }
 
-    public static List<PropertyEnum> fromPropertyString(String v) {
+    public static List<PropertyEnum> fromXmlValue(String v) {
         if (v == null || v.isBlank()) {
             return Collections.emptyList();
         }
@@ -59,17 +74,5 @@ public enum PropertyEnum {
         }
         result.removeIf(x -> x == null);
         return result;
-    }
-
-    public String getLongName() {
-        return longName;
-    }
-
-    public String getXmlKey() {
-        return xmlKey;
-    }
-
-    public String getMarkdownLink() {
-        return String.format("[%s](%s)", longName, "/reference/item/weapon-properties.md#" + longName);
     }
 }

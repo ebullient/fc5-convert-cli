@@ -35,64 +35,72 @@ import io.quarkus.qute.TemplateData;
  * 
  */
 @TemplateData
-public enum ItemEnum {
+public enum ItemEnum implements ConvertedEnumType {
 
-    lightArmor("light armor", "LA"),
-    mediumArmor("medium armor", "MA"),
-    heavyArmor("heavy armor", "HA"),
-    shield("shield", "S"),
-    melee("melee weapon", "M"),
-    ranged("ranged weapon", "R"),
-    ammunition("ammunition", "A"),
-    rod("rod", "RD"),
-    staff("staff", "ST"),
-    wand("wand", "WD"),
-    ring("ring", "RG"),
-    potion("potion", "P"),
-    scroll("scroll", "SC"),
-    wondrous("wondrous item", "W"),
-    gear("adventuring gear", "G"),
-    wealth("coins and gemstones", "$"),
-    unknown("unknown", "UNK");
+    LIGHT_ARMOR("light armor", "LA"),
+    MEDIUM_ARMOR("medium armor", "MA"),
+    HEAVY_ARMOR("heavy armor", "HA"),
+    SHIELD("shield", "S"),
+    MELEE_WEAPON("melee weapon", "M"),
+    RANGED_WEAPON("ranged weapon", "R"),
+    AMMUNITION("ammunition", "A"),
+    ROD("rod", "RD"),
+    STAFF("staff", "ST"),
+    WAND("wand", "WD"),
+    RING("ring", "RG"),
+    POTION("potion", "P"),
+    SCROLL("scroll", "SC"),
+    WONDROUS("wondrous item", "W"),
+    GEAR("adventuring gear", "G"),
+    WEALTH("coins and gemstones", "$"),
+    UNKNOWN("unknown", "");
 
     private final String longName;
-    private final String xmlKey;
+    private final String xmlValue;
 
-    private ItemEnum(String longName, String xmlKey) {
+    private ItemEnum(String longName, String xmlValue) {
         this.longName = longName;
-        this.xmlKey = xmlKey;
+        this.xmlValue = xmlValue;
     }
 
-    public static ItemEnum fromValue(String v) {
+    public String getXmlValue() {
+        return xmlValue;
+    }
+
+    public String value() {
+        return longName;
+    }
+
+    public static ItemEnum fromXmlValue(String v) {
         if (v == null || v.isBlank()) {
-            return unknown;
+            return UNKNOWN;
         }
         for (ItemEnum i : ItemEnum.values()) {
-            if (i.xmlKey.equals(v)) {
+            if (i.xmlValue.equals(v)) {
                 return i;
             }
         }
-        return unknown;
+        throw new IllegalArgumentException("Invalid/Unknown item type " + v);
     }
 
     public boolean isWeapon() {
-        return this == ranged || this == melee || this == ammunition;
+        return this == RANGED_WEAPON || this == MELEE_WEAPON || this == AMMUNITION;
     }
 
     public boolean isArmor() {
-        return this == lightArmor || this == mediumArmor || this == heavyArmor || this == shield;
+        return this == LIGHT_ARMOR || this == MEDIUM_ARMOR || this == HEAVY_ARMOR || this == SHIELD;
     }
 
     public boolean isGear() {
-        return this == gear;
+        return this == GEAR;
     }
 
     public boolean isConsumable() {
-        return this == potion || this == scroll;
+        return this == POTION || this == SCROLL;
     }
 
     public boolean isMoney() {
-        return this == wealth;
+        return this == WEALTH;
     }
 
     public boolean canBeMagic() {
@@ -100,13 +108,13 @@ public enum ItemEnum {
     }
 
     public boolean isWondrousItem() {
-        return this == rod
-                || this == staff
-                || this == wand
-                || this == ring
-                || this == potion
-                || this == scroll
-                || this == wondrous;
+        return this == ROD
+                || this == STAFF
+                || this == WAND
+                || this == RING
+                || this == POTION
+                || this == SCROLL
+                || this == WONDROUS;
     }
 
     public String getItemTag(String detail, Text text) {
@@ -118,14 +126,14 @@ public enum ItemEnum {
         } else if (isWeapon()) {
             tag.append("/weapon/");
             tag.append(detail.contains("martial") ? "martial/" : "simple/");
-            tag.append(this == ranged ? "ranged" : "melee");
+            tag.append(this == RANGED_WEAPON ? "ranged" : "melee");
         } else if (isGear()) {
             tag.append("/gear");
             if (detail.contains("poison")) {
                 tag.append("/poison");
             }
         } else if (isWondrousItem()) {
-            tag.append("/wondrous" + (this == wondrous ? "" : "/" + longName));
+            tag.append("/wondrous" + (this == WONDROUS ? "" : "/" + longName));
         } else if (isMoney()) {
             if (text.contains("gemstone")) {
                 tag.append("/gem");
@@ -142,20 +150,20 @@ public enum ItemEnum {
         tmpDetail = tmpDetail.toLowerCase();
         StringBuilder replacement;
         switch (this) {
-            case melee:
-            case ranged:
+            case MELEE_WEAPON:
+            case RANGED_WEAPON:
                 replacement = new StringBuilder();
                 replacement.append("weapon (");
                 replacement.append(tmpDetail.contains("martial") ? "martial" : "simple");
-                replacement.append(this == ranged ? " ranged" : " melee");
+                replacement.append(this == RANGED_WEAPON ? " ranged" : " melee");
                 replacement.append(")");
 
                 tmpDetail = tmpDetail.replaceAll("(simple|martial) weapon(, )?", "")
                         .replaceAll("(melee|ranged) weapon", replacement.toString());
                 break;
-            case heavyArmor:
-            case mediumArmor:
-            case lightArmor:
+            case HEAVY_ARMOR:
+            case MEDIUM_ARMOR:
+            case LIGHT_ARMOR:
                 tmpDetail = tmpDetail.replaceAll("(heavy|medium|light) armor", "armor ($1)");
                 break;
             default:

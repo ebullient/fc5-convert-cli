@@ -1,5 +1,6 @@
 package dev.ebullient.fc5.data;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -9,62 +10,39 @@ import io.quarkus.qute.TemplateData;
 
 @TemplateData
 public class Proficiency {
-    public static final Proficiency ABILITY_AND_SKILL_LIST = new Proficiency("", "abilityAndSkillList") {
-        @Override
-        public void setFlavor(String string) {
-        }
-    };
-    public static final Proficiency SKILL_LIST = new Proficiency("", "skillList") {
-        @Override
-        public void setFlavor(String string) {
-        }
-    };
-    public static final Proficiency STRING = new Proficiency("", "string") {
-        @Override
-        public void setFlavor(String string) {
-        }
-    };
+    static final Proficiency NONE = new Proficiency("");
 
-    String flavor;
-    final List<String> skills;
+    final List<SkillOrAbility> skills;
 
     final String textContent;
 
-    private Proficiency(String textContent, String flavor) {
-        this.flavor = flavor;
-        this.textContent = textContent;
-        this.skills = Collections.emptyList();
-    }
-
     public Proficiency(String textContent) {
         this.textContent = textContent;
-        this.skills = Arrays.asList(textContent.split("\\s*,\\s*"));
-    }
-
-    public void setFlavor(String flavor) {
-        this.flavor = flavor;
+        if (textContent.trim().isBlank()) {
+            this.skills = Collections.emptyList();
+        } else {
+            this.skills = new ArrayList<SkillOrAbility>();
+            Arrays.asList(textContent.trim().split("\\s*,\\s*")).forEach(s -> {
+                if (SkillEnum.isSkill(s)) {
+                    skills.add(SkillEnum.fromXmlValue(s));
+                } else {
+                    skills.add(AbilityEnum.fromXmlValue(s));
+                }
+            });
+        }
     }
 
     public String getSavingThrows() {
-        if (ABILITY_AND_SKILL_LIST.flavor.equals(this.flavor)) {
-            return skills.stream()
-                    .filter(x -> AbilityEnum.isAbility(x))
-                    .collect(Collectors.joining(", "));
-        }
-        return "";
+        return skills.stream()
+                .filter(x -> x.isAbility())
+                .map(x -> x.value() + " Saving Throws")
+                .collect(Collectors.joining(", "));
     }
 
     public String getSkillNames() {
-        if (ABILITY_AND_SKILL_LIST.flavor.equals(this.flavor)) {
-            return skills.stream()
-                    .filter(x -> !AbilityEnum.isAbility(x))
-                    .map(x -> "*" + x + "*")
-                    .collect(Collectors.joining(", "));
-        }
         return skills.stream()
-                .filter(x -> x == null)
-                .filter(x -> x.isBlank())
-                .map(x -> "*" + x + "*")
+                .filter(x -> x.isSkill())
+                .map(x -> "*" + x.value() + "*")
                 .collect(Collectors.joining(", "));
     }
 }

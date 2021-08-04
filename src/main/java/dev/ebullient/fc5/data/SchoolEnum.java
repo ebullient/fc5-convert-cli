@@ -27,39 +27,45 @@ import io.quarkus.qute.TemplateData;
  * 
  */
 @TemplateData
-public enum SchoolEnum {
+public enum SchoolEnum implements ConvertedEnumType {
 
-    abjuration("abjuration", "A"),
-    conjuration("conjuration", "C"),
-    divination("divination", "D"),
-    enchantment("enchantment", "EN"),
-    evocation("evocation", "EV"),
-    illusion("illusion", "I"),
-    necromancy("necromancy", "N"),
-    transmutation("transmutation", "T");
+    Abjuration("abjuration", "A"),
+    Conjuration("conjuration", "C"),
+    Divination("divination", "D"),
+    Enchantment("enchantment", "EN"),
+    Evocation("evocation", "EV"),
+    Illusion("illusion", "I"),
+    Necromancy("necromancy", "N"),
+    Transmutation("transmutation", "T"),
+    None("none", "");
 
     private final String longName;
-    private final String xmlKey;
+    private final String xmlValue;
 
-    private SchoolEnum(String longName, String xmlType) {
+    private SchoolEnum(String longName, String xmlValue) {
         this.longName = longName;
-        this.xmlKey = xmlType;
+        this.xmlValue = xmlValue;
     }
 
-    public static SchoolEnum fromXmlType(String v) {
-        if (v == null || v.isBlank()) {
-            return null;
-        }
-        for (SchoolEnum p : SchoolEnum.values()) {
-            if (p.xmlKey.equals(v)) {
-                return p;
-            }
-        }
-        return null;
-    }
-
-    public String longName() {
+    @Override
+    public String value() {
         return longName;
     }
 
+    @Override
+    public String getXmlValue() {
+        return xmlValue;
+    }
+
+    public static SchoolEnum fromXmlValue(String v) {
+        if (v == null || v.isBlank()) {
+            return None;
+        }
+        for (SchoolEnum p : SchoolEnum.values()) {
+            if (p.xmlValue.equals(v)) {
+                return p;
+            }
+        }
+        throw new IllegalArgumentException("Invalid/Unknown school " + v);
+    }
 }

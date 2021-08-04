@@ -18,17 +18,39 @@ package dev.ebullient.fc5.data;
  * </pre>
  * 
  */
-public enum ResetEnum {
+public enum ResetEnum implements ConvertedEnumType {
 
-    L,
-    S;
+    LongRest("long rest", "L"),
+    ShortRest("short rest", "S"),
+    None("none", "");
 
-    public String value() {
-        return name();
+    private final String longName;
+    private final String xmlValue;
+
+    private ResetEnum(String longName, String xmlValue) {
+        this.longName = longName;
+        this.xmlValue = xmlValue;
     }
 
-    public static ResetEnum fromValue(String v) {
-        return valueOf(v);
+    public String getXmlValue() {
+        return xmlValue;
+    }
+
+    public String value() {
+        return longName;
+    }
+
+    public static ResetEnum fromXmlValue(String v) {
+        if (v == null || v.isBlank()) {
+            return None;
+        }
+        switch (v.toLowerCase()) {
+            case "l":
+                return LongRest;
+            case "s":
+                return ShortRest;
+        }
+        throw new IllegalArgumentException("Invalid/Unknown reset interval " + v);
     }
 
 }

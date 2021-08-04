@@ -21,7 +21,7 @@ public class RaceTypeTest extends ParsingTestBase {
         RaceType race = compendium.races.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Dragonborn", race.name),
-                () -> assertEquals(SizeEnum.M, race.size),
+                () -> assertEquals(SizeEnum.MEDIUM, race.size),
                 () -> assertEquals(30, race.speed),
                 () -> assertEquals("Str 2, Cha 1", race.ability),
                 () -> assertEquals("", race.proficiency.textContent),

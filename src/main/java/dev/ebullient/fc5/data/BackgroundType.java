@@ -8,10 +8,10 @@ import io.quarkus.qute.TemplateData;
 /**
  * <p>
  * Java class for backgroundType complex type.
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="backgroundType">
  *   &lt;complexContent>
@@ -35,10 +35,8 @@ public class BackgroundType implements BaseType {
     public BackgroundType(ParsingContext context) {
         name = context.getOrFail(context.owner, "name", String.class);
 
-        proficiency = context.getOrDefault("proficiency", Proficiency.SKILL_LIST);
-        proficiency.setFlavor("skillList");
-
-        traits = context.getOrDefault("trait", Collections.emptyList());
+        proficiency = context.getOrDefault(name, "proficiency", Proficiency.NONE);
+        traits = context.getOrDefault(name, "trait", Collections.emptyList());
     }
 
     public String getName() {

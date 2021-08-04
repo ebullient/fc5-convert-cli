@@ -1,5 +1,9 @@
 package dev.ebullient.fc5.data;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import io.quarkus.qute.TemplateData;
 
 /**
@@ -18,32 +22,59 @@ import io.quarkus.qute.TemplateData;
  * </pre>
  */
 @TemplateData
-public enum AbilityEnum {
-    Strength,
-    Dexterity,
-    Constitution,
-    Intelligence,
-    Wisdom,
-    Charisma,
-    NONE;
+public enum AbilityEnum implements SkillOrAbility {
+    STR("Strength"),
+    DEX("Dexterity"),
+    CON("Constitution"),
+    INT("Intelligence"),
+    WIS("Wisdom"),
+    CHA("Charisma"),
+    NONE("");
 
-    public String value() {
-        return name();
+    final static List<String> allShortNames = Arrays.asList(AbilityEnum.values()).stream()
+            .map(x -> x.name())
+            .collect(Collectors.toList());
+    final String longName;
+
+    private AbilityEnum(String longName) {
+        this.longName = longName;
     }
 
-    public static AbilityEnum fromValue(String v) {
-        if (v == null || v.isBlank()) {
+    public String getXmlValue() {
+        return longName;
+    }
+
+    public String value() {
+        return longName;
+    }
+
+    @Override
+    public boolean isSkill() {
+        return false;
+    }
+
+    @Override
+    public boolean isAbility() {
+        return true;
+    }
+
+    public static AbilityEnum fromXmlValue(String v) {
+        if (v == null || v.isBlank() || v.length() < 3) {
             return NONE;
         }
-        return valueOf(v);
+        String compare = v.substring(0, 3).toUpperCase();
+        for (AbilityEnum a : AbilityEnum.values()) {
+            if (compare.equals(a.name())) {
+                return a;
+            }
+        }
+        throw new IllegalArgumentException("Unknown ability value " + v);
     }
 
     static boolean isAbility(String v) {
-        try {
-            Enum.valueOf(AbilityEnum.class, v);
-            return true;
-        } catch (IllegalArgumentException e) {
+        if (v == null || v.isBlank() || v.length() < 3) {
+            return false;
         }
-        return false;
+        return allShortNames.contains(v.substring(0, 3).toUpperCase());
     }
 }

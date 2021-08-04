@@ -26,7 +26,7 @@ public class MonsterTypeTest extends ParsingTestBase {
         MonsterType monster = compendium.monsters.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Ankheg", monster.name),
-                () -> assertEquals(SizeEnum.L, monster.size),
+                () -> assertEquals(SizeEnum.LARGE, monster.size),
                 () -> assertEquals("monstrosity", monster.type),
                 () -> assertEquals("Unaligned", monster.alignment),
                 () -> assertEquals("14 (natural armor, 11 while prone)", monster.ac),
@@ -39,7 +39,7 @@ public class MonsterTypeTest extends ParsingTestBase {
                 () -> assertEquals(1, monster.scores.intelligence),
                 () -> assertEquals(13, monster.scores.wisdom),
                 () -> assertEquals(6, monster.scores.charisma),
-                () -> assertEquals("", monster.save),
+                () -> assertEquals(Collections.emptyList(), monster.save),
                 () -> assertEquals(new ArrayList<>(Arrays.asList("Intimidation +2", "History +1")), monster.skill),
                 () -> assertEquals(11, monster.passive),
                 () -> assertEquals("", monster.languages),
@@ -65,6 +65,10 @@ public class MonsterTypeTest extends ParsingTestBase {
                 () -> assertContains(content, "*Large monstrosity, Unaligned*"),
                 () -> assertContains(content, "|17 (+3)|11 (+0)|13 (+1)|1 (-5)|13 (+1)|6 (-2)|"),
                 () -> assertContains(content, "***Acid Spray (Recharge 6).*** The ankheg spits"),
-                () -> assertContains(content, "aliases: ['Ankheg']"));
+                () -> assertContains(content, "aliases: ['Ankheg']"),
+                () -> assertContains(content, "**Lurkers in the Earth.**"),
+                () -> assertContains(content, "**Bane of Field and Forest.**"),
+                () -> assertContains(content, "**Earthen Tunnels.**"),
+                () -> assertContains(content, "**Elemental Spirit in Material Form.**"));
     }
 }

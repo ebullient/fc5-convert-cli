@@ -25,46 +25,46 @@ import io.quarkus.qute.TemplateData;
  * </pre>
  */
 @TemplateData
-public enum DamageEnum {
-    bludgeoning("bludgeoning", "B"),
-    piercing("piercing", "P"),
-    slashing("slashing", "S"),
-    acid("acid", "A"),
-    cold("cold", "C"),
-    fire("fire", "F"),
-    force("force", "FC"),
-    lightning("lightning", "L"),
-    necrotic("necrotic", "N"),
-    poison("poison", "PS"),
-    radiant("radiant", "R"),
-    thunder("thunder", "T"),
-    unknown("unknown", "UNK");
+public enum DamageEnum implements ConvertedEnumType {
+    BLUDGEONING("bludgeoning", "B"),
+    PIERCING("piercing", "P"),
+    SLASHING("slashing", "S"),
+    ACID("acid", "A"),
+    COLD("cold", "C"),
+    FIRE("fire", "F"),
+    FORCE("force", "FC"),
+    LIGHTNING("lightning", "L"),
+    NECROTIC("necrotic", "N"),
+    POISON("poison", "PS"),
+    RADIANT("radiant", "R"),
+    THUNDER("thunder", "T"),
+    UNKNOWN("unknown", "");
 
     private final String longName;
-    private final String xmlKey;
+    private final String xmlValue;
 
-    private DamageEnum(String longName, String xmlKey) {
+    private DamageEnum(String longName, String xmlValue) {
         this.longName = longName;
-        this.xmlKey = xmlKey;
+        this.xmlValue = xmlValue;
     }
 
-    public String getLongName() {
+    public String value() {
         return longName;
     }
 
-    public String getXmlKey() {
-        return xmlKey;
+    public String getXmlValue() {
+        return xmlValue;
     }
 
-    public static DamageEnum fromValue(String v) {
+    public static DamageEnum fromXmlValue(String v) {
         if (v == null || v.isBlank()) {
-            return unknown;
+            return UNKNOWN;
         }
         for (DamageEnum i : DamageEnum.values()) {
-            if (i.xmlKey.equals(v)) {
+            if (i.xmlValue.equals(v)) {
                 return i;
             }
         }
-        return unknown;
+        throw new IllegalArgumentException("Invalid/Unknown damage type " + v);
     }
 }

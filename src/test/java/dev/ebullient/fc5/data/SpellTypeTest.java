@@ -35,7 +35,7 @@ public class SpellTypeTest extends ParsingTestBase {
                 () -> assertEquals("Acid Splash", spell.name),
                 () -> assertEquals(0, spell.level),
                 () -> assertEquals(tags, spell.getTags()),
-                () -> assertEquals(SchoolEnum.conjuration, spell.school),
+                () -> assertEquals(SchoolEnum.Conjuration, spell.school),
                 () -> assertEquals(false, spell.ritual),
                 () -> assertEquals("1 action", spell.time),
                 () -> assertEquals("60 feet", spell.range),
@@ -52,7 +52,7 @@ public class SpellTypeTest extends ParsingTestBase {
         Assertions.assertAll(
                 () -> assertContains(content, "spell/class/artificer"),
                 () -> assertContains(content, "# Acid Splash"),
-                () -> assertContains(content, "*conjuration cantrip*"),
+                () -> assertContains(content, "*cantrip, conjuration*"),
                 () -> assertContains(content, "- **Casting time:** 1 action"),
                 () -> assertContains(content, "- **Components:** V, S"));
     }
@@ -82,7 +82,7 @@ public class SpellTypeTest extends ParsingTestBase {
                 () -> assertEquals("Alarm", spell.name),
                 () -> assertEquals(1, spell.level),
                 () -> assertEquals(tags, spell.getTags()),
-                () -> assertEquals(SchoolEnum.abjuration, spell.school),
+                () -> assertEquals(SchoolEnum.Abjuration, spell.school),
                 () -> assertEquals(true, spell.ritual),
                 () -> assertEquals("1 minute", spell.time),
                 () -> assertEquals("30 feet", spell.range),
@@ -97,7 +97,7 @@ public class SpellTypeTest extends ParsingTestBase {
         String content = templates.renderSpell(spell);
         Assertions.assertAll(
                 () -> assertContains(content, "# Alarm"),
-                () -> assertContains(content, "*1st level abjuration (ritual)*"),
+                () -> assertContains(content, "*1st-level, abjuration (ritual)*"),
                 () -> assertContains(content, "- **Casting time:** 1 minute unless cast as a ritual"),
                 () -> assertContains(content,
                         "Artificer, Fighter (Eldritch Knight), Paladin (Watchers), Ranger, Sorcerer (Clockwork Soul), Wizard, Wizard (Ritual Caster)"),
