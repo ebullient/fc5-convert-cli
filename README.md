@@ -9,7 +9,7 @@ If you want to learn more about Quarkus, please visit its website: https://quark
 1. Install JBang: https://www.jbang.dev/documentation/guide/latest/installation.html
 2. Install the snapshot jar: 
 ```
-jbang app install --name fc5-convert --force --fresh https://jitpack.io/com/github/ebullient/fc5-convert-cli/1.0.0-SNAPSHOT/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar
+jbang app install --name fc5-convert --force --fresh https://jitpack.io/dev/ebullient/fc5-convert-cli/1.0.0-SNAPSHOT/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar
 ```
 3. Run the command: 
 ```
