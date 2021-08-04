@@ -1,7 +1,7 @@
 name: Update snapshot tag
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   publish:
