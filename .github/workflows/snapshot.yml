@@ -1,13 +1,16 @@
 name: Update snapshot tag
+
 on:
   push:
     branches: [ main ]
-      - '.gitignore'
-      - 'LICENSE'
-      - '*.md'
-      - '*.adoc'
-      - '*.txt'
-      - '.all-contributorsrc'
+    paths-ignore:
+    - '.gitignore'
+    - 'LICENSE'
+    - '*.md'
+    - '*.adoc'
+    - '*.txt'
+    - '.all-contributorsrc'
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -42,6 +45,7 @@ jobs:
       - name: Update tag
         if: success()
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JITPACK_TOKEN: ${{ secrets.JITPACK_TOKEN }}
         shell: bash
         run: |
