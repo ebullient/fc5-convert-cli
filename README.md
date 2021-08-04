@@ -4,6 +4,18 @@ This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
 
+To just run: 
+
+1. Install JBang: https://www.jbang.dev/documentation/guide/latest/installation.html
+2. Install the snapshot jar: 
+```
+jbang app install --name fc5-convert --force --fresh https://jitpack.io/com/github/ebullient/fc5-convert-cli/1.0.0-SNAPSHOT/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar
+```
+3. Run the command: 
+```
+fc5-convert --help
+```
+
 To build: 
 
 1. Clone this repository
