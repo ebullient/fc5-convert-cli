@@ -23,17 +23,44 @@ import picocli.CommandLine.Spec;
 @Command(name = "validate", mixinStandardHelpOptions = true, header = "Validate XML files against a schema definition")
 public class Validate implements Callable<Integer> {
 
-    Path xsd;
-
     @Spec
     private CommandSpec spec;
 
     @ParentCommand
-    private ConvertCli parent;
+    ConvertCli parent;
 
-    @Option(names = "-s", description = "XSD file", required = true)
-    void setXsdFile(File xsdFile) {
-        xsd = xsdFile.toPath().toAbsolutePath().normalize();
+    @CommandLine.ArgGroup(exclusive = true)
+    ValidationSource validationSource = new ValidationSource();
+
+    static class ValidationSource {
+
+        Path xsd;
+
+        ValidationSource() {
+        }
+
+        ValidationSource(boolean collection) {
+            this.collection = collection;
+            this.compendium = !collection;
+            this.xsd = null;
+        }
+
+        ValidationSource(File xsdFile) {
+            this.collection = false;
+            this.compendium = false;
+            setXsdFile(xsdFile);
+        }
+
+        @Option(names = "-s", description = "XSD file", required = true)
+        void setXsdFile(File xsdFile) {
+            xsd = xsdFile.toPath().toAbsolutePath().normalize();
+        }
+
+        @Option(names = "--collection", description = "Validate a collection of compendium files (first element in the file is <collection>")
+        boolean collection;
+
+        @Option(names = "--compendium", description = "Validate a compendium file (first element is <collection>", defaultValue = "true")
+        boolean compendium = true;
     }
 
     @Override
@@ -41,8 +68,22 @@ public class Validate implements Callable<Integer> {
         Log.prepareStreams(spec);
         boolean allOk = true;
 
+        final StreamSource xsdSource;
+        if (validationSource.xsd == null) {
+            if (validationSource.collection) {
+                Log.outPrintln("💡 Using Collection XSD file");
+                xsdSource = new StreamSource(this.getClass().getResourceAsStream("/collection.xsd"));
+            } else {
+                Log.outPrintln("💡 Using Compendium XSD file");
+                xsdSource = new StreamSource(this.getClass().getResourceAsStream("/compendium.xsd"));
+            }
+        } else {
+            Log.outPrintln("💡 Using XSD " + validationSource.xsd.toAbsolutePath());
+            xsdSource = new StreamSource(validationSource.xsd.toFile());
+        }
+
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        Schema schema = factory.newSchema(xsd.toFile());
+        Schema schema = factory.newSchema(xsdSource);
         Validator validator = schema.newValidator();
 
         if (parent.input == null || parent.input.isEmpty()) {

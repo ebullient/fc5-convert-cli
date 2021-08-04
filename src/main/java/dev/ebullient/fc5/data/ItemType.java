@@ -201,7 +201,7 @@ public class ItemType implements BaseType {
             boolean hasClassification = tmpClassification != Classification.NONE;
 
             if (type.canBeMagic() && (magic || hasRarity || hasClassification)) {
-                if (name.startsWith("+")) {
+                if (name.startsWith("+") && !hasRarity) {
                     hasRarity = true;
                     if (name.startsWith("+1")) {
                         tmpRarity = Rarity.RARE;

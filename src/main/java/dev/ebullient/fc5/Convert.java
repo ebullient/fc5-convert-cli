@@ -34,7 +34,7 @@ public class Convert implements Callable<Integer> {
 
     Path output;
 
-    public Convert(Templates tpl) {
+    Convert(Templates tpl) {
         this.tpl = tpl;
         reader = new CompendiumXmlReader();
     }

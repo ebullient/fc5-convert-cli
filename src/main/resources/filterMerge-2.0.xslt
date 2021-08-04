@@ -70,37 +70,37 @@
     </xsl:template>
 
     <!-- Add elements for rarity, classification (major, minor), and attunement -->
-    <xsl:template mode="firstStage" match="item[./detail]">
-        <xsl:variable name="details" select="./detail" />
-        <xsl:copy>
-            <xsl:apply-templates mode="firstStage" select="@* | node()"/>
-            <xsl:analyze-string select="$details" regex=".*?((rarity varies|legendary|(very )?rare|(un)?common)( \(\+\d\))?).*?">
-              <xsl:matching-substring>
-                <xsl:element name="rarity"><xsl:value-of select="regex-group(1)" /></xsl:element>
-              </xsl:matching-substring>
-            </xsl:analyze-string>
-            <xsl:analyze-string select="$details" regex=".*?(major|minor).*?">
-              <xsl:matching-substring>
-                <xsl:element name="classification"><xsl:value-of select="regex-group(1)" /></xsl:element>
-              </xsl:matching-substring>
-            </xsl:analyze-string>
-            <xsl:analyze-string select="$details" regex=".*(\(.*?attunement.*?\)).*">
-                <xsl:matching-substring>
-                    <xsl:element name="attunement"><xsl:value-of select="regex-group(1)" /></xsl:element>
-                </xsl:matching-substring>
-            </xsl:analyze-string>
-        </xsl:copy>
-    </xsl:template>
+<!--    <xsl:template mode="firstStage" match="item[./detail]">-->
+<!--        <xsl:variable name="details" select="./detail" />-->
+<!--        <xsl:copy>-->
+<!--            <xsl:apply-templates mode="firstStage" select="@* | node()"/>-->
+<!--            <xsl:analyze-string select="$details" regex=".*?((rarity varies|legendary|(very )?rare|(un)?common)( \(\+\d\))?).*?">-->
+<!--              <xsl:matching-substring>-->
+<!--                <xsl:element name="rarity"><xsl:value-of select="regex-group(1)" /></xsl:element>-->
+<!--              </xsl:matching-substring>-->
+<!--            </xsl:analyze-string>-->
+<!--            <xsl:analyze-string select="$details" regex=".*?(major|minor).*?">-->
+<!--              <xsl:matching-substring>-->
+<!--                <xsl:element name="classification"><xsl:value-of select="regex-group(1)" /></xsl:element>-->
+<!--              </xsl:matching-substring>-->
+<!--            </xsl:analyze-string>-->
+<!--            <xsl:analyze-string select="$details" regex=".*(\(.*?attunement.*?\)).*">-->
+<!--                <xsl:matching-substring>-->
+<!--                    <xsl:element name="attunement"><xsl:value-of select="regex-group(1)" /></xsl:element>-->
+<!--                </xsl:matching-substring>-->
+<!--            </xsl:analyze-string>-->
+<!--        </xsl:copy>-->
+<!--    </xsl:template>-->
 
     <!-- Strip rarity / classification / attunement / type from detail string-->
-    <xsl:template mode="firstStage" match="detail">
-        <xsl:variable name="noClassifier" select="replace(., '(major|minor),? ?', '')" />
-        <xsl:variable name="noRarity" select="replace($noClassifier, '(or )?(rarity varies|legendary|(very )?rare|(un)?common)( \(\+\d\))?,? ?', '')" />
-        <xsl:variable name="noAttunement" select="replace($noRarity, '(\(.*?attunement.*?\)),? ?', '')" />
-        <xsl:variable name="noType" select="replace($noAttunement, '(([Hh]eavy|[Mm]edium|[Ll]ight) Armor|([Ss]imple|[Mm]artial|[Mm]elee|[Rr]anged) [Ww]eapon|[Aa]mmunition|[Ss]hield|[Aa]dventuring [Gg]ear|[Ww]ondrous [Ii]tem),? ?', '')" />
-        <xsl:variable name="danglingComma" select="replace($noType, ',\s*$', '')" />
-        <xsl:element name="detail"><xsl:value-of select="$danglingComma" /></xsl:element>
-    </xsl:template>
+<!--    <xsl:template mode="firstStage" match="detail">-->
+<!--        <xsl:variable name="noClassifier" select="replace(., '(major|minor),? ?', '')" />-->
+<!--        <xsl:variable name="noRarity" select="replace($noClassifier, '(or )?(rarity varies|legendary|(very )?rare|(un)?common)( \(\+\d\))?,? ?', '')" />-->
+<!--        <xsl:variable name="noAttunement" select="replace($noRarity, '(\(.*?attunement.*?\)),? ?', '')" />-->
+<!--        <xsl:variable name="noType" select="replace($noAttunement, '(([Hh]eavy|[Mm]edium|[Ll]ight) Armor|([Ss]imple|[Mm]artial|[Mm]elee|[Rr]anged) [Ww]eapon|[Aa]mmunition|[Ss]hield|[Aa]dventuring [Gg]ear|[Ww]ondrous [Ii]tem),? ?', '')" />-->
+<!--        <xsl:variable name="danglingComma" select="replace($noType, ',\s*$', '')" />-->
+<!--        <xsl:element name="detail"><xsl:value-of select="$danglingComma" /></xsl:element>-->
+<!--    </xsl:template>-->
 
     <!-- consistency for magic value -->
     <xsl:template mode="firstStage" match="magic">
@@ -130,7 +130,7 @@
     <xsl:template name="class-extendable">
         <xsl:param name="classes" />
         <xsl:for-each select="$classes">
-            <xsl:sort select="." order="ascending"/>
+            <xsl:sort select="." />
             <xsl:choose>
                 <!-- Check if there's a duplicate -->
                 <xsl:when test="count($classes[name = current()/name]) &gt; 1">
@@ -189,7 +189,7 @@
     <xsl:template name="items-extendable">
         <xsl:param name="items" />
         <xsl:for-each select="$items">
-            <xsl:sort select="." order="ascending"/>
+            <xsl:sort select="." />
             <xsl:choose>
                 <!-- Check if there's a duplicate -->
                 <xsl:when test="count($items[name = current()/name]) &gt; 1">
@@ -215,33 +215,53 @@
     <xsl:template name="single-item">
         <xsl:param name="item" />
         <xsl:param name="items" />
-        <xsl:variable name="modifier_list">
+        <xsl:variable name="modifier-list">
             <xsl:for-each-group select="$items[name = $item/name]/modifier" group-by=".">
-                <xsl:sort select="." order="ascending"/>
-                <xsl:copy-of select='.'/>
+                <xsl:sort select="." />
+                <xsl:sequence select='.'/>
             </xsl:for-each-group>
         </xsl:variable>
-        <xsl:variable name="item_roll_list">
+        <xsl:variable name="item-roll-list">
             <xsl:for-each-group select="$items[name = $item/name]/roll" group-by=".">
-                <xsl:sort select="@num" order="ascending" data-type="number"/>
-                <xsl:sort select="@die" order="ascending" data-type="number"/>
-                <xsl:copy-of select='.'/>
+                <xsl:sort select="@num" data-type="number"/>
+                <xsl:sort select="@die" data-type="number"/>
+                <xsl:sequence select='.'/>
             </xsl:for-each-group>
         </xsl:variable>
+<!--        <xsl:variable name="item-rarity-list">-->
+<!--            <xsl:for-each-group select="$items[name = $item/name]/rarity" group-by=".">-->
+<!--                <xsl:sort select="."/>-->
+<!--                <xsl:sequence select='.'/>-->
+<!--            </xsl:for-each-group>-->
+<!--        </xsl:variable>-->
+<!--        <xsl:variable name="item-attunement-list">-->
+<!--            <xsl:for-each select="$items[name = $item/name]/attunement">-->
+<!--                <xsl:sort select="."/>-->
+<!--                <xsl:sequence select='.'/>-->
+<!--            </xsl:for-each>-->
+<!--        </xsl:variable>-->
+<!--        <xsl:variable name="item-classification-list">-->
+<!--            <xsl:for-each select="$items[name = $item/name]/classification">-->
+<!--                <xsl:sort select="."/>-->
+<!--                <xsl:sequence select='.'/>-->
+<!--            </xsl:for-each>-->
+<!--        </xsl:variable>-->
         <item>
             <xsl:apply-templates mode="secondStage" select="$item/name" />
             <xsl:apply-templates mode="secondStage" select="$item/type" />
             <xsl:apply-templates mode="secondStage" select="$item/magic" />
-            <!-- custom elements used to gather/establish classification, rarity, and attunement for the detail string -->
-            <xsl:apply-templates mode="secondStage" select="$item/rarity" />
-            <xsl:apply-templates mode="secondStage" select="$item/classification" />
-            <xsl:apply-templates mode="secondStage" select="$item/attunement" />
             <xsl:apply-templates mode="secondStage" select="$item/detail" />
+<!--            <xsl:call-template name="single-item-detail">-->
+<!--                <xsl:with-param name="item" select="$item" />-->
+<!--                <xsl:with-param name="item-rarity-list" select="$item-rarity-list" />-->
+<!--                <xsl:with-param name="item-attunement" select="head($item-attunement-list)" />-->
+<!--                <xsl:with-param name="item-classification" select="head($item-classification-list)" />-->
+<!--            </xsl:call-template>-->
             <xsl:apply-templates mode="secondStage" select="$item/weight" />
             <xsl:apply-templates mode="secondStage" select="$item/text" />
-            <xsl:apply-templates mode="secondStage" select="$item_roll_list" />
+            <xsl:apply-templates mode="secondStage" select="$item-roll-list" />
             <xsl:apply-templates mode="secondStage" select="$item/value" />
-            <xsl:apply-templates mode="secondStage" select="$modifier_list" />
+            <xsl:apply-templates mode="secondStage" select="$modifier-list" />
             <xsl:apply-templates mode="secondStage" select="$item/ac" />
             <xsl:apply-templates mode="secondStage" select="$item/strength" />
             <xsl:apply-templates mode="secondStage" select="$item/stealth" />
@@ -253,12 +273,32 @@
         </item>
     </xsl:template>
 
+<!--    <xsl:template name="single-item-detail">-->
+<!--        <xsl:param name="item" />-->
+<!--        <xsl:param name="item-rarity-list" />-->
+<!--        <xsl:param name="item-attunement" />-->
+<!--        <xsl:param name="item-classification" />-->
+
+<!--        <xsl:variable name="fulltext" select="string-join($item/text, ' ')" />-->
+<!--        <xsl:variable name="rarity"></xsl:variable>-->
+<!--        <xsl:variable name="classification" select="$item-classification" />-->
+
+<!-- -->
+<!--        <xsl:if test="empty($classification) and ($item/type eq 'P' or $item/type eq 'SC')"><xsl:variable name="classification">minor</xsl:variable></xsl:if>-->
+
+
+<!--        <xsl:variable name="detail" select="$item/detail" />-->
+<!--        <xsl:element name="detail">-->
+<!--            <xsl:value-of select="string-join(('classification', $classification, 'rarity', $rarity, 'remainder', $detail, 'attunement', $item-attunement), '|')" />-->
+<!--        </xsl:element>-->
+<!--    </xsl:template>-->
+
     <!-- Disambiguate monsters (second stage) -->
 
     <xsl:template name="monster-unique-filter">
         <xsl:param name="monsters" />
         <xsl:for-each-group select="$monsters" group-by="./name">
-            <xsl:sort select="." order="ascending"/>
+            <xsl:sort select="."/>
             <xsl:call-template name="single-monster">
                 <xsl:with-param name="monster" select="." />
             </xsl:call-template>
@@ -334,7 +374,7 @@
     <xsl:template name="spells-extendable">
         <xsl:param name="spells" />
         <xsl:for-each select="$spells">
-            <xsl:sort select="." order="ascending"/>
+            <xsl:sort select="."/>
             <xsl:choose>
                 <!-- Check if there's a duplicate -->
                 <xsl:when test="count($spells[name = current()/name]) &gt; 1">
@@ -364,18 +404,17 @@
 
         <xsl:variable name="spell_roll_list">
             <xsl:for-each-group select="$spells[name = $spell/name]/roll" group-by=".">
-                <xsl:sort select="@num" order="ascending" data-type="number"/>
-                <xsl:sort select="@die" order="ascending" data-type="number"/>
-                <xsl:copy-of select='.'/>
+                <xsl:sort select="@num" data-type="number"/>
+                <xsl:sort select="@die" data-type="number"/>
+                <xsl:sequence select='.'/>
             </xsl:for-each-group>
         </xsl:variable>
         <xsl:variable name="sorted_class_list">
             <xsl:for-each-group select="$spells[name = $spell/name]/classes/spellClass" group-by=".">
-                <xsl:sort select="." order="ascending"/>
-                <xsl:copy-of select='.'/>
+                <xsl:sort select="."/>
+                <xsl:sequence select='.'/>
             </xsl:for-each-group>
         </xsl:variable>
-
         <spell>
             <xsl:apply-templates mode="secondStage" select="$spell/name" />
             <xsl:apply-templates mode="secondStage" select="$spell/level" />
@@ -396,11 +435,9 @@
 
     <!-- Final Stage -->
 
-    <!--empty template suppresses this attribute-->
+    <!--empty template suppresses these working attributes and elements -->
     <xsl:template mode="finalStage" match="@die" />
     <xsl:template mode="finalStage" match="@num" />
-    <!-- <xsl:template mode="finalStage" match="rarity" />
-    <xsl:template mode="finalStage" match="classification" /> -->
 
     <!--Convert spellClass elements into comma separated string-->
     <xsl:template mode="finalStage" match="spellClass">

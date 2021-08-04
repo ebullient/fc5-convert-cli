@@ -8,7 +8,7 @@ tags:
 aliases: ['{resource.name}']
 ---
 # {resource.name}
-*{resource.detail}*
+{#if resource.detail }*{resource.detail}*{/if}
 
 {#if resource.isArmor }
 - **Base Armor Class**: {resource.armorClass}

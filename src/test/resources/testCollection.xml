@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection>
+    <doc href="backgroundAcolyte.xml" />
+    <doc href="classBarbarian.xml" />
+    <doc href="featActor.xml" />
+    <doc href="featDefensiveDuelist.xml" />
+    <doc href="itemJug.xml" />
+    <doc href="itemLance.xml" />
+    <doc href="items.xml" />
+    <doc href="monsterAnkheg.xml" />
+    <doc href="raceDragonborn.xml" />
+    <doc href="spellAcidSplash.xml" />
+    <doc href="spellAlarm.xml" />
+    <doc href="testResources.xml" />
+</collection>
