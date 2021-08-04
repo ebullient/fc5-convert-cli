@@ -2,9 +2,11 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>dev.ebullient.fc5</groupId>
-  <artifactId>convert-cli</artifactId>
+
+  <groupId>dev.ebullient</groupId>
+  <artifactId>fc5-convert-cli</artifactId>
   <version>1.0.0-SNAPSHOT</version>
+
   <properties>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
@@ -24,6 +26,35 @@
     <formatter-plugin.version>2.16.0</formatter-plugin.version>
     <impsort-plugin.version>1.6.2</impsort-plugin.version>
   </properties>
+
+    <scm>
+    <url>https://github.com/ebullient/fc5-convert-cli</url>
+    <connection>scm:git:https://github.com/ebullient/fc5-convert-cli.git</connection>
+    <developerConnection>scm:git:git@github.com/ebullient/fc5-convert-cli.git</developerConnection>
+    <tag>${project.version}</tag>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub ebullient fc5-convert-cli Maven Packages</name>
+      <url>https://maven.pkg.github.com/ebullient/fc5-convert-cli</url>
+    </repository>
+  </distributionManagement>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/ebullient/fc5-convert-cli/issues</url>
+  </issueManagement>
+
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
   <dependencyManagement>
     <dependencies>
       <dependency>

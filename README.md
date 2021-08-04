@@ -1,4 +1,4 @@
-# convert-cli Project
+# fc5-convert-cli
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
