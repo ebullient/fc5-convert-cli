@@ -39,3 +39,8 @@ nb-configuration.xml
 .env
 
 FightClub5eXML
+.flattened*
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties

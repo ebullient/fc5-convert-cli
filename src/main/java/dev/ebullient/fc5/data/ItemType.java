@@ -3,7 +3,6 @@ package dev.ebullient.fc5.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -91,10 +90,8 @@ public class ItemType implements BaseType {
         roll = context.getOrDefault(name, "roll", Collections.emptyList());
 
         // Figure out missing details
-        String tmpDetail = context.getOrDefault(name, "detail", "");
-        magicItem = new MagicItem(name, tmpDetail, text, type, context.getOrDefault(name, "magic", false));
-        tmpDetail = magicItem.updateDetails(tmpDetail);
-        detail = type.updateDetails(tmpDetail);
+        detail = context.getOrDefault(name, "detail", "");
+        magicItem = new MagicItem(name, detail, text, type, context.getOrDefault(name, "magic", false));
     }
 
     public String getName() {
@@ -194,108 +191,9 @@ public class ItemType implements BaseType {
         final boolean isMagic;
 
         MagicItem(String name, String detail, Text text, ItemEnum type, boolean magic) {
-            Rarity tmpRarity = Rarity.find(detail);
-            Classification tmpClassification = Classification.find(detail);
-
-            boolean hasRarity = tmpRarity != Rarity.NONE;
-            boolean hasClassification = tmpClassification != Classification.NONE;
-
-            if (type.canBeMagic() && (magic || hasRarity || hasClassification)) {
-                if (name.startsWith("+") && !hasRarity) {
-                    hasRarity = true;
-                    if (name.startsWith("+1")) {
-                        tmpRarity = Rarity.RARE;
-                    } else if (name.startsWith("+2")) {
-                        tmpRarity = Rarity.VERY_RARE;
-                    } else if (name.startsWith("+3")) {
-                        tmpRarity = Rarity.LEGENDARY;
-                    }
-                }
-
-                MatchResult result = text.matches(FOUND_ON);
-                if (result != null) {
-                    // Note these fall through: Tables A-E are minor, G-I are major
-                    switch (result.group(1)) {
-                        case "A":
-                            if (!hasRarity) {
-                                tmpRarity = Rarity.common;
-                                hasRarity = true;
-                            }
-                        case "B":
-                            if (!hasRarity) {
-                                tmpRarity = Rarity.UNCOMMON;
-                                hasRarity = true;
-                            }
-                        case "C":
-                            if (!hasRarity) {
-                                tmpRarity = Rarity.RARE;
-                                hasRarity = true;
-                            }
-                        case "D":
-                            if (!hasRarity) {
-                                tmpRarity = Rarity.VERY_RARE;
-                                hasRarity = true;
-                            }
-                        case "E":
-                            if (!hasRarity) {
-                                tmpRarity = Rarity.LEGENDARY;
-                                hasRarity = true;
-                            }
-                            if (!hasClassification) {
-                                tmpClassification = Classification.MINOR;
-                                hasClassification = true;
-                            }
-                            break;
-                        case "F":
-                            if (!hasRarity) {
-                                tmpRarity = Rarity.UNCOMMON;
-                                hasRarity = true;
-                            }
-                        case "G":
-                            if (!hasRarity) {
-                                tmpRarity = Rarity.RARE;
-                                hasRarity = true;
-                            }
-                        case "H":
-                            if (!hasRarity) {
-                                tmpRarity = Rarity.VERY_RARE;
-                                hasRarity = true;
-                            }
-                        case "I":
-                            if (!hasRarity) {
-                                tmpRarity = Rarity.LEGENDARY;
-                                hasRarity = true;
-                            }
-                            if (!hasClassification) {
-                                tmpClassification = Classification.MAJOR;
-                                hasClassification = true;
-                            }
-                            break;
-                    }
-                }
-            }
-
-            if (!hasClassification && hasRarity) {
-                if (tmpRarity == Rarity.LEGENDARY) {
-                    tmpClassification = Classification.MAJOR;
-                    hasClassification = true;
-                } else if (tmpRarity == Rarity.RARE || tmpRarity == Rarity.VERY_RARE) { // rare or very rare
-                    if (type.isConsumable()) {
-                        tmpClassification = Classification.MINOR;
-                        hasClassification = true;
-                    } else {
-                        tmpClassification = Classification.MAJOR;
-                        hasClassification = true;
-                    }
-                } else if (tmpRarity == Rarity.UNCOMMON || tmpRarity == Rarity.common) {
-                    tmpClassification = Classification.MINOR;
-                    hasClassification = true;
-                }
-            }
-
-            this.rarity = tmpRarity;
-            this.classification = tmpClassification;
-            this.isMagic = type.canBeMagic() && magic;
+            this.rarity = Rarity.find(detail);
+            this.classification = Classification.find(detail);
+            this.isMagic = magic;
         }
 
         public boolean hasTag() {
@@ -303,20 +201,6 @@ public class ItemType implements BaseType {
         }
 
         String updateDetails(String detail) {
-            if (hasTag()) {
-                detail = detail.replaceAll("(, )?(major|minor),?", "")
-                        .replaceAll("(legendary|very rare|rare|uncommon|common),?", "").trim();
-
-                StringBuilder builder = new StringBuilder();
-                builder.append(classification);
-                if (rarity != Rarity.NONE) {
-                    builder.append(", ").append(rarity);
-                }
-                if (!detail.isBlank()) {
-                    builder.append(", ").append(detail);
-                }
-                detail = builder.toString();
-            }
             return detail;
         }
 

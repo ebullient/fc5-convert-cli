@@ -25,7 +25,7 @@ class ItemTypeTest extends ParsingTestBase {
         Assertions.assertAll(
                 () -> assertEquals("Jug", item.name),
                 () -> assertEquals(ItemEnum.GEAR, item.type),
-                () -> assertEquals("adventuring gear", item.detail),
+                () -> assertEquals("Adventuring gear", item.detail),
                 () -> assertEquals(4d, item.weight),
                 () -> assertEquals(0.02, item.cost),
                 () -> assertTrue(textContains(item.text, "A jug holds")));
@@ -33,7 +33,7 @@ class ItemTypeTest extends ParsingTestBase {
         String content = templates.renderItem(item);
         Assertions.assertAll(
                 () -> assertContains(content, "# Jug"),
-                () -> assertContains(content, "adventuring gear"),
+                () -> assertContains(content, "Adventuring gear"),
                 () -> assertContains(content, "item/gear"),
                 () -> assertContains(content, "aliases: ['Jug']"));
 
@@ -52,7 +52,7 @@ class ItemTypeTest extends ParsingTestBase {
                 () -> assertEquals("Lance", item.name),
                 () -> assertEquals(ItemEnum.MELEE_WEAPON, item.type),
                 () -> assertEquals(true, item.magicItem.isMagic),
-                () -> assertEquals("weapon (martial melee)", item.detail),
+                () -> assertEquals("Weapon (Martial melee)", item.detail),
                 () -> assertEquals(6d, item.weight),
                 () -> assertEquals(10.0, item.cost),
                 () -> assertEquals("1d12", item.dmg1.textContent),
@@ -63,7 +63,7 @@ class ItemTypeTest extends ParsingTestBase {
         String content = templates.renderItem(item);
         Assertions.assertAll(
                 () -> assertContains(content, "# Lance"),
-                () -> assertContains(content, "weapon (martial melee)"),
+                () -> assertContains(content, "Weapon (Martial melee)"),
                 () -> assertContains(content, "item/weapon/martial/melee"),
                 () -> assertContains(content, "Special: You have disadvantage"),
                 () -> assertContains(content, "aliases: ['Lance']"));
@@ -96,24 +96,24 @@ class ItemTypeTest extends ParsingTestBase {
                 spikedarmor = true;
                 assertContains(content, "item/armor/medium");
                 assertContains(content, "item/major");
-                assertContains(content, "*major, legendary, armor (medium)*");
+                assertContains(content, "*Armor (medium), major, legendary*");
                 assertContains(content, "**Base Armor Class**: 14 + DEX (max of +2)");
                 assertContains(content, "- **Bonus**: AC +3");
             } else if ("Double-Bladed Scimitar of Vengeance".equals(item.name)) {
                 scimitar = true;
                 assertContains(content, "item/weapon/martial/melee");
                 assertContains(content, "item/major/uncommon");
-                assertContains(content, "*major, uncommon, cursed, weapon (martial melee)*");
+                assertContains(content, "*Weapon (Martial melee), major, uncommon, Cursed item*");
             } else if ("Carpet of Flying, 6 ft. × 9 ft.".equals(item.name)) {
                 carpet = true;
                 assertContains(content, "item/wondrous");
                 assertContains(content, "item/major");
-                assertContains(content, "*major, wondrous item*");
+                assertContains(content, "*Wondrous item, major*");
             } else if ("Carrion Crawler Mucus".equals(item.name)) {
                 poison = true;
                 assertContains(content, "item/gear/poison");
                 assertContains(content, "item/major");
-                assertContains(content, "*major, adventuring gear, poison*");
+                assertContains(content, "*Adventuring gear, major, Poison*");
             }
         }
 
@@ -129,7 +129,7 @@ class ItemTypeTest extends ParsingTestBase {
         Assertions.assertAll(
                 () -> assertEquals("Longsword of Life Stealing", longsword.name),
                 () -> assertEquals(ItemEnum.MELEE_WEAPON, longsword.type),
-                () -> assertEquals("major, rare, weapon (martial melee)", longsword.detail),
+                () -> assertEquals("Weapon (Martial melee), major, rare", longsword.detail),
                 () -> assertEquals(3d, longsword.weight),
                 () -> assertTrue(textContains(longsword.text, "Source:")),
                 () -> assertTrue(rollContains(longsword.roll, "3d6")),
@@ -140,7 +140,7 @@ class ItemTypeTest extends ParsingTestBase {
 
         Assertions.assertAll(
                 () -> assertContains(content, "# Longsword of Life Stealing"),
-                () -> assertContains(content, "major, rare, weapon (martial melee)"),
+                () -> assertContains(content, "Weapon (Martial melee), major, rare"),
                 () -> assertContains(content, "item/weapon/martial/melee"),
                 () -> assertContains(content, "aliases: ['Longsword of Life Stealing']"));
     }
@@ -149,7 +149,7 @@ class ItemTypeTest extends ParsingTestBase {
         Assertions.assertAll(
                 () -> assertEquals("Light Crossbow", crossbow.name),
                 () -> assertEquals(ItemEnum.RANGED_WEAPON, crossbow.type),
-                () -> assertEquals("weapon (simple ranged)", crossbow.detail),
+                () -> assertEquals("Weapon (Simple ranged)", crossbow.detail),
                 () -> assertEquals(5d, crossbow.weight),
                 () -> assertTrue(textContains(crossbow.text, "Source:")),
                 () -> assertEquals(25.0, crossbow.cost),
@@ -161,7 +161,7 @@ class ItemTypeTest extends ParsingTestBase {
 
         Assertions.assertAll(
                 () -> assertContains(content, "# Light Crossbow"),
-                () -> assertContains(content, "weapon (simple ranged)"),
+                () -> assertContains(content, "Weapon (Simple ranged)"),
                 () -> assertContains(content, "item/weapon/simple/ranged"),
                 () -> assertContains(content, "aliases: ['Light Crossbow']"));
     }

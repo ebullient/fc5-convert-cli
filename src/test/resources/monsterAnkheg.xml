@@ -1,45 +1,45 @@
 <compendium>
-  <monster>
+   <monster>
       <name>Ankheg</name>
-    <size>L</size>
-    <type>monstrosity</type>
-    <alignment>Unaligned</alignment>
-    <ac>14 (natural armor, 11 while prone)</ac>
-    <hp>39 (6d10+6)</hp>
-    <speed>walk 30 ft., burrow 10 ft.</speed>
-    <str>17</str>
-    <dex>11</dex>
-    <con>13</con>
-    <int>1</int>
-    <wis>13</wis>
-    <cha>6</cha>
-    <save></save>
-    <skill>Intimidation +2</skill>
-    <skill>History +1</skill>
-    <passive>11</passive>
-    <languages></languages>
-    <cr>2</cr>
-    <resist></resist>
-    <immune></immune>
-    <vulnerable></vulnerable>
-    <conditionImmune></conditionImmune>
-    <senses>darkvision 60 ft., tremorsense 60 ft.</senses>
-    <action>
-        <name>Bite</name>
-      <text>Melee Weapon Attack: +5 to hit, reach 5 ft., one target. 10 (2d6 + 3) slashing damage plus 3 (1d6) acid damage. If the target is a Large or smaller creature, it is grappled (escape DC 13). Until this grapple ends, the ankheg can bite only the grappled creature and has advantage on attack rolls to do so.</text>
-      <attack>Bite|+5|2d6+3</attack>
+      <size>L</size>
+      <type>monstrosity</type>
+      <alignment>Unaligned</alignment>
+      <ac>14 (natural armor, 11 while prone)</ac>
+      <hp>39 (6d10+6)</hp>
+      <speed>walk 30 ft., burrow 10 ft.</speed>
+      <str>17</str>
+      <dex>11</dex>
+      <con>13</con>
+      <int>1</int>
+      <wis>13</wis>
+      <cha>6</cha>
+      <save/>
+      <skill>Intimidation +2</skill>
+      <skill>History +1</skill>
+      <resist/>
+      <vulnerable/>
+      <immune/>
+      <conditionImmune/>
+      <senses>darkvision 60 ft., tremorsense 60 ft.</senses>
+      <passive>11</passive>
+      <languages/>
+      <cr>2</cr>
+      <action>
+         <name>Bite</name>
+         <text>Melee Weapon Attack: +5 to hit, reach 5 ft., one target. 10 (2d6 + 3) slashing damage plus 3 (1d6) acid damage. If the target is a Large or smaller creature, it is grappled (escape DC 13). Until this grapple ends, the ankheg can bite only the grappled creature and has advantage on attack rolls to do so.</text>
+         <attack>Bite|+5|2d6+3</attack>
       </action>
-    <action>
-        <name>Acid Spray (Recharge 6)</name>
-      <text>The ankheg spits acid in a line that is 30 feet long and 5 feet wide, provided that it has no creature grappled. Each creature in that line must make a DC 13 Dexterity saving throw, taking 10 (3d6) acid damage on a failed save, or half as much damage on a successful one.</text>
-      <attack>Acid Spray (Recharge 6)||3d6</attack>
+      <action>
+         <name>Acid Spray (Recharge 6)</name>
+         <text>The ankheg spits acid in a line that is 30 feet long and 5 feet wide, provided that it has no creature grappled. Each creature in that line must make a DC 13 Dexterity saving throw, taking 10 (3d6) acid damage on a failed save, or half as much damage on a successful one.</text>
+         <attack>Acid Spray (Recharge 6)||3d6</attack>
       </action>
-    <description>An ankheg resembles an enormous many-legged insect, its long antennae twitching in response to any movement around it. Its legs end in sharp hooks adapted for burrowing and grasping its prey, and its powerful mandibles can snap a small tree in half.
+      <description>An ankheg resembles an enormous many-legged insect, its long antennae twitching in response to any movement around it. Its legs end in sharp hooks adapted for burrowing and grasping its prey, and its powerful mandibles can snap a small tree in half.
 Lurkers in the Earth. The ankheg uses its powerful mandibles to dig winding tunnels deep beneath the ground. When it hunts, an ankheg burrows upward, waiting below the surface until its antennae detect movement from above. Then it bursts from the earth and seizes prey in its mandibles, crushing and grinding while it secretes acidic digestive enzymes. These enzymes help dissolve a victim for easy swallowing, but the ankheg can also squirt acid to take down foes.
 Bane of Field and Forest. Although ankhegs receive a certain portion of their nutrients from the soil through which they burrow, they must supplement their diet with fresh meat. Pastures teeming with grazing livestock and forests rife with game are an ankheg's prime hunting grounds. Ankhegs are thus the bane of farmers and rangers everywhere.
 Earthen Tunnels. As it burrows through earth, the ankheg leaves a narrow, partially collapsed tunnel in its wake. In these tunnels, one might find the remnants of molted ankheg chitin, hatched ankheg eggs, or the grisly remains of ankheg victims, including coins or other treasures scattered during the creature's attack.
 Elemental Spirit in Material Form. The construction of a golem begins with the building of its body, requiring great command of the craft of sculpting, stonecutting, ironworking, or surgery. Sometimes a golem's creator is the master of the art, but often the individual who desires a golem must enlist master artisans to do the work.
 Source: Monster Manual p. 21, Princes of the Apocalypse, Waterdeep: Dragon Heist, Ghosts of Saltmarsh, Essentials Kit: Dragon of Icespire Peak, Baldur's Gate: Descent Into Avernus</description>
-    <environment>grassland, forest</environment>
-  </monster>
+      <environment>grassland, forest</environment>
+   </monster>
 </compendium>

@@ -1,15 +1,17 @@
 package dev.ebullient.fc5.data;
 
+import java.util.Locale;
+
 import io.quarkus.qute.TemplateData;
 
 /**
  * <p>
  * Java class for
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
  * <p>
- * 
+ *
  * <pre>
  * &lt;simplethis name="itemEnum">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
@@ -32,7 +34,7 @@ import io.quarkus.qute.TemplateData;
  *   &lt;/restriction>
  * &lt;/simplethis>
  * </pre>
- * 
+ *
  */
 @TemplateData
 public enum ItemEnum implements ConvertedEnumType {
@@ -125,11 +127,11 @@ public enum ItemEnum implements ConvertedEnumType {
             tag.append(longName.replace(" armor", ""));
         } else if (isWeapon()) {
             tag.append("/weapon/");
-            tag.append(detail.contains("martial") ? "martial/" : "simple/");
+            tag.append(detail.toLowerCase(Locale.ROOT).contains("martial") ? "martial/" : "simple/");
             tag.append(this == RANGED_WEAPON ? "ranged" : "melee");
         } else if (isGear()) {
             tag.append("/gear");
-            if (detail.contains("poison")) {
+            if (detail.toLowerCase(Locale.ROOT).contains("poison")) {
                 tag.append("/poison");
             }
         } else if (isWondrousItem()) {
