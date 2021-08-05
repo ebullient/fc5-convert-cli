@@ -39,7 +39,7 @@ public class ConvertCli implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public Integer call() {
         return CommandLine.ExitCode.OK;
     }
 }

@@ -25,7 +25,7 @@ public enum SkillEnum implements SkillOrAbility {
     Survival("Survival"),
     None("None");
 
-    final static List<String> allXmlNames = Arrays.asList(SkillEnum.values()).stream()
+    static final List<String> allXmlNames = Arrays.asList(SkillEnum.values()).stream()
             .map(x -> x.getXmlValue().toLowerCase())
             .collect(Collectors.toList());
 

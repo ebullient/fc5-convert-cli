@@ -13,7 +13,7 @@ import javax.inject.Inject;
 import dev.ebullient.fc5.Templates;
 
 public class ParsingTestBase {
-    final static Path output = Paths.get(System.getProperty("user.dir")).toAbsolutePath().resolve("target");
+    static final Path output = Paths.get(System.getProperty("user.dir")).toAbsolutePath().resolve("target");
 
     protected CompendiumXmlReader reader = new CompendiumXmlReader();
 

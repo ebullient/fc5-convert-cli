@@ -90,12 +90,12 @@ public class CompendiumXmlReader {
             }
         }
 
-        public void characters(XMLStreamReader reader) throws Exception {
+        public void characters(XMLStreamReader reader) {
             String textString = reader.getText().trim();
             content.add(textString);
         }
 
-        public void endElement(XMLStreamReader reader, Deque<ParsingContext> contextStack) throws Exception {
+        public void endElement(XMLStreamReader reader, Deque<ParsingContext> contextStack) {
             ParsingContext context = contextStack.peek();
             if (context == null) {
                 ignoredItems.add(name); // e.g. compendium element itself
@@ -129,11 +129,11 @@ public class CompendiumXmlReader {
         }
 
         @Override
-        public void characters(XMLStreamReader reader) throws Exception {
+        public void characters(XMLStreamReader reader) {
         }
 
         @Override
-        public void endElement(XMLStreamReader reader, Deque<ParsingContext> contextStack) throws Exception {
+        public void endElement(XMLStreamReader reader, Deque<ParsingContext> contextStack) {
             contextStack.pop(); // pop this nested context
             ParsingContext parentContext = contextStack.peek();
             if (TOP_LEVEL_ELEMENTS.contains(name)) {
@@ -158,7 +158,7 @@ public class CompendiumXmlReader {
         }
 
         @Override
-        public void endElement(XMLStreamReader reader, Deque<ParsingContext> contextStack) throws Exception {
+        public void endElement(XMLStreamReader reader, Deque<ParsingContext> contextStack) {
             contextStack.pop(); // pop this nested context
             ParsingContext parentContext = contextStack.peek();
 
@@ -176,7 +176,7 @@ public class CompendiumXmlReader {
         }
 
         @Override
-        public void endElement(XMLStreamReader reader, Deque<ParsingContext> contextStack) throws Exception {
+        public void endElement(XMLStreamReader reader, Deque<ParsingContext> contextStack) {
             contextStack.pop(); // pop this nested context
             ParsingContext parentContext = contextStack.peek();
             parentContext.put(name, new Autolevel(myElements));

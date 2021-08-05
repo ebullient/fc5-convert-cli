@@ -31,7 +31,7 @@ public enum AbilityEnum implements SkillOrAbility {
     CHA("Charisma"),
     NONE("");
 
-    final static List<String> allShortNames = Arrays.asList(AbilityEnum.values()).stream()
+    static final List<String> allShortNames = Arrays.asList(AbilityEnum.values()).stream()
             .map(x -> x.name())
             .collect(Collectors.toList());
     final String longName;
