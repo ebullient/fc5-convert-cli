@@ -72,7 +72,7 @@ public class MonsterType implements BaseType {
         int charisma;
 
         private String toAbilityModifier(int value) {
-            int mod = (value - 10);
+            int mod = value - 10;
             if (mod % 2 != 0) {
                 mod -= 1; // round down
             }

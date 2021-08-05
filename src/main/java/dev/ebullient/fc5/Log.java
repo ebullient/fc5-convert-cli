@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import picocli.CommandLine.Help.ColorScheme;
 import picocli.CommandLine.Model.CommandSpec;
 
-public class Log {
+public final class Log {
     private Log() {
     }
 
@@ -13,8 +13,8 @@ public class Log {
 
     private static PrintWriter out = new PrintWriter(System.out);
     private static PrintWriter err = new PrintWriter(System.err);
-    private static boolean verbose = false;
-    private static ColorScheme colors = null;
+    private static boolean verbose;
+    private static ColorScheme colors;
 
     public static void prepareStreams(CommandSpec spec) {
         if (spec != null) {

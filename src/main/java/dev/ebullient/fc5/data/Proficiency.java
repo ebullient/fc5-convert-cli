@@ -21,7 +21,7 @@ public class Proficiency {
         if (textContent.trim().isBlank()) {
             this.skills = Collections.emptyList();
         } else {
-            this.skills = new ArrayList<SkillOrAbility>();
+            this.skills = new ArrayList<>();
             Arrays.asList(textContent.trim().split("\\s*,\\s*")).forEach(s -> {
                 if (SkillEnum.isSkill(s)) {
                     skills.add(SkillEnum.fromXmlValue(s));

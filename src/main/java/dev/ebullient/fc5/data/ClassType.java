@@ -158,7 +158,7 @@ public class ClassType implements BaseType {
         final Feature feature;
         String depth;
         String title;
-        boolean grouped = false;
+        boolean grouped;
         List<Section> children = Collections.emptyList();
 
         public Section(String depth, String title) {
