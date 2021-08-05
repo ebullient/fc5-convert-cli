@@ -41,6 +41,11 @@ I also use [Obsidian](https://obsidian.md) to keep track of my notes. The goal i
     java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar validate --help
     java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar validate -s FightClub5eXML/Utilities/collection.xsd FightClub5eXML/Collections/CoreRulebooks.xml
     ```
+    Using the alias installed above: 
+    ```
+    fc5-convert validate --help
+    fc5-convert validate -s FightClub5eXML/Utilities/collection.xsd FightClub5eXML/Collections/CoreRulebooks.xml
+    ```    
 
 3. Merge and transform the collected XML documents using XSLT 2.0 (a default xslt file is in src/main/resources):
     ```
@@ -49,9 +54,21 @@ I also use [Obsidian](https://obsidian.md) to keep track of my notes. The goal i
     ```
     This will create `target/CoreRulebooks-merged.xml`
 
+    Using the alias installed above: 
+    ```
+    fc5-convert transform --help
+    fc5-convert transform -o target -x '-merged' FightClub5eXML/Collections/CoreRulebooks.xml
+    ```    
+
 4. Convert the merged XML document to markdown (🚧 in progress 🚧). For testing/tooling around purposes, you can tool around with test files:
     ```
     java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar convert --help
     java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar convert -o target/reference target/reference src/test/resources/backgroundAcolyte.xml
     java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar convert -o target/reference target/CoreRulebooks-merged.xml
     ```
+    
+    Using the alias installed above: 
+    ```
+    fc5-convert convert --help
+    fc5-convert convert -o target/reference target/CoreRulebooks-merged.xml
+    ```    
