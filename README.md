@@ -39,18 +39,18 @@ I also use [Obsidian](https://obsidian.md) to keep track of my notes. The goal i
 2. Validate your Collection using the xsd: 
     ```
     java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar validate --help
-    java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar validate -s FightClub5eXML/Utilities/collection.xsd FightClub5eXML/Collections/CoreRulebooks.xml
+    java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar validate FightClub5eXML/Collections/CoreRulebooks.xml
     ```
     Using the alias installed above: 
     ```
     fc5-convert validate --help
-    fc5-convert validate -s FightClub5eXML/Utilities/collection.xsd FightClub5eXML/Collections/CoreRulebooks.xml
+    fc5-convert validate FightClub5eXML/Collections/CoreRulebooks.xml
     ```    
 
 3. Merge and transform the collected XML documents using XSLT 2.0 (a default xslt file is in src/main/resources):
     ```
     java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar transform --help
-    java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar transform -o target -x  '-merged' FightClub5eXML/Collections/CoreRulebooks.xml
+    java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar transform -o target -x '-merged' FightClub5eXML/Collections/CoreRulebooks.xml
     ```
     This will create `target/CoreRulebooks-merged.xml`
 
