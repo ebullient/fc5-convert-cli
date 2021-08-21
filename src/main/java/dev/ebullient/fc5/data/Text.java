@@ -44,11 +44,14 @@ public class Text {
                 if (!line.isBlank()) {
                     line = line
                             .replaceAll("•", "-")
-                            .replaceAll("- ([^:]+):", "- **$1:**");
+                            .replaceAll(" (DC [0-9]+ [A-Za-z]+) ", " ==$1== ")
+                            .replaceAll(" ([0-9d]+ ?\\([0-9d +]+\\)) ", " `$1` ")
+                            .replaceAll("((Melee|Ranged) Weapon Attack:)", "*$1*")
+                            .replaceAll("- ([^:]+?):", "- **$1:**");
 
                     // Find the short sentence-like headings. They are the first few words,
                     // always followed by a lot more text (after the period), and have at least
-                    // two capital letters 
+                    // two capital letters
                     int pos = line.indexOf('.');
                     if (pos > 0 && pos + 10 < line.length()) { // There are at least 10 characters following
                         String sentence = line.substring(0, pos);
@@ -58,7 +61,7 @@ public class Text {
                         // there is only one word, OR there are no more than 5 words with at least two capital letters
                         if (!sentence.contains(":")
                                 && (words.length == 1 || (words.length <= 5 && capitals >= 2))) {
-                            line = line.replaceAll("^(.+?\\.)", "**$1**");
+                            line = line.replaceAll("^(.+?\\.)", "**$1**").replaceAll("^\\*\\*- ", "- **");
                         }
                     }
                     i.set(line);
@@ -71,8 +74,8 @@ public class Text {
                     insertBlankLineAbove(i);
                 }
 
-                if (!listMode && !tableMode) {
-                    insertBlankLine(i, line);
+                if (!listMode && !tableMode && !line.isBlank()) {
+                    insertLine(i, "");
                 }
             }
 
@@ -107,7 +110,7 @@ public class Text {
                 insertLine(i, String.join("|", line.replaceAll("[^|]", "-")));
             }
         } else if (tableMode && tableMode != newTableMode) {
-            insertBlankLine(i, line);
+            insertBlankLineAbove(i);
         }
         return newTableMode;
     }
@@ -117,12 +120,6 @@ public class Text {
         // reset the cursors around the new line for later checks
         i.previous();
         i.next();
-    }
-
-    void insertBlankLine(ListIterator<String> i, String line) {
-        if (!line.isBlank()) {
-            insertLine(i, "");
-        }
     }
 
     void insertBlankLineAbove(ListIterator<String> i) {

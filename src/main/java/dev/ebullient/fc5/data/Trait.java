@@ -48,7 +48,7 @@ public class Trait {
     }
 
     public String getText() {
-        return String.join("\n", text.content);
+        return String.join("\n", text.content).trim();
     }
 
     public List<String> getAttack() {

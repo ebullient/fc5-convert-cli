@@ -33,8 +33,8 @@ aliases: ['{resource.name}']
 {#if resource.stealthPenalty }
 - **Stealth**: The wearer has disadvantage on Stealth (DEX) checks.
 {/if}
-- **Cost**: {#if resource.cost }{resource.cost} gp{#else}——{/if}
-- **Weight**: {#if resource.weight }{resource.weight} lbs.{#else}——{/if}
+- **Cost**: {#if resource.cost }{resource.cost} gp{#else}—{/if}
+- **Weight**: {#if resource.weight }{resource.weight} lbs.{#else}—{/if}
 
 {resource.text}
 

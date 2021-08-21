@@ -27,5 +27,4 @@ aliases: ['{resource.name}']
 {section.depth} {section.title}{#if section.level} (Level {section.level}){/if}
 
 {section.text}
-
 {/for}

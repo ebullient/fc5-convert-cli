@@ -145,7 +145,7 @@ public class MonsterType implements BaseType {
         conditionImmune = context.getOrDefault(name, "conditionImmune", "");
         senses = context.getOrDefault(name, "senses", "");
         passive = context.getOrDefault(name, "passive", 10);
-        languages = context.getOrDefault(name, "languages", "--");
+        languages = context.getOrDefault(name, "languages", "");
         cr = context.getOrDefault(name, "cr", "0");
         trait = context.getOrDefault(name, "trait", Collections.emptyList());
         action = context.getOrDefault(name, "action", Collections.emptyList());
@@ -279,7 +279,7 @@ public class MonsterType implements BaseType {
     }
 
     public String getDescription() {
-        return String.join("\n", description.content);
+        return String.join("\n", description.content).trim();
     }
 
     public String getEnvironment() {

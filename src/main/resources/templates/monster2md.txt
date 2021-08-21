@@ -1,5 +1,4 @@
 ---
-cssclass: statblock
 type: statblock
 tags:
 - statblock
@@ -8,6 +7,7 @@ tags:
 {/for}
 aliases: ['{resource.name}']
 ---
+```ad-statblock
 # {resource.name}
 *{resource.size} {resource.type}, {resource.alignment}*
 
@@ -19,35 +19,36 @@ aliases: ['{resource.name}']
 |:---:|:---:|:---:|:---:|:---:|:---:|
 |{resource.scores}|
 
-- **Skills** {#if resource.skillString }{resource.skillString}{#else}——{/if}
-- **Senses** {#if resource.senses }{resource.senses}{#else}——{/if}
-- **Languages** {#if resource.languages }{resource.languages}{#else}——{/if}
+- **Skills** {#if resource.skillString }{resource.skillString}{#else}—{/if}
+- **Senses** {#if resource.senses }{resource.senses}{#else}—{/if}, passive Perception {resource.passive}
+- **Languages** {#if resource.languages }{resource.languages}{#else}—{/if}
 - **Challenge** {resource.cr}
-
 {#if resource.trait}
+
 ## Traits
 {#for trait in resource.trait}
+
 ***{trait.name}.*** {trait.text}
-{/for}
-{/if}
-{#if resource.action}
+{/for}{/if}{#if resource.action}
+
 ## Actions
 {#for action in resource.action}
+
 ***{action.name}.*** {action.text}
-{/for}
-{/if}
-{#if resource.reaction}
+{/for}{/if}{#if resource.reaction}
+
 ## Reactions
 {#for reaction in resource.reaction}
+
 ***{reaction.name}.*** {reaction.text}
-{/for}
-{/if}
-{#if resource.legendary}
+{/for}{/if}{#if resource.legendary}
+
 ## Legendary Actions
 {#for legendary in resource.legendary}
-***{legendary.name}.*** {legendary.text}
-{/for}
-{/if}
+
+{#if legendary.text}{#if legendary.name}***{legendary.name}.*** {/if}{legendary.text}{#else}## {legendary.name}{/if}
+{/for}{/if}
+```
 
 ## Description
 
