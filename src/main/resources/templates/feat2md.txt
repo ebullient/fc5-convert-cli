@@ -1,6 +1,5 @@
 ---
-cssclass: ref-feat
-type: ref-feat
+cssclass: 5e-feat
 tags:
 {#for tag in resource.tags}
 - {tag}

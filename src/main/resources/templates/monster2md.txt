@@ -1,7 +1,6 @@
 ---
-type: statblock
+cssclass: 5e-monster
 tags:
-- statblock
 {#for tag in resource.tags}
 - {tag}
 {/for}

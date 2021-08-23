@@ -1,6 +1,7 @@
 package dev.ebullient.fc5.data;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -45,7 +46,7 @@ import io.quarkus.qute.TemplateData;
  */
 @TemplateData
 public class ClassType implements BaseType {
-    public static final String NONE = "——";
+    public static final String NONE = "—";
 
     final String name;
     final int hitDice;
@@ -73,8 +74,10 @@ public class ClassType implements BaseType {
         wealth = context.getOrDefault(name, "wealth", "");
     }
 
-    public List<Autolevel> getLevelFeatures() {
-        return autolevel;
+    public Collection<Feature> getLevelFeatures() {
+        return autolevel.stream()
+                .flatMap(x -> x.features.stream())
+                .collect(Collectors.toList());
     }
 
     public String getName() {
@@ -119,9 +122,9 @@ public class ClassType implements BaseType {
 
     public List<Section> getSortedLevelFeatures() {
         // Collect all of the autolevel features
-        List<Section> allSections = autolevel.stream()
-                .flatMap(x -> x.features.stream())
+        List<Section> allSections = getLevelFeatures().stream()
                 .map(x -> new Section(x))
+                .sorted(leveledAlphabeticalSort)
                 .collect(Collectors.toList());
 
         // Find named groups (to derive sections later), e.g.
@@ -156,6 +159,8 @@ public class ClassType implements BaseType {
     @TemplateData
     class Section {
         final Feature feature;
+        final int level;
+
         String depth;
         String title;
         boolean grouped;
@@ -166,12 +171,14 @@ public class ClassType implements BaseType {
             this.title = title;
             this.feature = null;
             this.grouped = true;
+            this.level = 0;
         }
 
         public Section(Feature feature) {
             this.feature = feature;
             this.depth = "";
-            this.title = feature.getName();
+            this.title = feature.name;
+            this.level = feature.level;
         }
 
         void addAll(List<Section> children) {
@@ -188,9 +195,10 @@ public class ClassType implements BaseType {
         boolean findFeatureGroups(List<Section> allSections, String depth) {
             this.depth = depth;
             List<Section> matches = allSections.stream()
-                    .filter(x -> x != this)
+                    .filter(x -> x != this && !x.grouped)
+                    .filter(x -> !x.title.toLowerCase().contains(" feature"))
                     .filter(x -> x.belongsTo(this.title))
-                    .peek(x -> x.grouped = true)
+                    .peek(x -> x.grouped = true) // indicate matching section is part of a group
                     .collect(Collectors.toList());
 
             if (!matches.isEmpty()) {
@@ -217,12 +225,12 @@ public class ClassType implements BaseType {
         }
 
         public String getLevel() {
-            return feature == null ? "" : "" + feature.level;
+            return level == 0 ? "" : "" + level;
         }
 
         public String getText() {
             if (feature != null) {
-                return feature.getText();
+                return feature.getText().replaceAll("\n## ", "\n" + depth + "# ");
             }
             return "";
         }
@@ -238,18 +246,26 @@ public class ClassType implements BaseType {
 
         @Override
         public String toString() {
-            return String.format("%s %s (grouped=%s, children=%s)",
-                    depth, title, grouped, children.size());
+            return String.format("%s %s (grouped=%s, children=%s, level=%s)",
+                    depth, title, grouped, children.size(), level);
         }
+
     }
+
+    public static Comparator<Feature> alphabeticalFeatureSort = new Comparator<>() {
+        @Override
+        public int compare(Feature o1, Feature o2) {
+            return o1.name.compareTo(o2.name);
+        }
+    };
 
     public static Comparator<Section> leveledAlphabeticalSort = new Comparator<>() {
         @Override
         public int compare(Section o1, Section o2) {
-            if (o1.feature.level == o2.feature.level) {
+            if (o1.level == o2.level) {
                 return o2.title.compareTo(o2.title);
             }
-            return o1.feature.level - o2.feature.level;
+            return o1.level - o2.level;
         }
     };
 }

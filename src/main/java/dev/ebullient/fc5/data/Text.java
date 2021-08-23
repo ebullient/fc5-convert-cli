@@ -24,7 +24,7 @@ public class Text {
         } else {
             List<String> collectedText = text.stream()
                     .filter(x -> !x.isBlank())
-                    .flatMap(x -> Arrays.asList(x.split("\n")).stream())
+                    .flatMap(x -> Arrays.asList(x.replaceAll("------\n", "").split("\n")).stream())
                     .map(x -> x.trim())
                     .collect(Collectors.toList());
             content = convertToMarkdown(collectedText);
@@ -44,24 +44,31 @@ public class Text {
                 if (!line.isBlank()) {
                     line = line
                             .replaceAll("•", "-")
-                            .replaceAll(" (DC [0-9]+ [A-Za-z]+) ", " ==$1== ")
-                            .replaceAll(" ([0-9d]+ ?\\([0-9d +]+\\)) ", " `$1` ")
+                            .replaceAll(" (DC [0-9]+( [A-Za-z]+)?)", " ==$1==")
+                            .replaceAll(" ([0-9]+ ?\\([0-9d +]+\\)) ", " `$1` ")
+                            .replaceAll(" ([1-9]+d[0-9]+([0-9+ ]+)?) ", " `$1` ")
                             .replaceAll("((Melee|Ranged) Weapon Attack:)", "*$1*")
                             .replaceAll("- ([^:]+?):", "- **$1:**");
 
-                    // Find the short sentence-like headings. They are the first few words,
-                    // always followed by a lot more text (after the period), and have at least
-                    // two capital letters
+                    // Find the short sentence-like headings. They contain few words,
+                    // either alone, or followed by a lot more text. If more than one word,
+                    // they have at least two capital letters
                     int pos = line.indexOf('.');
-                    if (pos > 0 && pos + 10 < line.length()) { // There are at least 10 characters following
+                    if (pos > 0) {
                         String sentence = line.substring(0, pos);
-                        String[] words = sentence.split(" ");
-                        int capitals = line.substring(0, pos).split("(?=\\p{Lu})").length;
-                        // the sentence does not contain a :, AND
-                        // there is only one word, OR there are no more than 5 words with at least two capital letters
-                        if (!sentence.contains(":")
-                                && (words.length == 1 || (words.length <= 5 && capitals >= 2))) {
-                            line = line.replaceAll("^(.+?\\.)", "**$1**").replaceAll("^\\*\\*- ", "- **");
+                        // These sentence headings do not contain a :
+                        // Either they are followed by at least 10 characters (more text), or stand alone.
+                        if (!sentence.contains(":") && !sentence.contains("|")
+                                && (pos + 10 < line.length() || pos + 1 == line.length())) {
+                            String[] words = sentence.split(" ");
+                            int capitals = line.substring(0, pos).split("(?=\\p{Lu})").length;
+                            if (words.length == 1 || (words.length <= 5 && capitals >= 2)) {
+                                if (pos + 1 == line.length() && !line.startsWith("-")) {
+                                    line = "## " + line.substring(0, line.length() - 1);
+                                } else {
+                                    line = line.replaceAll("^(.+?\\.)", "**$1**").replaceAll("^\\*\\*- ", "- **");
+                                }
+                            }
                         }
                     }
                     i.set(line);

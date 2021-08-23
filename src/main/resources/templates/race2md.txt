@@ -1,6 +1,5 @@
 ---
-cssclass: ref-race
-type: ref-race
+cssclass: 5e-race
 tags:
 {#for tag in resource.tags}
 - {tag}

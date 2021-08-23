@@ -1,6 +1,5 @@
 ---
-cssclass: ref-item
-type: ref-item
+cssclass: 5e-item
 tags:
 {#for tag in resource.tags}
 - {tag}

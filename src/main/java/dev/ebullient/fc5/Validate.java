@@ -20,7 +20,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
 
-@Command(name = "validate", mixinStandardHelpOptions = true, header = "Validate XML files against a schema definition")
+@Command(name = "validate", mixinStandardHelpOptions = true, header = "Validate XML files against a schema definition", requiredOptionMarker = '*')
 public class Validate implements Callable<Integer> {
 
     @Spec

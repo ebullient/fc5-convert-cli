@@ -68,6 +68,6 @@ public class Feature {
 
     @Override
     public String toString() {
-        return "FeatureType [name=" + name + "]";
+        return "FeatureType [name=" + name + ", level=" + level + "]";
     }
 }

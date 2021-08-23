@@ -1,6 +1,5 @@
 ---
-cssclass: ref-spell
-type: ref-spell
+cssclass: 5e-spell
 tags:
 {#for tag in resource.tags}
 - {tag}

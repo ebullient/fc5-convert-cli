@@ -1,6 +1,5 @@
 ---
-cssclass: ref-background
-type: ref-background
+cssclass: 5e-background
 tags:
 {#for tag in resource.tags}
 - {tag}
