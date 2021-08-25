@@ -197,6 +197,7 @@ public class ClassType implements BaseType {
             List<Section> matches = allSections.stream()
                     .filter(x -> x != this && !x.grouped)
                     .filter(x -> !x.title.toLowerCase().contains(" feature"))
+                    .filter(x -> !x.title.toLowerCase().contains(" improvement"))
                     .filter(x -> x.belongsTo(this.title))
                     .peek(x -> x.grouped = true) // indicate matching section is part of a group
                     .collect(Collectors.toList());
@@ -236,7 +237,7 @@ public class ClassType implements BaseType {
         }
 
         public boolean belongsTo(String prefix) {
-            return title.startsWith(prefix) && !title.equals(prefix);
+            return title.startsWith(prefix) && !title.equals(prefix) && title.charAt(prefix.length()) != '-';
         }
 
         public Stream<Section> flatten() {
