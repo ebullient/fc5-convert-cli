@@ -17,8 +17,8 @@ import picocli.CommandLine.Spec;
 
 @TopCommand
 @Command(name = "fc5-convert", mixinStandardHelpOptions = true, subcommands = {
-        Convert.class, Transform.class, Validate.class, Completion.class })
-public class ConvertCli implements Callable<Integer> {
+        Obsidian.class, Transform.class, Validate.class, Completion.class })
+public class Fc5ConvertCli implements Callable<Integer> {
 
     List<Path> input;
 

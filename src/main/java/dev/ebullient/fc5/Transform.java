@@ -39,7 +39,7 @@ public class Transform implements Callable<Integer> {
     private CommandSpec spec;
 
     @ParentCommand
-    ConvertCli parent;
+    Fc5ConvertCli parent;
 
     @Option(names = "-t", description = "XSLT file")
     void setXsltFile(File xsltFile) {

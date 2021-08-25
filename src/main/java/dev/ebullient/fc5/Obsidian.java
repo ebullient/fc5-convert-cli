@@ -20,21 +20,21 @@ import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
 
-@Command(name = "convert", mixinStandardHelpOptions = true, header = "Create Markdown references from XML file")
-public class Convert implements Callable<Integer> {
+@Command(name = "obsidian", mixinStandardHelpOptions = true, header = "Create Obsidian.md Markdown references from XML file")
+public class Obsidian implements Callable<Integer> {
 
     @Spec
     CommandSpec spec;
 
     @ParentCommand
-    ConvertCli parent;
+    Fc5ConvertCli parent;
 
     final Templates tpl;
     final CompendiumXmlReader reader;
 
     Path output;
 
-    Convert(Templates tpl) {
+    Obsidian(Templates tpl) {
         this.tpl = tpl;
         reader = new CompendiumXmlReader();
     }

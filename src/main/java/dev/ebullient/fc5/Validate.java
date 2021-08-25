@@ -27,7 +27,7 @@ public class Validate implements Callable<Integer> {
     private CommandSpec spec;
 
     @ParentCommand
-    ConvertCli parent;
+    Fc5ConvertCli parent;
 
     @CommandLine.ArgGroup(exclusive = true)
     ValidationSource validationSource = new ValidationSource();
