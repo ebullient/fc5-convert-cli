@@ -31,7 +31,7 @@ public class Fc5ConvertTest {
     @Test
     @Launch({ "--help" })
     void testCommandHelp(LaunchResult result) {
-        System.out.println(result.getOutput());
+        result.echoSystemOut();
         Assertions.assertTrue(result.getOutput().contains("Usage: fc5-convert [-hvV] [<input>...] [COMMAND]"),
                 "Result should contain the CLI help message. Found: " + dump(result));
     }
@@ -39,7 +39,7 @@ public class Fc5ConvertTest {
     @Test
     @Launch({ "obsidian", "--help" })
     void testObsidianCommandHelp(LaunchResult result) {
-        System.out.println(result.getOutput());
+        result.echoSystemOut();
         Assertions.assertTrue(result.getOutput().contains("Usage: fc5-convert obsidian [-hvV] -o=<outputPath> [<input>...]"),
                 "Result should contain the CLI help message. Found: " + dump(result));
     }
@@ -47,7 +47,7 @@ public class Fc5ConvertTest {
     @Test
     @Launch({ "transform", "--help" })
     void testTransformCommandHelp(LaunchResult result) {
-        System.out.println(result.getOutput());
+        result.echoSystemOut();
         Assertions.assertTrue(
                 result.getOutput().contains("Usage: fc5-convert transform [-hvV] -o=<outputPath> [-t=<xsltFile>]"),
                 "Result should contain the CLI help message. Found: " + dump(result));
@@ -56,10 +56,19 @@ public class Fc5ConvertTest {
     @Test
     @Launch({ "validate", "--help" })
     void testValidateCommandHelp(LaunchResult result) {
-        System.out.println(result.getOutput());
+        result.echoSystemOut();
         Assertions.assertTrue(
                 result.getOutput().contains("Usage: fc5-convert validate [-hvV] [--collection | [--compendium] |"),
                 "Result should contain the CLI help message. Found: " + dump(result));
+    }
+
+    @Test
+    @Launch({ "validate", "--compendium", "src/test/resources/FC5-Compendium.xml" })
+    void testValidateXmlHelp(LaunchResult result) {
+        result.echoSystemOut();
+        // Assertions.assertTrue(
+        //         result.getOutput().contains("Usage: fc5-convert validate [-hvV] [--collection | [--compendium] |"),
+        //         "Result should contain the CLI help message. Found: " + dump(result));
     }
 
     @Test
