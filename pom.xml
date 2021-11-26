@@ -32,7 +32,7 @@
     </distributionManagement>
     <properties>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
-        <formatter-plugin.version>2.16.0</formatter-plugin.version>
+        <formatter-plugin.version>2.17.0</formatter-plugin.version>
         <github-slugify.version>2.4</github-slugify.version>
         <impsort-plugin.version>1.6.2</impsort-plugin.version>
         <maven.compiler.parameters>true</maven.compiler.parameters>
