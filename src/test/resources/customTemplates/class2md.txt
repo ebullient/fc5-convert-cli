@@ -1,0 +1,30 @@
+---
+cssclass: 5e-class
+tags:
+- CUSTOM
+{#for tag in resource.tags}
+- {tag}
+{/for}
+aliases: ['{resource.name}']
+---
+# {resource.name}
+
+## Hit Points
+
+- **Hit Dice**: 1d{resource.hitDice} per {resource.name} level
+- **Hit Points at First Level:** {resource.hitDice} + CON
+- **Hit Points at Higher Levels:** {resource.hitRollAverage}(1d{resource.hitDice}) + CON
+
+## Proficiencies
+
+- **Armor**: {resource.armor}
+- **Weapons**: {resource.weapons}
+- **Tools**: {resource.tools}
+- **Saving Throws**: {resource.savingThrows}
+- **Skills**: {resource.numSkills} of {resource.skills}
+
+{#for section in resource.sortedLevelFeatures}
+{section.depth} {section.title}{#if section.level} (Level {section.level}){/if}
+
+{section.text}
+{/for}

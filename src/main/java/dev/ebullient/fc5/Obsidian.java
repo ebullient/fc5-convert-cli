@@ -13,6 +13,7 @@ import dev.ebullient.fc5.data.CompendiumXmlReader;
 import dev.ebullient.fc5.data.MarkdownWriter;
 import dev.ebullient.fc5.data.MarkdownWriter.WrappedIOException;
 import picocli.CommandLine;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -20,7 +21,7 @@ import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
 
-@Command(name = "obsidian", mixinStandardHelpOptions = true, header = "Create Obsidian.md Markdown references from XML file")
+@Command(name = "obsidian", mixinStandardHelpOptions = true, header = "Create Obsidian.md Markdown references from XML file", sortOptions = false)
 public class Obsidian implements Callable<Integer> {
 
     @Spec
@@ -48,10 +49,17 @@ public class Obsidian implements Callable<Integer> {
         }
     }
 
+    @ArgGroup(exclusive = false)
+    TemplatePaths paths = new TemplatePaths();
+
     @Override
     public Integer call() throws Exception {
         Log.prepareStreams(spec);
         boolean allOk = true;
+
+        Log.outPrintf("Defined templates: %s", paths.customTemplates.toString());
+        tpl.setCustomTemplates(paths);
+        Log.outPrintf("Defined templates: %s", tpl);
 
         MarkdownWriter writer = new MarkdownWriter(output, tpl);
         Log.outPrintln("💡 Writing files to " + output);

@@ -1,0 +1,12 @@
+---
+cssclass: 5e-feat
+tags:
+- CUSTOM
+{#for tag in resource.tags}
+- {tag}
+{/for}
+aliases: ['{resource.name}']
+---
+# {resource.name}
+
+{resource.text}

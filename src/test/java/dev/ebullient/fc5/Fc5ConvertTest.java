@@ -21,6 +21,7 @@ import io.quarkus.test.junit.main.QuarkusMainTest;
 public class Fc5ConvertTest {
     final static Path PROJECT_PATH = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
     final static Path OUTPUT_PATH = PROJECT_PATH.resolve("target/fc5-convert");
+    final static Path CUSTOM_OUTPUT_PATH = PROJECT_PATH.resolve("target/fc5-convert-custom");
 
     @Test
     @Launch({})
@@ -40,7 +41,7 @@ public class Fc5ConvertTest {
     @Launch({ "obsidian", "--help" })
     void testObsidianCommandHelp(LaunchResult result) {
         result.echoSystemOut();
-        Assertions.assertTrue(result.getOutput().contains("Usage: fc5-convert obsidian [-hvV] -o=<outputPath> [<input>...]"),
+        Assertions.assertTrue(result.getOutput().contains("Usage: fc5-convert obsidian [-hvV] -o=<outputPath>"),
                 "Result should contain the CLI help message. Found: " + dump(result));
     }
 
@@ -95,6 +96,35 @@ public class Fc5ConvertTest {
                 OUTPUT_PATH.resolve("FC5-Collection-merged.xml").toString());
 
         Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
+    }
+
+    @Test
+    void testCustomBackgroundTemplate(TestInfo info, QuarkusMainLauncher launcher) throws IOException {
+        LaunchResult result = launcher.launch("obsidian", "-o", CUSTOM_OUTPUT_PATH.toString(),
+                "--background", "src/test/resources/customTemplates/background2md.txt",
+                "--class", "src/test/resources/customTemplates/class2md.txt",
+                "--feat", "src/test/resources/customTemplates/feat2md.txt",
+                "--item", "src/test/resources/customTemplates/item2md.txt",
+                "--monster", "src/test/resources/customTemplates/monster2md.txt",
+                "--race", "src/test/resources/customTemplates/race2md.txt",
+                "--spell", "src/test/resources/customTemplates/spell2md.txt",
+                "src/test/resources/FC5-Compendium.xml");
+
+        Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
+        Assertions.assertTrue(Files.readString(CUSTOM_OUTPUT_PATH.resolve("backgrounds/acolyte.md")).contains("CUSTOM"),
+                "File should contain CUSTOM");
+        Assertions.assertTrue(Files.readString(CUSTOM_OUTPUT_PATH.resolve("classes/barbarian.md")).contains("CUSTOM"),
+                "File should contain CUSTOM");
+        Assertions.assertTrue(Files.readString(CUSTOM_OUTPUT_PATH.resolve("feats/grappler.md")).contains("CUSTOM"),
+                "File should contain CUSTOM");
+        Assertions.assertTrue(Files.readString(CUSTOM_OUTPUT_PATH.resolve("items/abacus.md")).contains("CUSTOM"),
+                "File should contain CUSTOM");
+        Assertions.assertTrue(Files.readString(CUSTOM_OUTPUT_PATH.resolve("monsters/aboleth.md")).contains("CUSTOM"),
+                "File should contain CUSTOM");
+        Assertions.assertTrue(Files.readString(CUSTOM_OUTPUT_PATH.resolve("races/dragonborn.md")).contains("CUSTOM"),
+                "File should contain CUSTOM");
+        Assertions.assertTrue(Files.readString(CUSTOM_OUTPUT_PATH.resolve("spells/acid-arrow.md")).contains("CUSTOM"),
+                "File should contain CUSTOM");
     }
 
     public static void deleteDir(Path path) {
