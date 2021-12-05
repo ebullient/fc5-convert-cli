@@ -46,6 +46,6 @@ public class FeatTypeTest extends ParsingTestBase {
         Assertions.assertAll(
                 () -> assertContains(content, "# Defensive Duelist"),
                 () -> assertContains(content, "When you are wielding a finesse weapo"),
-                () -> assertContains(content, "aliases: ['Defensive Duelist']"));
+                () -> assertContains(content, "aliases: [\"Defensive Duelist\"]"));
     }
 }

@@ -4,7 +4,7 @@ tags:
 {#for tag in resource.tags}
 - {tag}
 {/for}
-aliases: ['{resource.name}']
+aliases: ["{resource.name}"]
 ---
 # {resource.name}
 *{resource.level}, {resource.school}{#if resource.ritual} (ritual){/if}*

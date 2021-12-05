@@ -65,7 +65,7 @@ public class MonsterTypeTest extends ParsingTestBase {
                 () -> assertContains(content, "*Large monstrosity, Unaligned*"),
                 () -> assertContains(content, "|17 (+3)|11 (+0)|13 (+1)|1 (-5)|13 (+1)|6 (-2)|"),
                 () -> assertContains(content, "***Acid Spray (Recharge 6).*** The ankheg spits"),
-                () -> assertContains(content, "aliases: ['Ankheg']"),
+                () -> assertContains(content, "aliases: [\"Ankheg\"]"),
                 () -> assertContains(content, "**Lurkers in the Earth.**"),
                 () -> assertContains(content, "**Bane of Field and Forest.**"),
                 () -> assertContains(content, "**Earthen Tunnels.**"),

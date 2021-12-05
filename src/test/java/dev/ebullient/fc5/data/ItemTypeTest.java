@@ -35,7 +35,7 @@ class ItemTypeTest extends ParsingTestBase {
                 () -> assertContains(content, "# Jug"),
                 () -> assertContains(content, "Adventuring gear"),
                 () -> assertContains(content, "item/gear"),
-                () -> assertContains(content, "aliases: ['Jug']"));
+                () -> assertContains(content, "aliases: [\"Jug\"]"));
 
     }
 
@@ -66,7 +66,7 @@ class ItemTypeTest extends ParsingTestBase {
                 () -> assertContains(content, "Weapon (Martial melee)"),
                 () -> assertContains(content, "item/weapon/martial/melee"),
                 () -> assertContains(content, "Special: You have disadvantage"),
-                () -> assertContains(content, "aliases: ['Lance']"));
+                () -> assertContains(content, "aliases: [\"Lance\"]"));
 
     }
 
@@ -142,7 +142,7 @@ class ItemTypeTest extends ParsingTestBase {
                 () -> assertContains(content, "# Longsword of Life Stealing"),
                 () -> assertContains(content, "Weapon (Martial melee), major, rare"),
                 () -> assertContains(content, "item/weapon/martial/melee"),
-                () -> assertContains(content, "aliases: ['Longsword of Life Stealing']"));
+                () -> assertContains(content, "aliases: [\"Longsword of Life Stealing\"]"));
     }
 
     private void validateCrossbow(ItemType crossbow, String content) {
@@ -163,7 +163,7 @@ class ItemTypeTest extends ParsingTestBase {
                 () -> assertContains(content, "# Light Crossbow"),
                 () -> assertContains(content, "Weapon (Simple ranged)"),
                 () -> assertContains(content, "item/weapon/simple/ranged"),
-                () -> assertContains(content, "aliases: ['Light Crossbow']"));
+                () -> assertContains(content, "aliases: [\"Light Crossbow\"]"));
     }
 
     void assertContainsProperties(List<PropertyEnum> properties, String origXml) {
