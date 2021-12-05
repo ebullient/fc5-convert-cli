@@ -91,8 +91,7 @@ public class CompendiumXmlReader {
         }
 
         public void characters(XMLStreamReader reader) {
-            String textString = reader.getText().trim();
-            content.add(textString);
+            content.add(reader.getText());
         }
 
         public void endElement(XMLStreamReader reader, Deque<ParsingContext> contextStack) {
@@ -216,7 +215,7 @@ public class CompendiumXmlReader {
     }
 
     String flatten(List<String> content) {
-        return String.join("\n", content);
+        return String.join("", content);
     }
 
     Boolean parseBoolean(String value) {

@@ -62,6 +62,10 @@ public class BackgroundTypeTest extends ParsingTestBase {
                 () -> assertContains(content, "# Acolyte"),
                 () -> assertContains(content, "**Skill Proficiencies**"),
                 () -> assertContains(content, "## Description"),
-                () -> assertContains(content, "|---|------------------|"));
+                () -> assertContains(content, "|---|------------------|"),
+                () -> assertContains(content, "\n\n|d8 | Personality Trait|"),
+                () -> assertContains(content, "\n\n|d6 | Ideal|"),
+                () -> assertContains(content, "\n\n|d6 | Bond|"),
+                () -> assertContains(content, "\n\n|d6 | Flaw|"));
     }
 }

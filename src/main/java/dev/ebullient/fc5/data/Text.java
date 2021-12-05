@@ -15,6 +15,7 @@ import io.quarkus.qute.TemplateData;
 @TemplateData
 public class Text {
     public static final Text NONE = new Text(Collections.emptyList());
+    static final Pattern diceRoll = Pattern.compile("^d[0-9]+ \\| .*");
 
     final List<String> content;
 
@@ -44,6 +45,7 @@ public class Text {
                 if (!line.isBlank()) {
                     line = line
                             .replaceAll("•", "-")
+                            .replaceAll("\\p{Zs}", " ") // normalize whitespace
                             .replaceAll(" (DC [0-9]+( [A-Za-z]+)?)", " ==$1==")
                             .replaceAll(" ([0-9]+ ?\\([0-9d +]+\\)) ", " `$1` ")
                             .replaceAll(" ([1-9]+d[0-9]+([0-9+ ]+)?) ", " `$1` ")
@@ -108,12 +110,14 @@ public class Text {
     boolean handleTable(ListIterator<String> i, String line, boolean tableMode) {
         boolean newTableMode = line.indexOf('|') >= 0;
         if (newTableMode) {
-            if (tableMode != newTableMode) {
+            boolean diceRollTable = diceRoll.matcher(line).matches();
+            boolean newHeaderRow = (tableMode != newTableMode) || (tableMode && diceRollTable);
+            if (newHeaderRow) {
                 insertBlankLineAbove(i);
             }
             line = "|" + line + "|";
             i.set(line);
-            if (tableMode != newTableMode) {
+            if (newHeaderRow) {
                 insertLine(i, String.join("|", line.replaceAll("[^|]", "-")));
             }
         } else if (tableMode && tableMode != newTableMode) {
