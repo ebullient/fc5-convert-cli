@@ -36,7 +36,7 @@ jobs:
       run: |
         echo "::set-output name=date::$(/bin/date -u "+%Y-%m")"
       shell: bash
-      
+
     - name: Cache Maven Repository
       id: cache-maven
       uses: actions/cache@v2
@@ -48,5 +48,6 @@ jobs:
     - name: Build with Maven
       run: mvn -B formatter:validate install --file pom.xml
 
-    - name: Build in native
-      run: mvn -B -Dnative verify --file pom.xml
+    # Temporarily disable native builds
+    # - name: Build in native
+    #  run: mvn -B -Dnative verify --file pom.xml
