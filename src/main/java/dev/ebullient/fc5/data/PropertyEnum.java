@@ -28,6 +28,7 @@ public enum PropertyEnum implements ConvertedEnumType {
     TWO_HANDED("Two-handed", "2H"),
     VERSATILE("Versatile", "V"),
     MARTIAL("Martial", "M"),
+    SILVERED("Silvered Weapons", "_"),
     UNKNOWN("Unknown", "");
 
     private final String longName;
@@ -49,7 +50,7 @@ public enum PropertyEnum implements ConvertedEnumType {
     }
 
     public String getMarkdownLink() {
-        return String.format("[%s](%s)", longName, "/reference/item/weapon-properties.md#" + longName);
+        return String.format("[%s](%s)", longName, "/rules/weapon-properties.md#" + longName);
     }
 
     public static PropertyEnum fromXmlType(String v) {

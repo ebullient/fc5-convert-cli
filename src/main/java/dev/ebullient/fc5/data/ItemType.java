@@ -3,6 +3,7 @@ package dev.ebullient.fc5.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -71,6 +72,9 @@ public class ItemType implements BaseType {
 
         type = ItemEnum.fromXmlValue(context.getOrDefault(name, "type", ""));
         properties = PropertyEnum.fromXmlValue(context.getOrDefault(name, "property", ""));
+        if (type.isWeapon() && name.toLowerCase(Locale.ROOT).contains("silvered")) {
+            properties.add(PropertyEnum.SILVERED);
+        }
 
         weight = context.getOrDefault(name, "weight", 0d);
         cost = context.getOrDefault(name, "value", 0d);
