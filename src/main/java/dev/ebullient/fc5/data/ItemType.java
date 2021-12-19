@@ -71,9 +71,12 @@ public class ItemType implements BaseType {
         name = context.getOrFail(context.owner, "name", String.class);
 
         type = ItemEnum.fromXmlValue(context.getOrDefault(name, "type", ""));
-        properties = PropertyEnum.fromXmlValue(context.getOrDefault(name, "property", ""));
         if (type.isWeapon() && name.toLowerCase(Locale.ROOT).contains("silvered")) {
+            properties = new ArrayList<>();
             properties.add(PropertyEnum.SILVERED);
+            properties.addAll(PropertyEnum.fromXmlValue(context.getOrDefault(name, "property", "")));
+        } else {
+            properties = PropertyEnum.fromXmlValue(context.getOrDefault(name, "property", ""));
         }
 
         weight = context.getOrDefault(name, "weight", 0d);
