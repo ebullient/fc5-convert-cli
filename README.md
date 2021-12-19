@@ -34,7 +34,7 @@ fc5-convert --help
 
 2. Look in the Collections directory of the Fight Club repository to see how collections work. Choose one of those or make your own.
 
-3. Validate the Collection (against a built-in XML schema)
+3. **Validate the Collection** (against a built-in XML schema)
     - Using the built jar: 
       ```shell
       java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar validate --help
@@ -46,7 +46,7 @@ fc5-convert --help
       fc5-convert validate FightClub5eXML/Collections/CoreRulebooks.xml
       ```    
 
-4. Merge and transform the collected XML documents using XSLT 2.0 (a default xslt file is in src/main/resources):
+4. **Merge and transform the collected XML documents** using XSLT 2.0 (a default xslt file is in src/main/resources):
     - Using the built jar: 
       ```shell
       java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar transform --help
@@ -60,7 +60,7 @@ fc5-convert --help
       
     This will create `target/CoreRulebooks-merged.xml`
 
-5. Convert the merged XML document to Obsidian markdown (basically CommonMark with YAML front-matter). For testing/tooling around purposes, you can tool around with test files:
+5. **Convert the merged XML document to Obsidian markdown** (basically CommonMark with YAML front-matter). For testing/tooling around purposes, you can tool around with test files:
     - Using the built jar: 
       ```shell
       java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian --help
@@ -73,17 +73,46 @@ fc5-convert --help
       fc5-convert obsidian -o target/reference target/CoreRulebooks-merged.xml
       ```    
 
-    This applicaiton uses the [Qute Templating Engine](https://quarkus.io/guides/qute). Simple customizations to markdown output can be achieved by copying a template from src/main/resources/templates, making the desired modifications, and then specifying that template on the command line.
+## Customizing Templates
+
+This applicaiton uses the [Qute Templating Engine](https://quarkus.io/guides/qute). Simple customizations to markdown output can be achieved by copying a template from src/main/resources/templates, making the desired modifications, and then specifying that template on the command line.
     
-    ```shell
-    java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian \
-      --background src/main/resources/templates/background2md.txt \
-      -o target/reference target/CoreRulebooks-merged.xml
-    ```
-    OR
-    ```shell
-    fc5-convert obsidian \
-      --background src/main/resources/templates/background2md.txt \
-      -o target/reference target/CoreRulebooks-merged.xml
-    ```    
-    
+```shell
+java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian \
+  --background src/main/resources/templates/background2md.txt \
+  -o target/reference target/CoreRulebooks-merged.xml
+```
+OR
+```shell
+fc5-convert obsidian \
+  --background src/main/resources/templates/background2md.txt \
+  -o target/reference target/CoreRulebooks-merged.xml
+```    
+
+### Monsters for obsidian-5e-statblocks plugin
+
+If you want monsters to be emitted in a format that the 5e statblocks plugin can use, use this variant: 
+
+````
+---
+cssclass: 5e-monster
+aliases: ['{resource.name}']
+tags:
+{#for tag in resource.tags}
+- {tag}
+{/for}
+---
+# {resource.name}
+{#if resource.description }
+
+{resource.description}
+{/if}
+
+```statblock
+{resource.5eStatblockYaml}
+```
+
+## Environment
+
+{resource.environment}
+````
