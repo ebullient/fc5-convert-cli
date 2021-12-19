@@ -1,0 +1,19 @@
+---
+cssclass: 5e-monster
+aliases: ['{resource.name}']
+tags:
+{#for tag in resource.tags}
+- {tag}
+{/for}
+---
+# {resource.name}
+{#if resource.description }
+{resource.description}
+{/if}
+```statblock
+{resource.5eStatblockYaml}
+```
+
+## Environment
+
+{resource.environment}

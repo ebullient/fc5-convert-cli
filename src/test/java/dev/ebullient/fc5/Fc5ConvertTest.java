@@ -22,6 +22,7 @@ public class Fc5ConvertTest {
     final static Path PROJECT_PATH = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
     final static Path OUTPUT_PATH = PROJECT_PATH.resolve("target/fc5-convert");
     final static Path CUSTOM_OUTPUT_PATH = PROJECT_PATH.resolve("target/fc5-convert-custom");
+    final static Path MIXED_OUTPUT_PATH = PROJECT_PATH.resolve("target/fc5-convert-mixed");
 
     @Test
     @Launch({})
@@ -99,13 +100,13 @@ public class Fc5ConvertTest {
     }
 
     @Test
-    void testCustomBackgroundTemplate(TestInfo info, QuarkusMainLauncher launcher) throws IOException {
+    void testCustomTemplates(TestInfo info, QuarkusMainLauncher launcher) throws IOException {
         LaunchResult result = launcher.launch("obsidian", "-o", CUSTOM_OUTPUT_PATH.toString(),
                 "--background", "src/test/resources/customTemplates/background2md.txt",
                 "--class", "src/test/resources/customTemplates/class2md.txt",
                 "--feat", "src/test/resources/customTemplates/feat2md.txt",
                 "--item", "src/test/resources/customTemplates/item2md.txt",
-                "--monster", "src/test/resources/customTemplates/monster2md.txt",
+                "--monster", "src/test/resources/customTemplates/monster2-5estatblock-md.txt",
                 "--race", "src/test/resources/customTemplates/race2md.txt",
                 "--spell", "src/test/resources/customTemplates/spell2md.txt",
                 "src/test/resources/FC5-Compendium.xml");
@@ -119,12 +120,32 @@ public class Fc5ConvertTest {
                 "File should contain CUSTOM");
         Assertions.assertTrue(Files.readString(CUSTOM_OUTPUT_PATH.resolve("items/abacus.md")).contains("CUSTOM"),
                 "File should contain CUSTOM");
-        Assertions.assertTrue(Files.readString(CUSTOM_OUTPUT_PATH.resolve("monsters/aboleth.md")).contains("CUSTOM"),
-                "File should contain CUSTOM");
+
+        String monster = Files.readString(CUSTOM_OUTPUT_PATH.resolve("monsters/aboleth.md"));
+        Assertions.assertTrue(monster.contains("```statblock"),
+                "File should contain ```statblock");
+        Assertions.assertFalse(monster.contains("{resource."),
+                "File should not contain unresolved resource strings");
+
         Assertions.assertTrue(Files.readString(CUSTOM_OUTPUT_PATH.resolve("races/dragonborn.md")).contains("CUSTOM"),
                 "File should contain CUSTOM");
         Assertions.assertTrue(Files.readString(CUSTOM_OUTPUT_PATH.resolve("spells/acid-arrow.md")).contains("CUSTOM"),
                 "File should contain CUSTOM");
+    }
+
+    @Test
+    void testMixedMonsterTemplate(TestInfo info, QuarkusMainLauncher launcher) throws IOException {
+        LaunchResult result = launcher.launch("obsidian", "-o", MIXED_OUTPUT_PATH.toString(),
+                "--monster", "src/test/resources/customTemplates/monster2-pieces.txt",
+                "src/test/resources/FC5-Compendium.xml");
+
+        String monster = Files.readString(MIXED_OUTPUT_PATH.resolve("monsters/aboleth.md"));
+        Assertions.assertTrue(monster.contains("```ad-statblock"),
+                "File should contain ```ad-statblock");
+        Assertions.assertFalse(monster.contains("{resource."),
+                "File should not contain unresolved resource strings");
+        Assertions.assertTrue(monster.contains("legendary_actions:"),
+                "File should contain statblock elements in the header metadata");
     }
 
     public static void deleteDir(Path path) {

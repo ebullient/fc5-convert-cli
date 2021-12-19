@@ -29,8 +29,8 @@ public class MonsterTypeTest extends ParsingTestBase {
                 () -> assertEquals(SizeEnum.LARGE, monster.size),
                 () -> assertEquals("monstrosity", monster.type),
                 () -> assertEquals("Unaligned", monster.alignment),
-                () -> assertEquals("14 (natural armor, 11 while prone)", monster.ac),
-                () -> assertEquals("39 (6d10+6)", monster.hp),
+                () -> assertEquals("14", monster.ac),
+                () -> assertEquals("39", monster.hp),
                 () -> assertEquals("walk 30 ft., burrow 10 ft.", monster.speed),
 
                 () -> assertEquals(17, monster.scores.strength),

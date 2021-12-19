@@ -8,6 +8,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+
 import com.github.slugify.Slugify;
 
 import dev.ebullient.fc5.Log;
@@ -26,6 +29,19 @@ public class MarkdownWriter {
             slugify = s;
         }
         return s;
+    }
+
+    private static Yaml yaml;
+
+    public static Yaml yaml() {
+        Yaml y = yaml;
+        if (y == null) {
+            DumperOptions options = new DumperOptions();
+            //            options.setDefaultScalarStyle(ScalarStyle.DOUBLE_QUOTED);
+            options.setPrettyFlow(true);
+            y = yaml = new Yaml(options);
+        }
+        return y;
     }
 
     final Templates templates;
