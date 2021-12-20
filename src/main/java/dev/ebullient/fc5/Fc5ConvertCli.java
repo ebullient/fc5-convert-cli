@@ -6,21 +6,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import io.quarkus.picocli.runtime.annotations.TopCommand;
+import javax.inject.Inject;
+
+import io.quarkus.runtime.QuarkusApplication;
+import io.quarkus.runtime.annotations.QuarkusMain;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.IFactory;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.ScopeType;
 import picocli.CommandLine.Spec;
 
-@TopCommand
+@QuarkusMain
 @Command(name = "fc5-convert", mixinStandardHelpOptions = true, subcommands = {
         Obsidian.class, Transform.class, Validate.class, Completion.class })
-public class Fc5ConvertCli implements Callable<Integer> {
+public class Fc5ConvertCli implements Callable<Integer>, QuarkusApplication {
 
     List<Path> input;
+
+    @Inject
+    IFactory factory;
 
     @Spec
     private CommandSpec spec;
@@ -41,5 +49,18 @@ public class Fc5ConvertCli implements Callable<Integer> {
     @Override
     public Integer call() {
         return CommandLine.ExitCode.OK;
+    }
+
+    private int executionStrategy(ParseResult parseResult) {
+        // Initialize log streams, carry on with the rest of the show
+        Log.prepareStreams(parseResult.commandSpec());
+        return new CommandLine.RunLast().execute(parseResult);
+    }
+
+    @Override
+    public int run(String... args) throws Exception {
+        return new CommandLine(this, factory)
+                .setExecutionStrategy(this::executionStrategy)
+                .execute(args);
     }
 }

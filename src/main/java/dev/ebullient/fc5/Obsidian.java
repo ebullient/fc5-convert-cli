@@ -54,7 +54,6 @@ public class Obsidian implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        Log.prepareStreams(spec);
         boolean allOk = true;
 
         Log.outPrintf("Defined templates: %s", paths.customTemplates.toString());

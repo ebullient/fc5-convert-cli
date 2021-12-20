@@ -65,7 +65,6 @@ public class Validate implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        Log.prepareStreams(spec);
         boolean allOk = true;
 
         final StreamSource xsdSource;
