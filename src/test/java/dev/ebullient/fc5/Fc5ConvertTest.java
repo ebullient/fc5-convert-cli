@@ -39,6 +39,14 @@ public class Fc5ConvertTest {
     }
 
     @Test
+    @Launch({ "csv", "--help" })
+    void testCsvCommandHelp(LaunchResult result) {
+        result.echoSystemOut();
+        Assertions.assertTrue(result.getOutput().contains("Usage: fc5-convert csv [-hvV] -o=<outputPath>"),
+                "Result should contain the CLI help message. Found: " + dump(result));
+    }
+
+    @Test
     @Launch({ "obsidian", "--help" })
     void testObsidianCommandHelp(LaunchResult result) {
         result.echoSystemOut();
@@ -90,13 +98,28 @@ public class Fc5ConvertTest {
         result = launcher.launch("validate", "--compendium", OUTPUT_PATH.resolve("FC5-Collection-merged.xml").toString());
         Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
 
-        result = launcher.launch("validate", "--compendium", OUTPUT_PATH.resolve("FC5-Collection-merged.xml").toString());
-        Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
+        // result = launcher.launch("csv", "-o", OUTPUT_PATH.toString(),
+        //         OUTPUT_PATH.resolve("FC5-Collection-merged.xml").toString());
+        // Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
 
         result = launcher.launch("obsidian", "-o", OUTPUT_PATH.toString(),
                 OUTPUT_PATH.resolve("FC5-Collection-merged.xml").toString());
-
         Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
+    }
+
+    @Test
+    void testFc5XmlCsv(TestInfo info, QuarkusMainLauncher launcher) {
+        LaunchResult result;
+
+        result = launcher.launch("csv", "-o", OUTPUT_PATH.toString(),
+                OUTPUT_PATH.resolve("FC5-Collection-merged.xml").toString());
+        Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
+
+        // result = launcher.launch("transform", "-o", OUTPUT_PATH.toString(),
+        //         "-x", ".csv",
+        //         OUTPUT_PATH.resolve("FC5-Collection-merged.xml").toString());
+        // Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
+
     }
 
     @Test

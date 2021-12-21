@@ -69,6 +69,14 @@
         </xsl:copy>
     </xsl:template>
 
+    <!-- Filter out groups of 20 -->
+    <xsl:template mode="firstStage" match="item[contains(name, '(20)')]">
+    </xsl:template>
+
+    <!-- Filter out groups of 50 -->
+    <xsl:template mode="firstStage" match="item[contains(name, '(50)')]">
+    </xsl:template>
+
     <!-- Add elements for rarity, classification (major, minor), and attunement,
         Use only items that have type fields -->
     <xsl:template mode="firstStage" match="item[./type]">

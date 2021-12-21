@@ -22,7 +22,7 @@ import picocli.CommandLine.Spec;
 
 @QuarkusMain
 @Command(name = "fc5-convert", mixinStandardHelpOptions = true, subcommands = {
-        Obsidian.class, Transform.class, Validate.class, Completion.class })
+        Csv.class, Obsidian.class, Transform.class, Validate.class, Completion.class })
 public class Fc5ConvertCli implements Callable<Integer>, QuarkusApplication {
 
     List<Path> input;

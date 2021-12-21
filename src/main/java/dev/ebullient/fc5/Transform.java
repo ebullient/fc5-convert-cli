@@ -8,10 +8,13 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -60,17 +63,29 @@ public class Transform implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        boolean allOk = true;
-
         final StreamSource xsltSource;
         if (xslt == null) {
             Log.outPrintln("💡 Using default XSLT filter");
-            xsltSource = new StreamSource(this.getClass().getResourceAsStream("/filterMerge-2.0.xslt"));
+            xsltSource = new StreamSource(ClassLoader.getSystemResourceAsStream("filterMerge-2.0.xslt"));
         } else {
             Log.outPrintln("💡 Using XLST " + xslt.toAbsolutePath());
             xsltSource = new StreamSource(xslt.toFile());
         }
 
+        boolean allOk = run(xsltSource, path -> {
+            String filename = path.getFileName().toString();
+            if (suffix != null) {
+                int pos = filename.lastIndexOf(".");
+                filename = filename.substring(0, pos) + suffix + filename.substring(pos);
+            }
+            return output.resolve(filename);
+        });
+
+        return allOk ? CommandLine.ExitCode.OK : CommandLine.ExitCode.SOFTWARE;
+    }
+
+    public boolean run(StreamSource xsltSource, Function<Path, Path> targetPath)
+            throws ParserConfigurationException, TransformerConfigurationException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
 
@@ -82,31 +97,24 @@ public class Transform implements Callable<Integer> {
 
         for (Path sourcePath : parent.input) {
             String systemId = sourcePath.toString();
-            Log.outPrintf("Transform %40s ... ", sourcePath.getFileName());
+            Log.outPrintf("⏱ Transform %40s ... \n", sourcePath.getFileName());
 
-            String filename = sourcePath.getFileName().toString();
-            if (suffix != null) {
-                int pos = filename.lastIndexOf(".");
-                filename = filename.substring(0, pos) + suffix + filename.substring(pos);
-            }
-            File targetFile = output.resolve(filename).toFile();
+            File targetFile = targetPath.apply(sourcePath).toFile();
 
             try (InputStream is = new FileInputStream(sourcePath.toFile())) {
                 Document doc = db.parse(is, systemId);
 
-                // transform xml to html via a xslt file
                 try (FileOutputStream target = new FileOutputStream(targetFile, false)) {
                     transformer.transform(new DOMSource(doc, systemId), new StreamResult(target));
                 }
 
                 Log.outPrintf("✅ wrote %s\n", targetFile.getAbsolutePath());
             } catch (IOException | SAXException | TransformerException e) {
-                Log.outPrintln("⛔️ Exception: " + e.getMessage());
-                allOk = false;
+                Log.errorf(e, "Exception processing %s: %s\n", sourcePath, e.getMessage());
+                return false;
             }
             db.reset();
         }
-
-        return allOk ? CommandLine.ExitCode.OK : CommandLine.ExitCode.SOFTWARE;
+        return true;
     }
 }
