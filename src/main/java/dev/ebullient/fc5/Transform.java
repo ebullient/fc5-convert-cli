@@ -2,16 +2,17 @@ package dev.ebullient.fc5;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -60,19 +61,34 @@ public class Transform implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        boolean allOk = true;
-
         final StreamSource xsltSource;
         if (xslt == null) {
             Log.outPrintln("💡 Using default XSLT filter");
-            xsltSource = new StreamSource(this.getClass().getResourceAsStream("/filterMerge-2.0.xslt"));
+            xsltSource = XmlStreamUtils.getSourceFor("filterMerge-2.0.xslt");
         } else {
             Log.outPrintln("💡 Using XLST " + xslt.toAbsolutePath());
             xsltSource = new StreamSource(xslt.toFile());
         }
 
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
+        boolean allOk = run(xsltSource, path -> {
+            String filename = path.getFileName().toString();
+            if (suffix != null) {
+                int pos = filename.lastIndexOf(".");
+                if (suffix.indexOf('.') >= 0) {
+                    filename = filename.substring(0, pos) + suffix;
+                } else {
+                    filename = filename.substring(0, pos) + suffix + filename.substring(pos);
+                }
+            }
+            return output.resolve(filename);
+        });
+
+        return allOk ? CommandLine.ExitCode.OK : CommandLine.ExitCode.SOFTWARE;
+    }
+
+    public boolean run(StreamSource xsltSource, Function<Path, Path> targetPath)
+            throws ParserConfigurationException, TransformerConfigurationException {
+        DocumentBuilder db = XmlStreamUtils.getDocumentBuilder();
 
         TransformerFactory transformerFactory = new net.sf.saxon.BasicTransformerFactory();
         Transformer transformer = transformerFactory.newTransformer(xsltSource);
@@ -82,31 +98,30 @@ public class Transform implements Callable<Integer> {
 
         for (Path sourcePath : parent.input) {
             String systemId = sourcePath.toString();
-            Log.outPrintf("Transform %40s ... ", sourcePath.getFileName());
+            Log.debug("  System id: " + systemId);
+            Log.outPrintf("⏱ Transforming %40s ... \n", sourcePath.getFileName());
 
-            String filename = sourcePath.getFileName().toString();
-            if (suffix != null) {
-                int pos = filename.lastIndexOf(".");
-                filename = filename.substring(0, pos) + suffix + filename.substring(pos);
+            Path outputPath = targetPath.apply(sourcePath);
+            if (sourcePath.equals(targetPath)) {
+                Log.errorf("Source and target are the same file: %s", sourcePath);
+                return false;
             }
-            File targetFile = output.resolve(filename).toFile();
+            File targetFile = outputPath.toFile();
 
             try (InputStream is = new FileInputStream(sourcePath.toFile())) {
                 Document doc = db.parse(is, systemId);
+                DOMSource domSource = new DOMSource(doc, systemId);
 
-                // transform xml to html via a xslt file
-                try (FileOutputStream target = new FileOutputStream(targetFile, false)) {
-                    transformer.transform(new DOMSource(doc, systemId), new StreamResult(target));
-                }
+                StreamResult result = new StreamResult(targetFile);
+                transformer.transform(domSource, result);
 
-                Log.outPrintf("✅ wrote %s\n", targetFile.getAbsolutePath());
+                Log.outPrintf("✅ wrote %s\n", outputPath);
             } catch (IOException | SAXException | TransformerException e) {
-                Log.outPrintln("⛔️ Exception: " + e.getMessage());
-                allOk = false;
+                Log.errorf(e, "Exception processing %s: %s\n", sourcePath, e.getMessage());
+                return false;
             }
             db.reset();
         }
-
-        return allOk ? CommandLine.ExitCode.OK : CommandLine.ExitCode.SOFTWARE;
+        return true;
     }
 }

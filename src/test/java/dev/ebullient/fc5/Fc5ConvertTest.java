@@ -77,7 +77,7 @@ public class Fc5ConvertTest {
     void testFc5Xml(TestInfo info, QuarkusMainLauncher launcher) {
         LaunchResult result;
 
-        result = launcher.launch("validate", "--collection", "./src/test/resources/FC5-Collection.xml");
+        result = launcher.launch("validate", "--collection", "src/test/resources/FC5-Collection.xml");
         Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
 
         result = launcher.launch("validate", "--compendium", "src/test/resources/FC5-Compendium.xml");
@@ -90,12 +90,14 @@ public class Fc5ConvertTest {
         result = launcher.launch("validate", "--compendium", OUTPUT_PATH.resolve("FC5-Collection-merged.xml").toString());
         Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
 
-        result = launcher.launch("validate", "--compendium", OUTPUT_PATH.resolve("FC5-Collection-merged.xml").toString());
-        Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
-
         result = launcher.launch("obsidian", "-o", OUTPUT_PATH.toString(),
                 OUTPUT_PATH.resolve("FC5-Collection-merged.xml").toString());
+        Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
 
+        result = launcher.launch("transform", "--verbose", "-o", OUTPUT_PATH.toString(),
+                "-t", "src/main/resources/itemExport.xslt",
+                "-x", ".csv",
+                OUTPUT_PATH.resolve("FC5-Collection-merged.xml").toString());
         Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
     }
 

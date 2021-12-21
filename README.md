@@ -14,7 +14,7 @@ I also use [Obsidian](https://obsidian.md) to keep track of my notes. The goal i
 
 1. Clone this repository
 2. Build this project: `quarkus build` or `./mvnw install`
-3. `java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar --help`
+3. `java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar --help`
 
 ## To run without building yourself
 
@@ -37,8 +37,8 @@ fc5-convert --help
 3. Validate the Collection (against a built-in XML schema)
     - Using the built jar: 
       ```shell
-      java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar validate --help
-      java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar validate FightClub5eXML/Collections/CoreRulebooks.xml
+      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar validate --help
+      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar validate FightClub5eXML/Collections/CoreRulebooks.xml
       ```
     - Using the jbang installed alias: 
       ```shell
@@ -49,8 +49,8 @@ fc5-convert --help
 4. Merge and transform the collected XML documents using XSLT 2.0 (a default xslt file is in src/main/resources):
     - Using the built jar: 
       ```shell
-      java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar transform --help
-      java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar transform -o target -x '-merged' FightClub5eXML/Collections/CoreRulebooks.xml
+      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar transform --help
+      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar transform -o target -x '-merged' FightClub5eXML/Collections/CoreRulebooks.xml
       ```
     - Using the jbang installed alias (notice `-o target` for the output directory): 
       ```shell
@@ -60,30 +60,53 @@ fc5-convert --help
       
     This will create `target/CoreRulebooks-merged.xml`
 
-5. Convert the merged XML document to Obsidian markdown (basically CommonMark with YAML front-matter). For testing/tooling around purposes, you can tool around with test files:
+5. Convert the merged XML document to Obsidian markdown (basically CommonMark with YAML front-matter). For testing/tooling around purposes, you can tool around with test files (notice `-o target/reference` for the output directory). 
     - Using the built jar: 
       ```shell
-      java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian --help
-      java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian -o target/reference src/test/resources/backgroundAcolyte.xml
-      java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian -o target/reference target/CoreRulebooks-merged.xml
+      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian --help
+      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian \
+        -o target/reference \
+        src/test/resources/backgroundAcolyte.xml
+      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian \
+        -o target/reference \
+        target/CoreRulebooks-merged.xml
       ```
-    - Using the jbang installed alias (notice `-o target` for the output directory): 
+    - Using the jbang installed alias: 
       ```shell
       fc5-convert obsidian --help
-      fc5-convert obsidian -o target/reference target/CoreRulebooks-merged.xml
+      fc5-convert obsidian \
+        -o target/reference \
+        target/CoreRulebooks-merged.xml
       ```    
 
-    This applicaiton uses the [Qute Templating Engine](https://quarkus.io/guides/qute). Simple customizations to markdown output can be achieved by copying a template from src/main/resources/templates, making the desired modifications, and then specifying that template on the command line.
+6. Export items to CSV (notice `-o target` for the output directory)
+   - Using the built jar:
+     ```shell
+     java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar \
+         transform -o target -x .csv \
+         -t src/main/resources/itemExport.xslt \
+         target/CoreRulebooks-merged.xml
+     ```
+   - Using the jbang installed alias :
+     ```shell
+     fc5-convert transform -o target -x .csv \
+       -t src/main/resources/itemExport.xslt \
+       target/CoreRulebooks-merged.xml
+     ```    
+
+## Qute Markdown templates
+
+This applicaiton uses the [Qute Templating Engine](https://quarkus.io/guides/qute). Simple customizations to markdown output can be achieved by copying a template from src/main/resources/templates, making the desired modifications, and then specifying that template on the command line.
     
-    ```shell
-    java -jar target/convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian \
-      --background src/main/resources/templates/background2md.txt \
-      -o target/reference target/CoreRulebooks-merged.xml
-    ```
-    OR
-    ```shell
-    fc5-convert obsidian \
-      --background src/main/resources/templates/background2md.txt \
-      -o target/reference target/CoreRulebooks-merged.xml
-    ```    
+```shell
+java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian \
+  --background src/main/resources/templates/background2md.txt \
+  -o target/reference target/CoreRulebooks-merged.xml
+```
+OR
+```shell
+fc5-convert obsidian \
+  --background src/main/resources/templates/background2md.txt \
+  -o target/reference target/CoreRulebooks-merged.xml
+```    
     
