@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:csv="csv:csv">
     <xsl:output method="text" omit-xml-declaration="yes" indent="no"/>
-
     <xsl:variable name="delimiter" select="','"/>
 
     <csv:columns>
@@ -24,10 +23,10 @@
     <xsl:template match="compendium">
         <!-- Output the CSV header -->
         <xsl:for-each select="document('')/*/csv:columns/*">
-                <xsl:value-of select="."/>
-                <xsl:if test="position() != last()">
-                    <xsl:value-of select="$delimiter"/>
-                </xsl:if>
+            <xsl:value-of select="."/>
+            <xsl:if test="position() != last()">
+                <xsl:value-of select="$delimiter"/>
+            </xsl:if>
         </xsl:for-each>
         <xsl:text>&#xa;</xsl:text>
 

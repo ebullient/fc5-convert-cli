@@ -71,10 +71,10 @@ public class Validate implements Callable<Integer> {
         if (validationSource.xsd == null) {
             if (validationSource.collection) {
                 Log.outPrintln("💡 Using Collection XSD file");
-                xsdSource = new StreamSource(this.getClass().getResourceAsStream("/collection.xsd"));
+                xsdSource = XmlStreamUtils.getSourceFor("collection.xsd");
             } else {
                 Log.outPrintln("💡 Using Compendium XSD file");
-                xsdSource = new StreamSource(this.getClass().getResourceAsStream("/compendium.xsd"));
+                xsdSource = XmlStreamUtils.getSourceFor("compendium.xsd");
             }
         } else {
             Log.outPrintln("💡 Using XSD " + validationSource.xsd.toAbsolutePath());
@@ -92,7 +92,7 @@ public class Validate implements Callable<Integer> {
 
         for (Path source : parent.input) {
             try {
-                Log.outPrintln("⏱ Validate " + source);
+                Log.outPrintln("⏱  Validate " + source);
                 validator.validate(new StreamSource(source.toFile()));
                 Log.outPrintln("  ✅ OK"); // end line
             } catch (IOException | SAXException e) {

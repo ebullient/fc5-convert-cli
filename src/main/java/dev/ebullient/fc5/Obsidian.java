@@ -56,9 +56,9 @@ public class Obsidian implements Callable<Integer> {
     public Integer call() throws Exception {
         boolean allOk = true;
 
-        Log.outPrintf("Defined templates: %s", paths.customTemplates.toString());
+        Log.debugf("Defined templates: %s", paths.customTemplates.toString());
         tpl.setCustomTemplates(paths);
-        Log.outPrintf("Defined templates: %s", tpl);
+        Log.debugf("Defined templates: %s", tpl);
 
         MarkdownWriter writer = new MarkdownWriter(output, tpl);
         Log.outPrintln("💡 Writing files to " + output);

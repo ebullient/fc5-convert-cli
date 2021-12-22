@@ -2,7 +2,6 @@ package dev.ebullient.fc5;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -11,7 +10,6 @@ import java.util.concurrent.Callable;
 import java.util.function.Function;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -66,7 +64,7 @@ public class Transform implements Callable<Integer> {
         final StreamSource xsltSource;
         if (xslt == null) {
             Log.outPrintln("💡 Using default XSLT filter");
-            xsltSource = new StreamSource(ClassLoader.getSystemResourceAsStream("filterMerge-2.0.xslt"));
+            xsltSource = XmlStreamUtils.getSourceFor("filterMerge-2.0.xslt");
         } else {
             Log.outPrintln("💡 Using XLST " + xslt.toAbsolutePath());
             xsltSource = new StreamSource(xslt.toFile());
@@ -76,7 +74,11 @@ public class Transform implements Callable<Integer> {
             String filename = path.getFileName().toString();
             if (suffix != null) {
                 int pos = filename.lastIndexOf(".");
-                filename = filename.substring(0, pos) + suffix + filename.substring(pos);
+                if (suffix.indexOf('.') >= 0) {
+                    filename = filename.substring(0, pos) + suffix;
+                } else {
+                    filename = filename.substring(0, pos) + suffix + filename.substring(pos);
+                }
             }
             return output.resolve(filename);
         });
@@ -86,8 +88,7 @@ public class Transform implements Callable<Integer> {
 
     public boolean run(StreamSource xsltSource, Function<Path, Path> targetPath)
             throws ParserConfigurationException, TransformerConfigurationException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
+        DocumentBuilder db = XmlStreamUtils.getDocumentBuilder();
 
         TransformerFactory transformerFactory = new net.sf.saxon.BasicTransformerFactory();
         Transformer transformer = transformerFactory.newTransformer(xsltSource);
@@ -97,18 +98,24 @@ public class Transform implements Callable<Integer> {
 
         for (Path sourcePath : parent.input) {
             String systemId = sourcePath.toString();
-            Log.outPrintf("⏱ Transform %40s ... \n", sourcePath.getFileName());
+            Log.debug("  System id: " + systemId);
+            Log.outPrintf("⏱ Transforming %40s ... \n", sourcePath.getFileName());
 
-            File targetFile = targetPath.apply(sourcePath).toFile();
+            Path outputPath = targetPath.apply(sourcePath);
+            if (sourcePath.equals(targetPath)) {
+                Log.errorf("Source and target are the same file: %s", sourcePath);
+                return false;
+            }
+            File targetFile = outputPath.toFile();
 
             try (InputStream is = new FileInputStream(sourcePath.toFile())) {
                 Document doc = db.parse(is, systemId);
+                DOMSource domSource = new DOMSource(doc, systemId);
 
-                try (FileOutputStream target = new FileOutputStream(targetFile, false)) {
-                    transformer.transform(new DOMSource(doc, systemId), new StreamResult(target));
-                }
+                StreamResult result = new StreamResult(targetFile);
+                transformer.transform(domSource, result);
 
-                Log.outPrintf("✅ wrote %s\n", targetFile.getAbsolutePath());
+                Log.outPrintf("✅ wrote %s\n", outputPath);
             } catch (IOException | SAXException | TransformerException e) {
                 Log.errorf(e, "Exception processing %s: %s\n", sourcePath, e.getMessage());
                 return false;
