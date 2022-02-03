@@ -18,6 +18,7 @@ public class Text {
     static final Pattern diceRoll = Pattern.compile("^d[0-9]+ \\| .*");
 
     final List<String> content;
+    String diceRollHeading = null;
 
     public Text(List<String> text) {
         if (text.isEmpty()) {
@@ -88,6 +89,11 @@ public class Text {
                 }
             }
 
+            if (tableMode) {
+                insertLine(i, "");
+                handleTable(i, "", tableMode);
+            }
+
             return textContent;
         } catch (Exception e) {
             Log.err().println("Unable to convert entry to markdown: " + e.getMessage());
@@ -111,17 +117,33 @@ public class Text {
         boolean newTableMode = line.indexOf('|') >= 0;
         if (newTableMode) {
             boolean diceRollTable = diceRoll.matcher(line).matches();
+            if (diceRollTable) {
+                diceRollHeading = line
+                        .replaceAll("^d[0-9]+ \\| ", "")
+                        .trim()
+                        .replaceAll("[\\| ]+", "-")
+                        .toLowerCase()
+                        .replaceAll("[^0-9a-z-]", "");
+                System.out.println(diceRollHeading);
+            }
             boolean newHeaderRow = (tableMode != newTableMode) || (tableMode && diceRollTable);
+
             if (newHeaderRow) {
                 insertBlankLineAbove(i);
             }
-            line = "|" + line + "|";
+            line = (diceRollTable ? "| dice: " : "| ") + line + "|";
             i.set(line);
             if (newHeaderRow) {
                 insertLine(i, String.join("|", line.replaceAll("[^|]", "-")));
             }
         } else if (tableMode && tableMode != newTableMode) {
-            insertBlankLineAbove(i);
+            if (diceRollHeading != null) {
+                insertLineAbove(i, "^" + diceRollHeading);
+                insertLine(i, "");
+                diceRollHeading = null;
+            } else {
+                insertBlankLineAbove(i);
+            }
         }
         return newTableMode;
     }
@@ -133,18 +155,28 @@ public class Text {
         i.next();
     }
 
-    void insertBlankLineAbove(ListIterator<String> i) {
+    void insertLineAbove(ListIterator<String> i, String content) {
         if (i.previousIndex() > 1) {
             // Move the cursor backwards two
             i.previous();
             String previous = i.previous();
             // use next to put it in the right place to add
             i.next();
-            if (!previous.isBlank()) {
-                i.add("");
+            if (content == null || content.isBlank()) {
+                // only add the blank line if the line isn't already blank
+                if (!previous.isBlank()) {
+                    i.add("");
+                }
+            } else {
+                // always insert any other content
+                i.add(content);
             }
             i.next(); // move cursor back to current line
         }
+    }
+
+    void insertBlankLineAbove(ListIterator<String> i) {
+        insertLineAbove(i, "");
     }
 
     public MatchResult matches(Pattern pattern) {

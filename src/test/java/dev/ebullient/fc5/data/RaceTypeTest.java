@@ -41,7 +41,7 @@ public class RaceTypeTest extends ParsingTestBase {
                 () -> assertContains(content, "# Dragonborn"),
                 () -> assertContains(content, "- race/dragonborn"),
                 () -> assertContains(content, "- **Ability Score Increase**: Str 2, Cha 1"),
-                () -> assertContains(content, "|-------|-------------|--------------|"),
+                () -> assertContains(content, "|--------|-------------|--------------|"),
                 () -> assertContains(content, "## Breath Weapon"));
     }
 }
