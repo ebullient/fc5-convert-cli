@@ -1,4 +1,5 @@
 ---
+obsidianUIMode: preview
 cssclass: 5e-class
 tags:
 {#for tag in resource.tags}

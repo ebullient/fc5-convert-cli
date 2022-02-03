@@ -1,4 +1,5 @@
 ---
+obsidianUIMode: preview
 cssclass: 5e-monster
 aliases: ["{resource.name}"]
 tags:

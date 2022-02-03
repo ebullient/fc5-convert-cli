@@ -1,4 +1,5 @@
 ---
+obsidianUIMode: preview
 cssclass: 5e-spell
 tags:
 {#for tag in resource.tags}
