@@ -205,6 +205,11 @@ public class CompendiumXmlReader {
             case "slots":
                 boolean optional = parseBoolean(element.attributes.get("optional"));
                 return new SpellSlots(content, optional);
+            case "skill":
+                if (content.contains(",")) {
+                    return Arrays.asList(content.split("\\s*,\\s*"));
+                }
+                return content;
             case "size":
                 return SizeEnum.fromXmlValue(content);
             case "spellAbility":

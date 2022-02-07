@@ -71,4 +71,19 @@ public class MonsterTypeTest extends ParsingTestBase {
                 () -> assertContains(content, "**Earthen Tunnels.**"),
                 () -> assertContains(content, "**Elemental Spirit in Material Form.**"));
     }
+
+    @Test
+    public void testAboleth() throws Exception {
+        CompendiumType compendium = doParseInputResource("monsterAboleth.xml");
+
+        Assertions.assertNotNull(compendium);
+        Assertions.assertFalse(compendium.monsters.isEmpty(),
+                "Monsters should not be empty, found " + compendium);
+
+        MonsterType monster = compendium.monsters.get(0);
+        Assertions.assertAll(
+                () -> assertEquals("Aboleth", monster.name),
+                () -> assertEquals(SizeEnum.LARGE, monster.size),
+                () -> assertEquals(2, monster.skill.size()));
+    }
 }
