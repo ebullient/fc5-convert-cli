@@ -63,6 +63,7 @@ title: {resource.name}
 {#if legendary.text}{#if legendary.name}***{legendary.name}.*** {/if}{legendary.text}{#else}## {legendary.name}{/if}
 {/for}{/if}
 ```
+^statblock
 
 ## Environment
 

@@ -13,6 +13,7 @@ tags:
 ```statblock
 {resource.5eStatblockYaml}
 ```
+^statblock
 
 ## Environment
 
