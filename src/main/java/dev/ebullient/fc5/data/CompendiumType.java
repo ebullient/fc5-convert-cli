@@ -6,10 +6,10 @@ import java.util.List;
 /**
  * <p>
  * Java class for compendiumType complex type.
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="compendiumType">
  *   &lt;complexContent>
@@ -29,8 +29,8 @@ import java.util.List;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
+ *
+ *
  */
 public class CompendiumType {
 

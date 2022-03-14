@@ -3,7 +3,7 @@ package dev.ebullient.fc5.data;
 import io.quarkus.qute.TemplateData;
 
 /**
- * 
+ *
  * <pre>
  *     &lt;xs:simpleType name="damageEnum">
  *      &lt;xs:restriction base="xs:string">

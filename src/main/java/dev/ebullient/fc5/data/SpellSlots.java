@@ -5,10 +5,10 @@ import io.quarkus.qute.TemplateData;
 /**
  * <p>
  * Java class for slotsType complex type.
- * 
+ *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="slotsType">
  *   &lt;simpleContent>
@@ -18,8 +18,8 @@ import io.quarkus.qute.TemplateData;
  *   &lt;/simpleContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
+ *
+ *
  */
 @TemplateData
 public class SpellSlots {
