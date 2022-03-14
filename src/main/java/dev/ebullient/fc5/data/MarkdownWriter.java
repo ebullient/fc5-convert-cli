@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.DumperOptions.ScalarStyle;
 import org.yaml.snakeyaml.Yaml;
 
 import com.github.slugify.Slugify;
@@ -37,7 +38,7 @@ public class MarkdownWriter {
         Yaml y = yaml;
         if (y == null) {
             DumperOptions options = new DumperOptions();
-            //            options.setDefaultScalarStyle(ScalarStyle.DOUBLE_QUOTED);
+            options.setDefaultScalarStyle(ScalarStyle.DOUBLE_QUOTED);
             options.setPrettyFlow(true);
             y = yaml = new Yaml(options);
         }

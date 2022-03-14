@@ -146,7 +146,7 @@ public class Fc5ConvertTest {
                 "File should contain ```ad-statblock");
         Assertions.assertFalse(monster.contains("{resource."),
                 "File should not contain unresolved resource strings");
-        Assertions.assertTrue(monster.contains("legendary_actions:"),
+        Assertions.assertTrue(monster.contains("\"legendary_actions\":"),
                 "File should contain statblock elements in the header metadata");
     }
 

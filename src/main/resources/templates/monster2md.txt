@@ -10,6 +10,7 @@ tags:
 # {resource.name}
 {#if resource.description }
 {resource.description}
+
 {/if}
 ```ad-statblock
 title: {resource.name}

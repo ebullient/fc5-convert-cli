@@ -9,6 +9,7 @@ tags:
 # {resource.name}
 {#if resource.description }
 {resource.description}
+
 {/if}
 ```statblock
 {resource.5eStatblockYaml}
