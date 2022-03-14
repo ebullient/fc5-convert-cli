@@ -31,7 +31,7 @@
         </repository>
     </distributionManagement>
     <properties>
-        <compiler-plugin.version>3.10.0</compiler-plugin.version>
+        <compiler-plugin.version>3.10.1</compiler-plugin.version>
         <formatter-plugin.version>2.17.1</formatter-plugin.version>
         <github-slugify.version>2.5</github-slugify.version>
         <impsort-plugin.version>1.6.2</impsort-plugin.version>
