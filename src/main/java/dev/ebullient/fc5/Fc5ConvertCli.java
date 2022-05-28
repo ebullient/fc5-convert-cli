@@ -22,7 +22,7 @@ import picocli.CommandLine.Spec;
 
 @QuarkusMain
 @Command(name = "fc5-convert", mixinStandardHelpOptions = true, subcommands = {
-        Obsidian.class, Transform.class, Validate.class, Completion.class })
+        Validate.class, Transform.class, Obsidian.class, Import5eTools.class, Completion.class })
 public class Fc5ConvertCli implements Callable<Integer>, QuarkusApplication {
 
     List<Path> input;
@@ -38,7 +38,7 @@ public class Fc5ConvertCli implements Callable<Integer>, QuarkusApplication {
         Log.setVerbose(verbose);
     }
 
-    @Parameters(description = "XML Source file(s)", scope = ScopeType.INHERIT)
+    @Parameters(description = "Source file(s)", scope = ScopeType.INHERIT)
     void setInput(List<File> inputFile) {
         input = new ArrayList<>(inputFile.size());
         for (File f : inputFile) {

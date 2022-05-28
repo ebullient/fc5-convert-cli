@@ -56,6 +56,15 @@ public class Fc5ConvertTest {
     }
 
     @Test
+    @Launch({ "5etools", "--help" })
+    void test5etoolsCommandHelp(LaunchResult result) {
+        result.echoSystemOut();
+        Assertions.assertTrue(
+                result.getOutput().contains("Usage: fc5-convert 5etools"),
+                "Result should contain the CLI help message. Found: " + dump(result));
+    }
+
+    @Test
     @Launch({ "validate", "--help" })
     void testValidateCommandHelp(LaunchResult result) {
         result.echoSystemOut();
@@ -140,6 +149,7 @@ public class Fc5ConvertTest {
         LaunchResult result = launcher.launch("obsidian", "-o", MIXED_OUTPUT_PATH.toString(),
                 "--monster", "src/test/resources/customTemplates/monster2-pieces.txt",
                 "src/test/resources/FC5-Compendium.xml");
+        Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
 
         String monster = Files.readString(MIXED_OUTPUT_PATH.resolve("monsters/aboleth.md"));
         Assertions.assertTrue(monster.contains("```ad-statblock"),

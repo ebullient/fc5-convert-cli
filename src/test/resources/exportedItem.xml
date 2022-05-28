@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<compendium version="5">
+<item>
+<name>Test</name>
+<type>G</type>
+<detail>detail</detail>
+<text>Description</text>
+<weight>1.0</weight>
+<value>0.2</value>
+<roll>2d6</roll>
+<modifier category="Bonus">Initiative + Proficiency Bonus</modifier>
+<modifier category="Bonus">Melee Attacks + Proficiency Bonus</modifier>
+<modifier category="Bonus">Melee Damage + Proficiency Bonus</modifier>
+<modifier category="Bonus">Passive Wisdom + Proficiency Bonus</modifier>
+<modifier category="Bonus">Proficiency Bonus +0</modifier>
+<modifier category="Bonus">Ranged Attacks + Proficiency Bonus</modifier>
+<modifier category="Bonus">Ranged Damage + Proficiency Bonus</modifier>
+<modifier category="Bonus">Saving Throws + Proficiency Bonus</modifier>
+<modifier category="Bonus">Saving Throws + Proficiency Bonus</modifier>
+<modifier category="Bonus">Speed + Proficiency Bonus</modifier>
+<modifier category="Bonus">Spell Attack + Proficiency Bonus</modifier>
+<modifier category="Bonus">Spell DC + Proficiency Bonus</modifier>
+<modifier category="Bonus">Weapon Attacks + Proficiency Bonus</modifier>
+<modifier category="Bonus">Weapon Damage + Proficiency Bonus</modifier>
+</item>
+</compendium>

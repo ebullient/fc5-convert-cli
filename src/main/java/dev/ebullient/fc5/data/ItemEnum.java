@@ -173,4 +173,40 @@ public enum ItemEnum implements ConvertedEnumType {
         tmpDetail = tmpDetail.replaceAll("cursed item", "cursed");
         return tmpDetail;
     }
+
+    public static ItemEnum mapValue(String v) {
+        switch (v) {
+            case "AF":
+                return AMMUNITION;
+            case "AT":
+                return GEAR;
+            case "EM":
+                return GEAR;
+            case "EXP":
+                return RANGED_WEAPON;
+            case "GS":
+                return GEAR;
+            case "INS":
+                return GEAR;
+            case "MNT":
+                return GEAR;
+            case "GV":
+                return GEAR;
+            case "SCF":
+                return GEAR;
+            case "OTH":
+                return GEAR;
+            case "T":
+                return GEAR;
+            case "TAH":
+                return GEAR;
+            case "TG":
+                return GEAR;
+            case "SHP":
+                return GEAR;
+            case "AIR":
+                return GEAR;
+        }
+        return fromXmlValue(v);
+    }
 }
