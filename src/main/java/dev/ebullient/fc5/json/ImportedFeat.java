@@ -23,21 +23,21 @@ public class ImportedFeat extends ImportedBase {
     final XmlFeatType fc5Feat;
     final List<JAXBElement<?>> attributes;
 
-    ImportedFeat(XmlObjectFactory factory, JsonNode jsonElement, String name) {
-        super(factory, jsonElement, name);
+    ImportedFeat(JsonIndex index, XmlObjectFactory factory, JsonNode jsonElement) {
+        super(factory, jsonElement, getName(jsonElement));
 
         this.fc5Feat = factory.createFeatType();
         this.attributes = fc5Feat.getNameOrPrerequisiteOrSpecial();
-
-        attributes.add(factory.createFeatTypeName(name));
     }
 
-    public void populateXmlAttributes(final Predicate<String> sourceIncluded, final Function<String, String> lookupName) {
+    public void populateXmlAttributes(final Predicate<String> sourceIncluded,
+            final Function<String, String> lookupName) {
         if (copyOf != null) {
             return;
         }
+        attributes.add(factory.createFeatTypeName(name));
+        addFeatText(sourceIncluded);
         addAbilityModifiers(attributes);
-        addItemText(sourceIncluded);
         addProficiencies(sourceIncluded, lookupName);
     }
 
@@ -85,7 +85,7 @@ public class ImportedFeat extends ImportedBase {
         return str.toString();
     }
 
-    public void addItemText(final Predicate<String> sourceIncluded) {
+    public void addFeatText(final Predicate<String> sourceIncluded) {
         StringBuilder text = new StringBuilder();
         Set<String> diceRolls = new HashSet<>();
 

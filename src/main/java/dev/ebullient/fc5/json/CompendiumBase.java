@@ -1,93 +1,42 @@
 package dev.ebullient.fc5.json;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.xml.bind.JAXBElement;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import dev.ebullient.fc5.Log;
-import dev.ebullient.fc5.xml.XmlModifierType;
 import dev.ebullient.fc5.xml.XmlObjectFactory;
 
-public abstract class ImportedBase {
+public abstract class CompendiumBase {
     final static Pattern itemPattern = Pattern.compile("\\{@item ([^}|]+)\\|?[^}|]*\\|?([^}]*)\\}");
     final static Pattern dicePattern = Pattern.compile("\\{@(dice|damage) ([^}]+)\\}");
     final static Pattern chancePattern = Pattern.compile("\\{@chance ([^}]+)\\}");
 
+    final String key;
+    final JsonIndex index;
     final XmlObjectFactory factory;
-
     final Set<String> bookSources;
-    final String sourceText;
-    final String copyOf;
-    final String name;
-    final JsonNode jsonElement;
 
-    ImportedBase(XmlObjectFactory factory, JsonNode jsonItem, String name) {
-        Log.debugf("Reading %s", name);
-
+    public CompendiumBase(String key, JsonIndex index, XmlObjectFactory factory) {
+        this.key = key;
+        this.index = index;
         this.factory = factory;
-        this.name = name;
-        this.jsonElement = jsonItem;
-
-        this.copyOf = jsonElement.has("_copy")
-                ? jsonElement.get("_copy").get("name").asText()
-                : null;
-
         this.bookSources = new HashSet<>();
-        this.sourceText = findSources();
     }
 
-    static String getName(JsonNode jsonNode) {
-        return jsonNode.get("name").asText();
-    }
+    public abstract boolean convert(JsonNode value);
+    public abstract Object getXmlCompendiumObject();
 
-    public abstract void populateXmlAttributes(Predicate<String> sourceIncluded,
-            Function<String, String> lookupName);
-
-    public boolean includeElement(List<String> allowedSources) {
-        if (allowedSources.isEmpty()) {
-            return jsonElement.has("srd"); // include SRD sources when no filter is specified.
-        }
-        return bookSources.stream().anyMatch(x -> allowedSources.contains(x));
-    }
-
-    private String findSources() {
-        this.bookSources.add(jsonElement.get("source").asText());
-        if (copyOf != null) {
-            return "See: " + copyOf;
-        }
-        String srcText = sourceAndPage(jsonElement);
-
-        srcText += ", " + StreamSupport.stream(jsonElement.withArray("additionalSources").spliterator(), false)
-                .peek(x -> this.bookSources.add(x.get("source").asText()))
-                .map(x -> sourceAndPage(x))
-                .collect(Collectors.joining(", "));
-
-        srcText += ", " + StreamSupport.stream(jsonElement.withArray("otherSources").spliterator(), false)
-                .peek(x -> this.bookSources.add(x.get("source").asText()))
-                .map(x -> sourceAndPage(x))
-                .collect(Collectors.joining(", "));
-
-        return srcText;
-    }
-
-    private String sourceAndPage(JsonNode source) {
-        if (source.has("page")) {
-            return String.format("%s p. %s", source.get("source").asText(), source.get("page").asText());
-        }
-        return source.get("source").asText();
-    }
-
-    void appendEntry(StringBuilder text, JsonNode entry, final Set<String> diceRolls) {
+    void appendEntryToText(StringBuilder text, JsonNode entry, final Collection<String> diceRolls) {
         if (entry.isTextual()) {
             text.append(replaceText(entry.asText(), diceRolls)).append("\n");
         } else if (entry.isObject()) {
@@ -101,22 +50,22 @@ public abstract class ImportedBase {
                     text.append("\n");
                     text.append(entry.get("name").asText()).append(": ");
                 }
-                entry.withArray("entries").forEach(e -> appendEntry(text, e, diceRolls));
+                entry.withArray("entries").forEach(e -> appendEntryToText(text, e, diceRolls));
             }
         } else {
             Log.errorf("Unknown entry type: %s", entry.toPrettyString());
         }
     }
 
-    private void appendListEntry(StringBuilder text, JsonNode entry, final Set<String> diceRolls) {
+    private void appendListEntry(StringBuilder text, JsonNode entry, final Collection<String> diceRolls) {
         text.append("\n");
         entry.withArray("items").forEach(e -> {
             text.append("- ");
-            appendEntry(text, e, diceRolls);
+            appendEntryToText(text, e, diceRolls);
         });
     }
 
-    private void appendTableEntry(StringBuilder text, JsonNode entry, final Set<String> diceRolls) {
+    private void appendTableEntry(StringBuilder text, JsonNode entry, final Collection<String> diceRolls) {
         text.append("\n");
         if (entry.has("caption")) {
             text.append(entry.get("caption").asText()).append(": \n");
@@ -132,7 +81,7 @@ public abstract class ImportedBase {
                 .append("\n"));
     }
 
-    String replaceText(String input, final Set<String> diceRolls) {
+    String replaceText(String input, final Collection<String> diceRolls) {
         // {@item Ball Bearings (Bag of 1,000)|phb|bag of ball bearings}
         // {@item sphere of annihilation}
         // {@item spellbook|phb}
@@ -175,38 +124,6 @@ public abstract class ImportedBase {
                 .replaceAll("\\{@note (\\*|Note:)?\\s?([^}]+)\\}", "$1");
     }
 
-    void addAbilityModifiers(List<JAXBElement<?>> attributes) {
-        JsonNode abilityElement = jsonElement.get("ability");
-        if (abilityElement == null) {
-            return;
-        }
-        if (abilityElement.isObject()) {
-            JsonNode staticValue = abilityElement.get("static");
-            abilityObjectValue(attributes, staticValue == null
-                    ? abilityElement
-                    : staticValue, staticValue != null);
-        } else if (abilityElement.isArray()) {
-
-        } else if (abilityElement.isTextual()) {
-
-        } else {
-            Log.error("Unknown abilityElement: " + abilityElement.toPrettyString());
-        }
-    }
-
-    private void abilityObjectValue(List<JAXBElement<?>> attributes, JsonNode abilityOrStaticElement, boolean isStatic) {
-        if (abilityOrStaticElement.has("from") || abilityOrStaticElement.has("choose")) {
-            return;
-        }
-        String type = isStatic ? "Score" : "Modifier";
-        abilityOrStaticElement.fields().forEachRemaining(entry -> {
-            XmlModifierType smt = new XmlModifierType(
-                    String.format("%s %s %s", entry.getKey(), type, entry.getValue().asText()),
-                    "Ability " + type);
-            attributes.add(factory.createItemTypeModifier(smt));
-        });
-    }
-
     String abilityToString(String ability) {
         switch (ability) {
             case "str":
@@ -223,5 +140,50 @@ public abstract class ImportedBase {
                 return "Charisma";
         }
         throw new IllegalStateException("Unknown ability: " + ability);
+    }
+
+    String alternateSource() {
+        Iterator<String> i = bookSources.iterator();
+        if (bookSources.size() > 1) {
+            i.next();
+        }
+        return i.next();
+    }
+
+    public String findSourceText(JsonNode jsonElement) {
+        this.bookSources.add(jsonElement.get("source").asText());
+
+        String copyOf = jsonElement.has("_copy")
+            ? jsonElement.get("_copy").get("name").asText()
+            : null;
+
+        if (copyOf != null) {
+            return "See: " + copyOf;
+        }
+
+        List<String> srcText = new ArrayList<>();
+        srcText.add(sourceAndPage(jsonElement));
+
+        if ( jsonElement.has("additionalSources")) {
+
+        }
+        srcText.addAll(StreamSupport.stream(jsonElement.withArray("additionalSources").spliterator(), false)
+                .peek(x -> this.bookSources.add(x.get("source").asText()))
+                .map(x -> sourceAndPage(x))
+                .collect(Collectors.toList()));
+
+                srcText.addAll(StreamSupport.stream(jsonElement.withArray("otherSources").spliterator(), false)
+                .peek(x -> this.bookSources.add(x.get("source").asText()))
+                .map(x -> sourceAndPage(x))
+                .collect(Collectors.toList()));
+
+        return String.join(", ", srcText);
+    }
+
+    private String sourceAndPage(JsonNode source) {
+        if (source.has("page")) {
+            return String.format("%s p. %s", source.get("source").asText(), source.get("page").asText());
+        }
+        return source.get("source").asText();
     }
 }

@@ -2,11 +2,8 @@ package dev.ebullient.fc5.json;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -14,82 +11,112 @@ import javax.xml.bind.JAXBElement;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import dev.ebullient.fc5.Log;
 import dev.ebullient.fc5.data.SkillEnum;
 import dev.ebullient.fc5.xml.XmlItemEnum;
 import dev.ebullient.fc5.xml.XmlItemType;
 import dev.ebullient.fc5.xml.XmlModifierType;
 import dev.ebullient.fc5.xml.XmlObjectFactory;
 
-public class ImportedItem extends ImportedBase {
-    final XmlItemType fc5Item;
-    final List<JAXBElement<?>> attributes;
+public class CompendiumItem extends CompendiumBase {
 
-    ImportedItem(JsonIndex index, XmlObjectFactory factory, JsonNode jsonItem) {
-        super(factory, jsonItem, getItemName(jsonItem));
+    String name;
+    XmlItemType fc5Item;
+    List<JAXBElement<?>> attributes;
+    CompendiumSources sources;
 
+    public CompendiumItem(String key, JsonIndex index, XmlObjectFactory factory) {
+        super(key, index, factory);
+    }
+
+    public XmlItemType getXmlCompendiumObject() {
+        return fc5Item;
+    }
+
+    @Override
+    public boolean convert(JsonNode value) {
+        this.sources = new CompendiumSources(key, value);
         this.fc5Item = factory.createItemType();
         this.attributes = fc5Item.getNameOrTypeOrMagic();
-    }
+        getItemName(value);
 
-    static String getItemName(JsonNode jsonNode) {
-        JsonNode srd = jsonNode.get("srd");
-        if (srd != null) {
-            if (srd.isTextual()) {
-                return srd.asText();
+        if (index.excludeElement(sources.bookSources, value.has("srd"))) {
+            return false; // do not include
+        }
+        if (value.has("reprintedAs")) {
+            String ra = value.get("reprintedAs").asText();
+            if (index.sourceIncluded(ra.substring(ra.lastIndexOf("|")+1))) {
+                Log.debugf("Skipping %s in favor of %s", key, ra);
+                return false; // the reprint will be used instead of this one.
             }
         }
-        return jsonNode.get("name").asText();
+
+        addItemTypeAttribute(value);
+        addItemMagicAttribute(value);
+        addAbilityModifiers(value);
+        addItemBonusModifierAttribute(value, "bonusAbilityCheck");
+        addItemBonusModifierAttribute(value, "bonusAc");
+        addItemBonusModifierAttribute(value, "bonusProficiencyBonus");
+        addItemBonusModifierAttribute(value, "bonusSavingThrow");
+        addItemBonusModifierAttribute(value, "bonusSpellAttack");
+        addItemBonusModifierAttribute(value, "bonusWeapon");
+        addItemBonusModifierAttribute(value, "bonusWeaponAttack");
+        addItemBonusModifierAttribute(value, "bonusWeaponCritDamage");
+        addItemBonusModifierAttribute(value, "bonusWeaponDamage");
+        addItemStealthAttribute(value);
+        addItemProperty(value);
+        addItemDetail(value);
+        addItemTextAndRolls(value);
+
+        return true;
     }
 
-    public void populateXmlAttributes(final Predicate<String> sourceIncluded,
-            final Function<String, String> lookupName) {
-        if (copyOf != null) {
+    private String getItemName(JsonNode value) {
+        JsonNode srd = value.get("srd");
+        if (srd != null) {
+            if (srd.isTextual()) {
+                return this.name = srd.asText();
+            }
+        }
+        return this.name = value.get("name").asText();
+    }
+
+
+    private void addAbilityModifiers(JsonNode value) {
+        JsonNode abilityElement = value.get("ability");
+        if (abilityElement == null) {
             return;
         }
-        attributes.add(factory.createItemTypeName(name));
-        if (jsonElement.has("value")) {
-            attributes.add(factory.createItemTypeValue(jsonElement.get("value").asText()));
+        if (abilityElement.isObject()) {
+            JsonNode staticValue = abilityElement.get("static");
+            abilityObjectValue(attributes, staticValue == null
+                    ? abilityElement
+                    : staticValue, staticValue != null);
+        } else if (abilityElement.isArray()) {
+            // TODO
+        } else if (abilityElement.isTextual()) {
+            // TODO
+        } else {
+            Log.error("Unknown abilityElement: " + abilityElement.toPrettyString());
         }
-        if (jsonElement.has("weight")) {
-            attributes.add(factory.createItemTypeWeight(jsonElement.get("weight").asText()));
-        }
-        if (jsonElement.has("strength")) {
-            attributes.add(factory.createItemTypeStrength(jsonElement.get("strength").asText()));
-        }
-        if (jsonElement.has("dmg1")) {
-            attributes.add(factory.createItemTypeDmg1(jsonElement.get("dmg1").asText()));
-        }
-        if (jsonElement.has("dmg2")) {
-            attributes.add(factory.createItemTypeDmg2(jsonElement.get("dmg2").asText()));
-        }
-        if (jsonElement.has("dmgType")) {
-            attributes.add(factory.createItemTypeDmgType(jsonElement.get("dmgType").asText()));
-        }
-        if (jsonElement.has("range")) {
-            attributes.add(factory.createItemTypeRange(jsonElement.get("range").asText()));
-        }
-        if (jsonElement.has("ac")) {
-            attributes.add(factory.createItemTypeAc(jsonElement.get("ac").bigIntegerValue()));
-        }
-        addItemTypeAttribute();
-        addItemMagicAttribute();
-        addAbilityModifiers(attributes);
-        addItemBonusModifierAttribute("bonusAbilityCheck");
-        addItemBonusModifierAttribute("bonusAc");
-        addItemBonusModifierAttribute("bonusProficiencyBonus");
-        addItemBonusModifierAttribute("bonusSavingThrow");
-        addItemBonusModifierAttribute("bonusSpellAttack");
-        addItemBonusModifierAttribute("bonusWeapon");
-        addItemBonusModifierAttribute("bonusWeaponAttack");
-        addItemBonusModifierAttribute("bonusWeaponCritDamage");
-        addItemBonusModifierAttribute("bonusWeaponDamage");
-        addItemStealthAttribute();
-        addItemProperty();
-        addItemDetail();
-        addItemTextAndRolls(sourceIncluded);
     }
 
-    void addItemDetail() {
+    private void abilityObjectValue(List<JAXBElement<?>> attributes,
+        JsonNode abilityOrStaticElement, boolean isStatic) {
+        if (abilityOrStaticElement.has("from") || abilityOrStaticElement.has("choose")) {
+            return;
+        }
+        String type = isStatic ? "Score" : "Modifier";
+        abilityOrStaticElement.fields().forEachRemaining(entry -> {
+            XmlModifierType smt = new XmlModifierType(
+                    String.format("%s %s %s", entry.getKey(), type, entry.getValue().asText()),
+                    "Ability " + type);
+            attributes.add(factory.createItemTypeModifier(smt));
+        });
+    }
+
+
+    private void addItemDetail(JsonNode jsonElement) {
         StringBuilder replacement = new StringBuilder();
 
         if (jsonElement.has("tier")) {
@@ -97,7 +124,9 @@ public class ImportedItem extends ImportedBase {
         }
 
         // rarity values: "rare", "none", "uncommon", "very rare", "legendary", "artifact", "unknown", "common", "unknown (magic)", "varies"
-        String rarity = jsonElement.with("rarity").asText("none");
+        String rarity = jsonElement.has("rarity")
+            ? jsonElement.get("rarity").asText()
+            : "none";
         switch (rarity) {
             case "none":
                 break;
@@ -134,27 +163,22 @@ public class ImportedItem extends ImportedBase {
         attributes.add(factory.createItemTypeDetail(replacement.toString()));
     }
 
-    String alternateSource() {
-        Iterator<String> i = bookSources.iterator();
-        if (bookSources.size() > 1) {
-            i.next();
-        }
-        return i.next();
-    }
-
-    public void addItemTextAndRolls(final Predicate<String> sourceIncluded) {
+    private void addItemTextAndRolls(JsonNode jsonElement) {
         StringBuilder text = new StringBuilder();
         Set<String> diceRolls = new HashSet<>();
+
+        String sourceText = findSourceText(jsonElement);
         String altSource = alternateSource();
 
-        jsonElement.withArray("entries").forEach(entry -> appendEntry(text, entry, diceRolls));
+        jsonElement.withArray("entries").forEach(entry -> appendEntryToText(text, entry, diceRolls));
         jsonElement.withArray("additionalEntries").forEach(entry -> {
-            if (entry.has("source") && !sourceIncluded.test(entry.get("source").asText())) {
+            if (entry.has("source") && !index.sourceIncluded(entry.get("source").asText())) {
                 return;
-            } else if (!sourceIncluded.test(altSource)) {
+            } else if (!index.sourceIncluded(altSource)) {
                 return;
             }
-            appendEntry(text, entry, diceRolls);
+
+            appendEntryToText(text, entry, diceRolls);
         });
 
         text.append("\n");
@@ -178,7 +202,7 @@ public class ImportedItem extends ImportedBase {
         });
     }
 
-    void addItemMagicAttribute() {
+    private void addItemMagicAttribute(JsonNode jsonElement) {
         JsonNode value = jsonElement.get("rarity");
         if (value != null) {
             String rarity = value.asText();
@@ -186,7 +210,7 @@ public class ImportedItem extends ImportedBase {
         }
     }
 
-    void addItemBonusModifierAttribute(String key) {
+    private void addItemBonusModifierAttribute(JsonNode jsonElement, String string) {
         JsonNode bonusElement = jsonElement.get(key);
         if (bonusElement != null) {
             XmlModifierType mt;
@@ -241,24 +265,48 @@ public class ImportedItem extends ImportedBase {
         }
     }
 
-    String addItemTypeAttribute() {
+    private void addItemTypeAttribute(JsonNode jsonElement) {
+        attributes.add(factory.createItemTypeName(name));
+        if (jsonElement.has("value")) {
+            attributes.add(factory.createItemTypeValue(jsonElement.get("value").asText()));
+        }
+        if (jsonElement.has("weight")) {
+            attributes.add(factory.createItemTypeWeight(jsonElement.get("weight").asText()));
+        }
+        if (jsonElement.has("strength")) {
+            attributes.add(factory.createItemTypeStrength(jsonElement.get("strength").asText()));
+        }
+        if (jsonElement.has("dmg1")) {
+            attributes.add(factory.createItemTypeDmg1(jsonElement.get("dmg1").asText()));
+        }
+        if (jsonElement.has("dmg2")) {
+            attributes.add(factory.createItemTypeDmg2(jsonElement.get("dmg2").asText()));
+        }
+        if (jsonElement.has("dmgType")) {
+            attributes.add(factory.createItemTypeDmgType(jsonElement.get("dmgType").asText()));
+        }
+        if (jsonElement.has("range")) {
+            attributes.add(factory.createItemTypeRange(jsonElement.get("range").asText()));
+        }
+        if (jsonElement.has("ac")) {
+            attributes.add(factory.createItemTypeAc(jsonElement.get("ac").bigIntegerValue()));
+        }
+
         JsonNode value = jsonElement.get("type");
         if (value != null) {
             XmlItemEnum xv = XmlItemEnum.mapValue(value.asText());
             attributes.add(factory.createItemTypeType(xv));
-            return value.asText();
         }
-        return null;
     }
 
-    void addItemStealthAttribute() {
+    private void addItemStealthAttribute(JsonNode jsonElement) {
         JsonNode value = jsonElement.get("stealth");
         if (value != null && value.asBoolean()) {
             attributes.add(factory.createItemTypeStealth("1"));
         }
     }
 
-    void addItemProperty() {
+    private void addItemProperty(JsonNode jsonElement) {
         JsonNode value = jsonElement.get("property");
         if (value != null && value.isArray()) {
             List<String> properties = new ArrayList<>();

@@ -16,8 +16,8 @@ public class ImportedSpell extends ImportedBase {
     final XmlSpellType fc5Spell;
     final List<JAXBElement<?>> attributes;
 
-    ImportedSpell(XmlObjectFactory factory, JsonNode jsonItem, String name) {
-        super(factory, jsonItem, name);
+    ImportedSpell(XmlObjectFactory factory, JsonNode jsonItem) {
+        super(factory, jsonItem, getName(jsonItem));
 
         this.fc5Spell = factory.createSpellType();
         this.attributes = fc5Spell.getNameOrLevelOrSchool();
@@ -25,7 +25,8 @@ public class ImportedSpell extends ImportedBase {
         attributes.add(factory.createSpellTypeName(name));
     }
 
-    public void populateXmlAttributes(Predicate<String> sourceIncluded, Function<String, String> lookupName) {
+    public void populateXmlAttributes(final Predicate<String> sourceIncluded,
+            final Function<String, String> lookupName) {
         if (copyOf != null) {
             return;
         }

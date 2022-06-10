@@ -16,7 +16,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 
 import dev.ebullient.fc5.data.MarkdownWriter;
-import dev.ebullient.fc5.json.ImportedJsonData;
+import dev.ebullient.fc5.json.CompendiumConverter;
+import dev.ebullient.fc5.json.JsonIndex;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ExitCode;
@@ -74,12 +75,14 @@ public class Import5eTools implements Callable<Integer> {
         }
 
         Log.outPrintf("Importing/Converting items from 5e tools %s to %s. %s\n",
-                parent.input, output, source.isEmpty() ? "Including only SRD items." : "Including items from " + source);
+                parent.input, output, source.isEmpty()
+                    ? "Including only SRD items."
+                    : "Including items from " + source);
 
         output.toFile().mkdirs();
 
         boolean allOk = true;
-        ImportedJsonData data = new ImportedJsonData(source);
+        JsonIndex index = new JsonIndex(source);
 
         for (Path inputPath : parent.input) {
             try {
@@ -87,36 +90,28 @@ public class Import5eTools implements Callable<Integer> {
                 File f = inputPath.toFile();
                 JsonNode node = MAPPER.readTree(f);
                 if (node.has("name")) {
-                    processNameList(node.get("name"), data);
+                    processNameList(node.get("name"), index);
                     Log.outPrintln("✅ Finished processing names form " + inputPath);
                     continue;
                 }
-                if (node.has("baseitem")) {
-                    data.parseItemList(node.get("baseitem"));
-                }
-                if (node.has("item")) {
-                    data.parseItemList(node.get("item"));
-                }
-                if (node.has("feat")) {
-                    data.parseFeatList(node.get("feat"));
-                }
-                Log.outPrintf("🔖 Finished reading %s; %s elements in compendium\n", inputPath, data.size());
+                index.importTree(node);
+                Log.outPrintf("🔖 Finished reading %s\n", inputPath);
             } catch (IOException e) {
                 Log.error(e, "  Exception: " + e.getMessage());
                 allOk = false;
             }
         }
 
-        if (!data.isEmpty()) {
-            if (suffix == null || suffix.endsWith("xml")) {
-                data.writeToXml(output.resolve("compendium.xml"));
-            }
+        if (suffix == null || suffix.endsWith("xml")) {
+            new CompendiumConverter(index)
+                .parseElements()
+                .writeToXml(output.resolve("compendium.xml"));
         }
 
         return allOk ? ExitCode.OK : ExitCode.SOFTWARE;
     }
 
-    void processNameList(JsonNode listSource, ImportedJsonData data) throws IOException {
+    void processNameList(JsonNode listSource, JsonIndex index) throws IOException {
         for (Iterator<JsonNode> i = listSource.elements(); i.hasNext();) {
             JsonNode element = i.next();
             String name = element.get("name").asText();
@@ -129,7 +124,7 @@ public class Import5eTools implements Callable<Integer> {
 
             boolean isSRD = element.has("srd");
             JsonNode itemSource = element.get("source");
-            if (data.excludeItem(itemSource, isSRD)) {
+            if (index.excludeItem(itemSource, isSRD)) {
                 // skip this item: not from a specified source
                 Log.debugf("Skipped %s from %s (%s)", name, itemSource, isSRD);
                 continue;

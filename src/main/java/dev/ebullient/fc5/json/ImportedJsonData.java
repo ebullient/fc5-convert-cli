@@ -2,9 +2,9 @@ package dev.ebullient.fc5.json;
 
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -23,11 +23,16 @@ public class ImportedJsonData {
     final XmlCompendiumType compendiumType;
     final Map<String, ImportedBase> importedItems;
     final List<Object> compendiumElements;
+    final Map<String, Set<String>> reprints;
+    final JsonIndex index;
 
-    public ImportedJsonData(List<String> allowedSources) {
+    public ImportedJsonData(List<String> allowedSources, JsonIndex index) {
+        this.index = index;
         this.allowedSources = allowedSources;
+
         this.factory = new XmlObjectFactory();
         this.importedItems = new HashMap<>();
+        this.reprints = new HashMap<>();
 
         this.compendiumType = this.factory.createCompendiumType();
         this.compendiumType.setVersion(Byte.valueOf("5"));
@@ -43,93 +48,33 @@ public class ImportedJsonData {
     }
 
     /** Read item or baseitem from 5etools.json, and create XML compatible object types */
-    public void parseItemList(JsonNode jsonNode) {
-        for (Iterator<JsonNode> i = jsonNode.elements(); i.hasNext();) {
-            JsonNode element = i.next();
-            boolean isSRD = element.has("srd");
-
-            ImportedItem itemHolder = new ImportedItem(factory, element, getName(element));
-            if (excludeItem(itemHolder.bookSources, isSRD)) {
-                // skip this item: not from a specified source
-                Log.debugf("Skipped %s from %s (%s)", getName(element), itemHolder.bookSources, isSRD);
-                continue;
-            }
-            if (importedItems.get(itemHolder.name.toLowerCase()) != null) {
-                Log.error("Duplicate entry for " + itemHolder.name);
-                continue;
-            }
-            importedItems.put(itemHolder.name.toLowerCase(), itemHolder);
-            compendiumElements.add(itemHolder.fc5Item);
-        }
-    }
+    public void parseItem(JsonNode element) {
+        ImportedItem itemHolder = new ImportedItem(index, factory, element);
+        importedItems.put(itemHolder.name.toLowerCase(), itemHolder);
+}
 
     /** Read item or baseitem from 5etools.json, and create XML compatible object types */
-    public void parseFeatList(JsonNode jsonNode) {
-        for (Iterator<JsonNode> i = jsonNode.elements(); i.hasNext();) {
-            JsonNode element = i.next();
-            boolean isSRD = element.has("srd");
-
-            ImportedFeat featHolder = new ImportedFeat(factory, element, getName(element));
-            if (excludeItem(featHolder.bookSources, isSRD)) {
-                // skip this item: not from a specified source
-                Log.debugf("Skipped %s from %s (%s)", getName(element), featHolder.bookSources, isSRD);
-                continue;
-            }
-            if (importedItems.get(featHolder.name.toLowerCase()) != null) {
-                Log.error("Duplicate entry for " + featHolder.name);
-                continue;
-            }
-
-            importedItems.put(featHolder.name.toLowerCase(), featHolder);
-            compendiumElements.add(featHolder.fc5Feat);
-        }
+    public void parseFeat(JsonNode element) {
+        ImportedFeat featHolder = new ImportedFeat(index, factory, element);
+        importedItems.put(featHolder.name.toLowerCase(), featHolder);
     }
 
-    public boolean excludeItem(List<String> bookSources, boolean isSRD) {
-        if (allowedSources.isEmpty()) {
-            return !isSRD; // exclude non-SRD sources when no filter is specified.
-        }
-        return bookSources.stream().noneMatch(x -> allowedSources.contains(x));
-    }
+    public void parseRace(JsonNode element) {
+        ImportedRace raceHolder = new ImportedRace(index, factory, element);
 
-    public boolean excludeItem(JsonNode itemSource, boolean isSRD) {
-        if (allowedSources.isEmpty()) {
-            return !isSRD; // exclude non-SRD sources when no filter is specified.
+        Set<String> moreSources = reprints.get(raceHolder.key);
+        if (element.has("reprintedAs")) {
+            reprints.put(raceHolder.key, raceHolder.bookSources);
+        } else if (moreSources.size() > 0) {
+            raceHolder.bookSources.addAll(moreSources);
         }
-        if (itemSource == null || !itemSource.isTextual()) {
-            return true; // unlikely, but skip items if we can't check their source
-        }
-        return !allowedSources.contains(itemSource.asText());
-    }
-
-    /**
-     * From 5eTools, if the item is in the SRD, the SRD name is in the
-     * "srd" field (rather than just true/false).
-     *
-     * @param element
-     * @return String to use as the name
-     */
-    public String getName(JsonNode element) {
-        JsonNode srd = element.get("srd");
-        if (srd != null) {
-            if (srd.isTextual()) {
-                return srd.asText();
-            }
-        }
-        return element.get("name").asText();
+        importedItems.put(raceHolder.name.toLowerCase(), raceHolder);
     }
 
     public void writeToXml(Path outputPath) throws JAXBException {
-        // fill out the rest of XML values
-        importedItems.forEach((k, v) -> v.populateXmlAttributes(
-                bookSource -> allowedSources.contains(bookSource),
-                lowerName -> {
-                    ImportedBase base = importedItems.get(lowerName);
-                    if (base == null) {
-                        Log.debugf("Did not find element for %s", lowerName);
-                    }
-                    return base == null ? lowerName : base.name;
-                }));
+        Log.debugf("%s items known", importedItems.size());
+
+        Log.debugf("%s items in compendium", compendiumElements.size());
 
         JAXBContext jaxbContext = JAXBContext.newInstance(XmlCompendiumType.class, XmlObjectFactory.class);
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
