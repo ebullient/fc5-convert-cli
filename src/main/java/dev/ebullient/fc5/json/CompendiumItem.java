@@ -9,16 +9,20 @@ import java.util.stream.StreamSupport;
 
 import javax.xml.bind.JAXBElement;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import dev.ebullient.fc5.Import5eTools;
 import dev.ebullient.fc5.Log;
 import dev.ebullient.fc5.data.SkillEnum;
+import dev.ebullient.fc5.json.JsonIndex.IndexType;
 import dev.ebullient.fc5.xml.XmlItemEnum;
 import dev.ebullient.fc5.xml.XmlItemType;
 import dev.ebullient.fc5.xml.XmlModifierType;
 import dev.ebullient.fc5.xml.XmlObjectFactory;
 
 public class CompendiumItem extends CompendiumBase {
+    final static String NODE_TYPE = "item";
 
     String name;
     XmlItemType fc5Item;
@@ -34,87 +38,55 @@ public class CompendiumItem extends CompendiumBase {
     }
 
     @Override
-    public boolean convert(JsonNode value) {
-        this.sources = new CompendiumSources(key, value);
+    public boolean convert(JsonNode itemNode) {
+        this.sources = new CompendiumSources(key, itemNode);
         this.fc5Item = factory.createItemType();
         this.attributes = fc5Item.getNameOrTypeOrMagic();
-        getItemName(value);
+        getItemName(itemNode);
 
-        if (index.excludeElement(sources.bookSources, value.has("srd"))) {
+        if (index.excludeElement(key, itemNode, sources)) {
             return false; // do not include
         }
-        if (value.has("reprintedAs")) {
-            String ra = value.get("reprintedAs").asText();
-            if (index.sourceIncluded(ra.substring(ra.lastIndexOf("|")+1))) {
+        if (itemNode.has("reprintedAs")) {
+            String ra = itemNode.get("reprintedAs").asText();
+            if (index.sourceIncluded(ra.substring(ra.lastIndexOf("|") + 1))) {
                 Log.debugf("Skipping %s in favor of %s", key, ra);
                 return false; // the reprint will be used instead of this one.
             }
         }
 
-        addItemTypeAttribute(value);
-        addItemMagicAttribute(value);
-        addAbilityModifiers(value);
-        addItemBonusModifierAttribute(value, "bonusAbilityCheck");
-        addItemBonusModifierAttribute(value, "bonusAc");
-        addItemBonusModifierAttribute(value, "bonusProficiencyBonus");
-        addItemBonusModifierAttribute(value, "bonusSavingThrow");
-        addItemBonusModifierAttribute(value, "bonusSpellAttack");
-        addItemBonusModifierAttribute(value, "bonusWeapon");
-        addItemBonusModifierAttribute(value, "bonusWeaponAttack");
-        addItemBonusModifierAttribute(value, "bonusWeaponCritDamage");
-        addItemBonusModifierAttribute(value, "bonusWeaponDamage");
-        addItemStealthAttribute(value);
-        addItemProperty(value);
-        addItemDetail(value);
-        addItemTextAndRolls(value);
+        addItemTypeAttribute(itemNode);
+        addItemMagicAttribute(itemNode);
+        collectModifierTypes(itemNode).stream().forEach(m -> {
+            attributes.add(factory.createItemTypeModifier(m));
+        });
+
+        addItemBonusModifierAttribute(itemNode, "bonusAbilityCheck");
+        addItemBonusModifierAttribute(itemNode, "bonusAc");
+        addItemBonusModifierAttribute(itemNode, "bonusProficiencyBonus");
+        addItemBonusModifierAttribute(itemNode, "bonusSavingThrow");
+        addItemBonusModifierAttribute(itemNode, "bonusSpellAttack");
+        addItemBonusModifierAttribute(itemNode, "bonusWeapon");
+        addItemBonusModifierAttribute(itemNode, "bonusWeaponAttack");
+        addItemBonusModifierAttribute(itemNode, "bonusWeaponCritDamage");
+        addItemBonusModifierAttribute(itemNode, "bonusWeaponDamage");
+        addItemStealthAttribute(itemNode);
+        addItemProperty(itemNode);
+        addItemDetail(itemNode);
+        addItemTextAndRolls(name, itemNode);
 
         return true;
     }
 
-    private String getItemName(JsonNode value) {
-        JsonNode srd = value.get("srd");
+    private String getItemName(JsonNode itemNode) {
+        JsonNode srd = itemNode.get("srd");
         if (srd != null) {
             if (srd.isTextual()) {
                 return this.name = srd.asText();
             }
         }
-        return this.name = value.get("name").asText();
+        return this.name = itemNode.get("name").asText();
     }
-
-
-    private void addAbilityModifiers(JsonNode value) {
-        JsonNode abilityElement = value.get("ability");
-        if (abilityElement == null) {
-            return;
-        }
-        if (abilityElement.isObject()) {
-            JsonNode staticValue = abilityElement.get("static");
-            abilityObjectValue(attributes, staticValue == null
-                    ? abilityElement
-                    : staticValue, staticValue != null);
-        } else if (abilityElement.isArray()) {
-            // TODO
-        } else if (abilityElement.isTextual()) {
-            // TODO
-        } else {
-            Log.error("Unknown abilityElement: " + abilityElement.toPrettyString());
-        }
-    }
-
-    private void abilityObjectValue(List<JAXBElement<?>> attributes,
-        JsonNode abilityOrStaticElement, boolean isStatic) {
-        if (abilityOrStaticElement.has("from") || abilityOrStaticElement.has("choose")) {
-            return;
-        }
-        String type = isStatic ? "Score" : "Modifier";
-        abilityOrStaticElement.fields().forEachRemaining(entry -> {
-            XmlModifierType smt = new XmlModifierType(
-                    String.format("%s %s %s", entry.getKey(), type, entry.getValue().asText()),
-                    "Ability " + type);
-            attributes.add(factory.createItemTypeModifier(smt));
-        });
-    }
-
 
     private void addItemDetail(JsonNode jsonElement) {
         StringBuilder replacement = new StringBuilder();
@@ -125,8 +97,8 @@ public class CompendiumItem extends CompendiumBase {
 
         // rarity values: "rare", "none", "uncommon", "very rare", "legendary", "artifact", "unknown", "common", "unknown (magic)", "varies"
         String rarity = jsonElement.has("rarity")
-            ? jsonElement.get("rarity").asText()
-            : "none";
+                ? jsonElement.get("rarity").asText()
+                : "none";
         switch (rarity) {
             case "none":
                 break;
@@ -147,52 +119,66 @@ public class CompendiumItem extends CompendiumBase {
         }
 
         // attunement
-        JsonNode attument = jsonElement.get("reqAttune");
-        if (attument != null) {
-            String value = attument.asText();
-            if (attument.isBoolean()) {
+        JsonNode attunementNode = jsonElement.get("reqAttune");
+        if (attunementNode != null) {
+            String attunement = attunementNode.asText();
+            if (attunementNode.isBoolean()) {
                 replacement.append(" (requires attunement)");
-            } else if ("optional".equals(value)) {
+            } else if ("optional".equals(attunement)) {
                 replacement.append(" (attunement optional)");
             } else {
                 replacement.append(" (requires attunement ")
-                        .append(value).append(")");
+                        .append(attunement).append(")");
             }
         }
 
         attributes.add(factory.createItemTypeDetail(replacement.toString()));
     }
 
-    private void addItemTextAndRolls(JsonNode jsonElement) {
-        StringBuilder text = new StringBuilder();
+    private void addItemTextAndRolls(String name, JsonNode jsonElement) {
         Set<String> diceRolls = new HashSet<>();
 
-        String sourceText = findSourceText(jsonElement);
-        String altSource = alternateSource();
+        String sourceText = sources.getSourceText();
+        String altSource = sources.alternateSource();
 
-        jsonElement.withArray("entries").forEach(entry -> appendEntryToText(text, entry, diceRolls));
-        jsonElement.withArray("additionalEntries").forEach(entry -> {
-            if (entry.has("source") && !index.sourceIncluded(entry.get("source").asText())) {
-                return;
-            } else if (!index.sourceIncluded(altSource)) {
-                return;
-            }
-
-            appendEntryToText(text, entry, diceRolls);
-        });
-
-        text.append("\n");
+        List<String> text = new ArrayList<>();
+        try {
+            getFluffDescription(name, jsonElement, IndexType.itemfluff, text);
+            jsonElement.withArray("entries").forEach(entry -> {
+                if (entry.isTextual()) {
+                    String input = entry.asText();
+                    if (input.startsWith("{#itemEntry ")) {
+                        insertItemRefText(name, text, jsonElement, input, diceRolls);
+                    } else {
+                        text.add(replaceText(entry.asText(), diceRolls));
+                    }
+                } else {
+                    appendEntryToText(name, text, entry, diceRolls);
+                }
+            });
+            jsonElement.withArray("additionalEntries").forEach(entry -> {
+                if (entry.has("source") && !index.sourceIncluded(entry.get("source").asText())) {
+                    return;
+                } else if (!index.sourceIncluded(altSource)) {
+                    return;
+                }
+                appendEntryToText(name, text, entry, diceRolls);
+            });
+        } catch (Exception e) {
+            Log.errorf(e, "Unable to parse text for item %s", name);
+        }
+        maybeAddBlankLine(text);
 
         if (jsonElement.has("lootTables")) {
-            text.append("Found on: ");
-            text.append(StreamSupport.stream(jsonElement.withArray("lootTables").spliterator(), false)
+            StringBuilder txt = new StringBuilder();
+            txt.append("Found on: ");
+            txt.append(StreamSupport.stream(jsonElement.withArray("lootTables").spliterator(), false)
                     .map(x -> x.asText())
-                    .collect(Collectors.joining(", ")))
-                    .append("\n");
+                    .collect(Collectors.joining(", ")));
+            text.add(txt.toString());
         }
-
-        text.append("Source: ").append(sourceText);
-        attributes.add(factory.createItemTypeText(text.toString()));
+        text.add("Source: " + sourceText);
+        text.forEach(t -> attributes.add(factory.createItemTypeText(t)));
 
         diceRolls.forEach(r -> {
             if (r.startsWith("d")) {
@@ -202,8 +188,34 @@ public class CompendiumItem extends CompendiumBase {
         });
     }
 
-    private void addItemMagicAttribute(JsonNode jsonElement) {
-        JsonNode value = jsonElement.get("rarity");
+    private void insertItemRefText(String name, List<String> text, JsonNode source, String input, Set<String> diceRolls) {
+        String finalKey = index.getRefKey(IndexType.itementry, input.replaceAll("\\{#itemEntry (.*)\\}", "$1"));
+        if (index.keyIsExcluded(finalKey)) {
+            return;
+        }
+        JsonNode ref = index.getNode(finalKey);
+        if (ref == null) {
+            Log.errorf("Could not find %s from %s", finalKey, name);
+            return;
+        } else if (index.sourceIncluded(ref.get("source").asText())) {
+            try {
+                String entriesTemplate = Import5eTools.MAPPER.writeValueAsString(ref.get("entriesTemplate"));
+                if (source.has("detail1")) {
+                    entriesTemplate = entriesTemplate.replaceAll("\\{\\{item.detail1\\}\\}", source.get("detail1").asText());
+                }
+                if (source.has("resist")) {
+                    entriesTemplate = entriesTemplate.replaceAll("\\{\\{item.resist\\}\\}",
+                            joinAndReplace(source.withArray("resist")));
+                }
+                appendEntryToText(name, text, Import5eTools.MAPPER.readTree(entriesTemplate), diceRolls);
+            } catch (JsonProcessingException e) {
+                Log.errorf(e, "Unable to insert item element text for %s from %s", input, name);
+            }
+        }
+    }
+
+    private void addItemMagicAttribute(JsonNode itemNode) {
+        JsonNode value = itemNode.get("rarity");
         if (value != null) {
             String rarity = value.asText();
             attributes.add(factory.createItemTypeMagic("none".equals(rarity) ? "NO" : "YES"));
@@ -216,9 +228,8 @@ public class CompendiumItem extends CompendiumBase {
             XmlModifierType mt;
             switch (key) {
                 case "bonusAbilityCheck":
-                    SkillEnum.allXmlNames
+                    SkillEnum.allSkills
                             .stream()
-                            .filter(s -> !"None".equals(s))
                             .forEach(s -> {
                                 XmlModifierType smt = new XmlModifierType("Skill", s + " " + bonusElement.asText());
                                 attributes.add(factory.createItemTypeModifier(smt));
@@ -292,25 +303,29 @@ public class CompendiumItem extends CompendiumBase {
             attributes.add(factory.createItemTypeAc(jsonElement.get("ac").bigIntegerValue()));
         }
 
-        JsonNode value = jsonElement.get("type");
-        if (value != null) {
-            XmlItemEnum xv = XmlItemEnum.mapValue(value.asText());
-            attributes.add(factory.createItemTypeType(xv));
+        JsonNode type = jsonElement.get("type");
+        if (type != null) {
+            try {
+                XmlItemEnum xv = XmlItemEnum.mapValue(type.asText());
+                attributes.add(factory.createItemTypeType(xv));
+            } catch (Exception e) {
+                Log.errorf(e, "Unable to determine type of %s from %s", name, type.toPrettyString());
+            }
         }
     }
 
     private void addItemStealthAttribute(JsonNode jsonElement) {
-        JsonNode value = jsonElement.get("stealth");
-        if (value != null && value.asBoolean()) {
+        JsonNode stealth = jsonElement.get("stealth");
+        if (stealth != null && stealth.asBoolean()) {
             attributes.add(factory.createItemTypeStealth("1"));
         }
     }
 
     private void addItemProperty(JsonNode jsonElement) {
-        JsonNode value = jsonElement.get("property");
-        if (value != null && value.isArray()) {
+        JsonNode property = jsonElement.get("property");
+        if (property != null && property.isArray()) {
             List<String> properties = new ArrayList<>();
-            value.forEach(x -> properties.add(x.asText()));
+            property.forEach(x -> properties.add(x.asText()));
             attributes.add(factory.createItemTypeProperty(String.join(",", properties)));
         }
     }

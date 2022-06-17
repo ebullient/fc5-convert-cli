@@ -73,7 +73,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "monsterType", propOrder = {
         "nameOrSizeOrType"
 })
-public class XmlMonsterType {
+public class XmlMonsterType implements Comparable<Object> {
 
     @XmlElementRefs({
             @XmlElementRef(name = "dex", type = JAXBElement.class, required = false),
@@ -170,4 +170,16 @@ public class XmlMonsterType {
         return this.nameOrSizeOrType;
     }
 
+    public int compareTo(Object o) {
+        if (this.getClass().equals(o.getClass())) {
+            JAXBElement<?> thisName = this.nameOrSizeOrType.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            JAXBElement<?> thatName = ((XmlMonsterType) o).nameOrSizeOrType.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            return thisName.getValue().toString().compareTo(thatName.getValue().toString());
+        }
+        return this.getClass().getSimpleName().compareTo(o.getClass().getSimpleName());
+    }
 }

@@ -25,8 +25,9 @@ public enum SkillEnum implements SkillOrAbility {
     Survival("Survival"),
     None("None");
 
-    public static final List<String> allXmlNames = Arrays.asList(SkillEnum.values()).stream()
-            .map(x -> x.getXmlValue().toLowerCase())
+    public static final List<String> allSkills = Arrays.asList(SkillEnum.values()).stream()
+            .filter(x -> x != None)
+            .map(x -> x.getXmlValue())
             .collect(Collectors.toList());
 
     final String longValue;
@@ -72,6 +73,6 @@ public enum SkillEnum implements SkillOrAbility {
         if (v == null || v.isBlank()) {
             return false;
         }
-        return allXmlNames.contains(v.toLowerCase());
+        return allSkills.contains(v.toLowerCase());
     }
 }

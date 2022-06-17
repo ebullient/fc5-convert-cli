@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "classType", propOrder = {
         "nameOrHdOrProficiency"
 })
-public class XmlClassType {
+public class XmlClassType implements Comparable<Object> {
 
     @XmlElementRefs({
             @XmlElementRef(name = "autolevel", type = JAXBElement.class, required = false),
@@ -110,4 +110,16 @@ public class XmlClassType {
         return this.nameOrHdOrProficiency;
     }
 
+    public int compareTo(Object o) {
+        if (this.getClass().equals(o.getClass())) {
+            JAXBElement<?> thisName = this.nameOrHdOrProficiency.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            JAXBElement<?> thatName = ((XmlClassType) o).nameOrHdOrProficiency.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            return thisName.getValue().toString().compareTo(thatName.getValue().toString());
+        }
+        return this.getClass().getSimpleName().compareTo(o.getClass().getSimpleName());
+    }
 }

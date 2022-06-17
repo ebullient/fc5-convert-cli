@@ -119,4 +119,16 @@ public class XmlFeatureType {
         this.optional = value;
     }
 
+    public int compareTo(Object o) {
+        if (this.getClass().equals(o.getClass())) {
+            JAXBElement<?> thisName = this.nameOrTextOrSpecial.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            JAXBElement<?> thatName = ((XmlFeatureType) o).nameOrTextOrSpecial.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            return thisName.getValue().toString().compareTo(thatName.getValue().toString());
+        }
+        return this.getClass().getSimpleName().compareTo(o.getClass().getSimpleName());
+    }
 }

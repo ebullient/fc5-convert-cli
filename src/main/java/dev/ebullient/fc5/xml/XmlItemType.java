@@ -59,7 +59,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "itemType", propOrder = {
         "nameOrTypeOrMagic"
 })
-public class XmlItemType {
+public class XmlItemType implements Comparable<Object> {
 
     @XmlElementRefs({
             @XmlElementRef(name = "name", type = JAXBElement.class, required = false),
@@ -126,5 +126,18 @@ public class XmlItemType {
             nameOrTypeOrMagic = new ArrayList<JAXBElement<?>>();
         }
         return this.nameOrTypeOrMagic;
+    }
+
+    public int compareTo(Object o) {
+        if (this.getClass().equals(o.getClass())) {
+            JAXBElement<?> thisName = this.nameOrTypeOrMagic.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            JAXBElement<?> thatName = ((XmlItemType) o).nameOrTypeOrMagic.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            return thisName.getValue().toString().compareTo(thatName.getValue().toString());
+        }
+        return this.getClass().getSimpleName().compareTo(o.getClass().getSimpleName());
     }
 }

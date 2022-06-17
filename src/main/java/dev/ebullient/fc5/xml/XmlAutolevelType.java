@@ -7,7 +7,6 @@
 
 package dev.ebullient.fc5.xml;
 
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
-import javax.xml.bind.annotation.XmlMixed;
 import javax.xml.bind.annotation.XmlType;
 
 /**
@@ -57,8 +55,7 @@ public class XmlAutolevelType {
             @XmlElementRef(name = "feature", type = JAXBElement.class, required = false),
             @XmlElementRef(name = "counter", type = JAXBElement.class, required = false)
     })
-    @XmlMixed
-    protected List<Serializable> content;
+    protected List<JAXBElement<?>> content;
     @XmlAttribute(name = "level", required = true)
     protected BigInteger level;
     @XmlAttribute(name = "scoreImprovement")
@@ -90,9 +87,9 @@ public class XmlAutolevelType {
      *
      *
      */
-    public List<Serializable> getContent() {
+    public List<JAXBElement<?>> getContent() {
         if (content == null) {
-            content = new ArrayList<Serializable>();
+            content = new ArrayList<JAXBElement<?>>();
         }
         return this.content;
     }

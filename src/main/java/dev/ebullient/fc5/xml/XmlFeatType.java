@@ -47,7 +47,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "featType", propOrder = {
         "nameOrPrerequisiteOrSpecial"
 })
-public class XmlFeatType {
+public class XmlFeatType implements Comparable<Object> {
 
     @XmlElementRefs({
             @XmlElementRef(name = "special", type = JAXBElement.class, required = false),
@@ -94,4 +94,16 @@ public class XmlFeatType {
         return this.nameOrPrerequisiteOrSpecial;
     }
 
+    public int compareTo(Object o) {
+        if (this.getClass().equals(o.getClass())) {
+            JAXBElement<?> thisName = this.nameOrPrerequisiteOrSpecial.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            JAXBElement<?> thatName = ((XmlFeatType) o).nameOrPrerequisiteOrSpecial.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            return thisName.getValue().toString().compareTo(thatName.getValue().toString());
+        }
+        return this.getClass().getSimpleName().compareTo(o.getClass().getSimpleName());
+    }
 }

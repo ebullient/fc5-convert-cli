@@ -50,7 +50,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "raceType", propOrder = {
         "nameOrSizeOrSpeed"
 })
-public class XmlRaceType {
+public class XmlRaceType implements Comparable<Object> {
 
     @XmlElementRefs({
             @XmlElementRef(name = "spellAbility", type = JAXBElement.class, required = false),
@@ -101,4 +101,16 @@ public class XmlRaceType {
         return this.nameOrSizeOrSpeed;
     }
 
+    public int compareTo(Object o) {
+        if (this.getClass().equals(o.getClass())) {
+            JAXBElement<?> thisName = this.nameOrSizeOrSpeed.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            JAXBElement<?> thatName = ((XmlRaceType) o).nameOrSizeOrSpeed.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            return thisName.getValue().toString().compareTo(thatName.getValue().toString());
+        }
+        return this.getClass().getSimpleName().compareTo(o.getClass().getSimpleName());
+    }
 }

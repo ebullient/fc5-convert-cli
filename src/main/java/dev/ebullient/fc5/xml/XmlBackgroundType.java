@@ -44,7 +44,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "backgroundType", propOrder = {
         "nameOrProficiencyOrTrait"
 })
-public class XmlBackgroundType {
+public class XmlBackgroundType implements Comparable<Object> {
 
     @XmlElementRefs({
             @XmlElementRef(name = "name", type = JAXBElement.class, required = false),
@@ -85,4 +85,16 @@ public class XmlBackgroundType {
         return this.nameOrProficiencyOrTrait;
     }
 
+    public int compareTo(Object o) {
+        if (this.getClass().equals(o.getClass())) {
+            JAXBElement<?> thisName = this.nameOrProficiencyOrTrait.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            JAXBElement<?> thatName = ((XmlBackgroundType) o).nameOrProficiencyOrTrait.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            return thisName.getValue().toString().compareTo(thatName.getValue().toString());
+        }
+        return this.getClass().getSimpleName().compareTo(o.getClass().getSimpleName());
+    }
 }

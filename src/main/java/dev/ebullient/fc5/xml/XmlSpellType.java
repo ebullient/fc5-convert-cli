@@ -54,7 +54,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "spellType", propOrder = {
         "nameOrLevelOrSchool"
 })
-public class XmlSpellType {
+public class XmlSpellType implements Comparable<Object> {
 
     @XmlElementRefs({
             @XmlElementRef(name = "components", type = JAXBElement.class, required = false),
@@ -113,4 +113,16 @@ public class XmlSpellType {
         return this.nameOrLevelOrSchool;
     }
 
+    public int compareTo(Object o) {
+        if (this.getClass().equals(o.getClass())) {
+            JAXBElement<?> thisName = this.nameOrLevelOrSchool.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            JAXBElement<?> thatName = ((XmlSpellType) o).nameOrLevelOrSchool.stream()
+                    .filter(e -> "name".equals(e.getName().getLocalPart()))
+                    .findFirst().get();
+            return thisName.getValue().toString().compareTo(thatName.getValue().toString());
+        }
+        return this.getClass().getSimpleName().compareTo(o.getClass().getSimpleName());
+    }
 }

@@ -1,3 +1,5 @@
+FightClub5eXML
+5etools-mirror-1.github.io
 publish
 
 #Maven
@@ -40,7 +42,6 @@ nb-configuration.xml
 # Local environment
 .env
 
-FightClub5eXML
 .flattened*
 pom.xml.tag
 pom.xml.releaseBackup

@@ -55,17 +55,19 @@ import javax.xml.bind.annotation.XmlType;
 public class XmlCompendiumType {
 
     @XmlElements({
-            @XmlElement(name = "item", type = XmlItemType.class),
-            @XmlElement(name = "race", type = XmlRaceType.class),
+            @XmlElement(name = "background", type = XmlBackgroundType.class),
             @XmlElement(name = "class", type = XmlClassType.class),
             @XmlElement(name = "feat", type = XmlFeatType.class),
-            @XmlElement(name = "background", type = XmlBackgroundType.class),
+            @XmlElement(name = "item", type = XmlItemType.class),
+            @XmlElement(name = "monster", type = XmlMonsterType.class),
+            @XmlElement(name = "race", type = XmlRaceType.class),
             @XmlElement(name = "spell", type = XmlSpellType.class),
-            @XmlElement(name = "monster", type = XmlMonsterType.class)
     })
     protected List<Object> elements;
+
     @XmlAttribute(name = "version")
     protected Byte version;
+
     @XmlAttribute(name = "auto_indent")
     protected String autoIndent;
 

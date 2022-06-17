@@ -1,10 +1,7 @@
 package dev.ebullient.fc5.json;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
 
@@ -16,12 +13,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import dev.ebullient.fc5.Import5eTools;
 import dev.ebullient.fc5.Log;
+import dev.ebullient.fc5.json.JsonIndex.IndexType;
 import dev.ebullient.fc5.xml.XmlObjectFactory;
 import dev.ebullient.fc5.xml.XmlRaceType;
-import dev.ebullient.fc5.xml.XmlSizeEnum;
 import dev.ebullient.fc5.xml.XmlTraitType;
 
 public class CompendiumRace extends CompendiumBase {
+    final static String NODE_TYPE = "race";
 
     String name;
     XmlRaceType fc5Race;
@@ -36,6 +34,10 @@ public class CompendiumRace extends CompendiumBase {
         return fc5Race;
     }
 
+    List<CompendiumBase> variants() {
+        return List.of(this);
+    }
+
     @Override
     public boolean convert(JsonNode value) {
         this.sources = new CompendiumSources(key, value);
@@ -44,39 +46,41 @@ public class CompendiumRace extends CompendiumBase {
         getName(value);
 
         if (value.has("raceName")) {
-            String baseNodeKey = String.format("race|%s|%s",
-                value.get("raceName").asText(), value.get("raceSource").asText());
-            JsonNode baseNode = index.nodeIndex.get(baseNodeKey);
+            JsonNode baseNode = index.getNode(IndexType.race,
+                    value.get("raceName").asText(),
+                    value.get("raceSource").asText());
             try {
                 value = mergeRaceNode(baseNode, value);
             } catch (JsonProcessingException e) {
                 throw new IllegalStateException("Unable to resolve race " + name);
             }
         }
-
-        if (index.excludeElement(sources.bookSources, value.has("srd"))) {
+        if (index.excludeElement(key, value, sources)) {
             return false; // do not include
         }
         if (value.has("reprintedAs")) {
             String ra = value.get("reprintedAs").asText();
-            if (index.sourceIncluded(ra.substring(ra.lastIndexOf("|")+1))) {
+            if (index.sourceIncluded(ra.substring(ra.lastIndexOf("|") + 1))) {
                 Log.debugf("Skipping %s in favor of %s", key, ra);
                 return false; // the reprint will be used instead of this one.
             }
         }
 
-        attributes.add(factory.createRaceTypeName(name));
-        attributes.add(factory.createRaceTypeSize(getSize(value)));
-        attributes.add(factory.createRaceTypeSpeed(getSpeed(value)));
+        attributes.add(factory.createRaceTypeName(decoratedTypeName(name, sources)));
+        attributes.add(factory.createRaceTypeSize(getSize(name, value)));
+        attributes.add(factory.createRaceTypeSpeed(getSpeed(name, value)));
 
         addRaceAbilities(value);
         addRaceSpellAbility(value);
         addRaceSkillProficiency(value);
         addRaceTraits(value);
+        collectModifierTypes(value).stream().forEach(m -> {
+            attributes.add(factory.createRaceTypeModifier(m));
+        });
         return true;
     }
 
-	private String getName(JsonNode value) {
+    private String getName(JsonNode value) {
         JsonNode raceNameNode = value.get("raceName");
         String name = value.get("name").asText();
 
@@ -86,92 +90,60 @@ public class CompendiumRace extends CompendiumBase {
         return this.name = name;
     }
 
-    private static XmlSizeEnum getSize(JsonNode value) {
-        JsonNode size = value.get("size");
-        if (size == null) {
-            return XmlSizeEnum.M;
-        } else if (size.isTextual()) {
-            return XmlSizeEnum.fromValue(size.asText());
-        }
-        return XmlSizeEnum.fromValue(size.get(0).asText());
-    }
-
-    private static BigInteger getSpeed(JsonNode value) {
-        JsonNode speed = value.get("speed");
-        if (speed == null) {
-            return BigInteger.valueOf(30);
-        } else if (speed.isTextual()) {
-            return BigInteger.valueOf(Long.valueOf(speed.asText()));
-        }
-        return BigInteger.valueOf(Long.valueOf(speed.get("walk").asText()));
-    }
-
     public void addRaceTraits(JsonNode value) {
-        StringBuilder text = new StringBuilder();
-        Set<String> diceRolls = new HashSet<>();
+        try {
+            List<String> text = new ArrayList<>();
+            getFluffDescription(name, value, IndexType.racefluff, text);
+            text.add("");
+            XmlTraitType description = createTraitType("Description", text);
+            addTraitTypeText(description, "Source: " + sources.getSourceText());
+            attributes.add(factory.createBackgroundTypeTrait(description));
 
-        value.withArray("entries").forEach(entry -> {
-            if (entry.isTextual()) {
-                text.append(replaceText(entry.asText(), diceRolls)).append("\n");
-            } else if (entry.isObject()) {
-                XmlTraitType trait = factory.createTraitType();
-                List<JAXBElement<String>> traitAttributes = trait.getNameOrTextOrAttack();
-                traitAttributes.add(factory.createTraitTypeName(entry.get("name").asText()));
-
-                StringBuilder traitText = new StringBuilder();
-                appendEntryToText(traitText, entry.get("entries"), diceRolls);
-                traitAttributes.add(factory.createTraitTypeText(traitText.toString()));
-
-                attributes.add(factory.createRaceTypeTrait(trait));
-            }
-        });
-
-        if (text.length() > 0) {
-            XmlTraitType baseTrait = factory.createTraitType();
-            List<JAXBElement<String>> baseTraitAttributes = baseTrait.getNameOrTextOrAttack();
-            baseTraitAttributes.add(factory.createTraitTypeName(name + " Notes"));
-            baseTraitAttributes.add(factory.createTraitTypeText(text.toString()));
-            attributes.add(factory.createRaceTypeTrait(baseTrait));
+            List<XmlTraitType> traits = collectTraits(name, value);
+            traits.forEach(t -> attributes.add(factory.createRaceTypeTrait(t)));
+        } catch (Exception e) {
+            Log.errorf(e, "Unable to collect traits for %s", name);
         }
     }
 
     private void addRaceAbilities(JsonNode value) {
-        JsonNode entry = value.withArray("ability");
-        if (entry.size() == 1 && !entry.toString().contains("choose")) {
-            List<String> list = new ArrayList<>();
-            entry.fields().forEachRemaining(f -> {
-                list.add(String.format("%s %s", f.getKey(), f.getValue().asText()));
-            });
-            attributes.add(factory.createRaceTypeAbility(String.join(", ", list)));
+        JsonNode ability = value.withArray("ability");
+        String list = jsonToSkillBonusList(ability);
+        if (list != null && !list.isEmpty()) {
+            attributes.add(factory.createRaceTypeAbility(list));
         }
     }
 
     private void addRaceSkillProficiency(JsonNode value) {
         JsonNode skills = value.withArray("skillProficiencies");
-        if (skills.size() == 1 && !skills.toString().contains("choose")) {
-            List<String> list = new ArrayList<>();
-            skills.fieldNames().forEachRemaining(f -> list.add(f));
-            attributes.add(factory.createRaceTypeProficiency(String.join(", ", list)));
+        String list = jsonToSkillList(skills);
+        if (list != null && !list.isEmpty()) {
+            attributes.add(factory.createRaceTypeProficiency(list));
         }
     }
 
     private void addRaceSpellAbility(JsonNode value) {
-        JsonNode spells = value.withArray("additionalSpells");
-        // if (skills.size() == 1 && !skills.toString().contains("choose")) {
-        //     List<String> list = new ArrayList<>();
-        //     skills.fieldNames().forEachRemaining(f -> list.add(f));
-        //     attributes.add(factory.createRaceTypeProficiency(String.join(", ", list)));
-        // }
+        JsonNode spells = value.withArray("additionalSpells").get(0);
+        if (spells != null && spells.has("ability")) {
+            JsonNode ability = spells.get("ability");
+            if (ability.has("choose")) {
+                // just pick the first
+                attributes.add(factory.createRaceTypeSpellAbility(asAbilityEnum(ability.withArray("choose").get(0))));
+            } else {
+                attributes.add(factory.createRaceTypeSpellAbility(asAbilityEnum(ability)));
+            }
+        }
     }
 
     JsonNode mergeRaceNode(JsonNode baseNode, JsonNode value) throws JsonMappingException, JsonProcessingException {
 
         ObjectNode mergedNode = (ObjectNode) Import5eTools.MAPPER.readTree(baseNode.toString());
         mergedNode.put("merged", true);
+        mergedNode.remove("srd");
 
         value.fieldNames().forEachRemaining(f -> {
             JsonNode sourceNode = value.get(f);
-            switch(f) {
+            switch (f) {
                 case "name":
                 case "source":
                 case "additionalSources":
@@ -189,15 +161,15 @@ public class CompendiumRace extends CompendiumBase {
                     sourceNode.elements().forEachRemaining(e -> entries.add(e));
                     break;
                 case "additionalSpells":
-                    if ( sourceNode.isArray() ) {
+                    if (sourceNode.isArray()) {
                         ArrayNode list = (ArrayNode) mergedNode.withArray(f);
-                        if ( list.isEmpty() ) {
+                        if (list.isEmpty()) {
                             list.add(value.get(f));
                         } else {
                             JsonNode source = value.withArray(f).get(0);
                             ObjectNode target = (ObjectNode) list.get(0);
                             source.fieldNames().forEachRemaining(i -> {
-                                switch(i) {
+                                switch (i) {
                                     case "ability":
                                         target.replace(i, source.get(i));
                                         break;
@@ -212,7 +184,9 @@ public class CompendiumRace extends CompendiumBase {
                                             } else if (sourceLevel.isArray() && targetLevel.isArray()) {
                                                 sourceLevel.elements().forEachRemaining(x -> ((ArrayNode) targetLevel).add(x));
                                             } else {
-                                                throw new IllegalStateException("Conflict with "+name+" spellCasting: \n Source: " + sourceLevel.toPrettyString() + "\n Target: " + targetLevel.toPrettyString());
+                                                throw new IllegalStateException("Conflict with " + name
+                                                        + " spellCasting: \n Source: " + sourceLevel.toPrettyString()
+                                                        + "\n Target: " + targetLevel.toPrettyString());
                                             }
                                         });
                                         break;
@@ -226,7 +200,7 @@ public class CompendiumRace extends CompendiumBase {
                 case "armorProficiencies":
                 case "skillProficiencies":
                     ArrayNode list = (ArrayNode) mergedNode.withArray(f);
-                    if ( list.isEmpty() ) {
+                    if (list.isEmpty()) {
                         list.add(value.get(f));
                     } else {
                         JsonNode source = value.withArray(f).get(0);
@@ -237,6 +211,6 @@ public class CompendiumRace extends CompendiumBase {
             }
         });
 
-		return mergedNode;
-	}
+        return mergedNode;
+    }
 }

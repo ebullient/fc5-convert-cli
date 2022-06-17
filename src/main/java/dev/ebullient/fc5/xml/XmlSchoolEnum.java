@@ -52,6 +52,12 @@ public enum XmlSchoolEnum {
     }
 
     public static XmlSchoolEnum fromValue(String v) {
+        if ("V".equals(v)) {
+            return EV;
+        }
+        if ("E".equals(v)) {
+            return EN;
+        }
         return valueOf(v);
     }
 

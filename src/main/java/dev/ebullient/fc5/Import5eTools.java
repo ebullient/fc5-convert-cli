@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import dev.ebullient.fc5.data.MarkdownWriter;
 import dev.ebullient.fc5.json.CompendiumConverter;
 import dev.ebullient.fc5.json.JsonIndex;
+import dev.ebullient.fc5.json.JsonIndex.IndexType;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ExitCode;
@@ -48,10 +49,17 @@ public class Import5eTools implements Callable<Integer> {
     @Option(names = "-s", description = "Source Books%n  Comma-separated list or multiple declarations (PHB,DMG,...)")
     List<String> source = Collections.emptyList();
 
-    @Option(names = "-x", description = "Suffix (xml for FightClub 5 xml files of json for source-filtered json)")
-    String suffix;
+    @Option(names = "--xml", description = "Generate FightClub 5 XML Compendium files")
+    boolean createXml;
+
+    @Option(names = "--md", description = "Generate Markdown files")
+    boolean createMarkdown;
+
+    @Option(names = "--index", description = "Create index of keys that can be used to exclude entries")
+    boolean filterIndex;
 
     Path output;
+    CompendiumConverter converter = null;
 
     @Option(names = "-o", description = "Output directory", required = true)
     void setOutputPath(File outputDir) {
@@ -76,8 +84,8 @@ public class Import5eTools implements Callable<Integer> {
 
         Log.outPrintf("Importing/Converting items from 5e tools %s to %s. %s\n",
                 parent.input, output, source.isEmpty()
-                    ? "Including only SRD items."
-                    : "Including items from " + source);
+                        ? "Including only SRD items."
+                        : "Including items from " + source);
 
         output.toFile().mkdirs();
 
@@ -91,7 +99,7 @@ public class Import5eTools implements Callable<Integer> {
                 JsonNode node = MAPPER.readTree(f);
                 if (node.has("name")) {
                     processNameList(node.get("name"), index);
-                    Log.outPrintln("✅ Finished processing names form " + inputPath);
+                    Log.outPrintln("✅ Finished processing names from " + inputPath);
                     continue;
                 }
                 index.importTree(node);
@@ -102,13 +110,25 @@ public class Import5eTools implements Callable<Integer> {
             }
         }
 
-        if (suffix == null || suffix.endsWith("xml")) {
-            new CompendiumConverter(index)
-                .parseElements()
-                .writeToXml(output.resolve("compendium.xml"));
+        if (filterIndex) {
+            index.writeFilterIndex(output);
+        }
+
+        if (createXml) {
+            getConverter(index)
+                    .parseElements()
+                    .writeToXml(output.resolve("compendium.xml"))
+                    .writeTypeToXml(IndexType.background, output.resolve("backgrounds.xml"));
         }
 
         return allOk ? ExitCode.OK : ExitCode.SOFTWARE;
+    }
+
+    CompendiumConverter getConverter(JsonIndex index) {
+        if (converter == null) {
+            return converter = new CompendiumConverter(index);
+        }
+        return converter;
     }
 
     void processNameList(JsonNode listSource, JsonIndex index) throws IOException {
