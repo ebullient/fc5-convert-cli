@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,7 +27,7 @@ import dev.ebullient.fc5.json.JsonIndex.IndexType;
 
 public class JsonDataTest {
     final static Path PROJECT_PATH = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
-    final static Path OUTPUT_PATH = PROJECT_PATH.resolve("target");
+    final static Path OUTPUT_PATH = PROJECT_PATH.resolve("target/5etools-import/jsondata");
 
     // for compile/test purposes. Must clone/sync separately.
     final static Path TOOLS_PATH = PROJECT_PATH.resolve("5etools-mirror-1.github.io/data");
@@ -64,6 +65,12 @@ public class JsonDataTest {
         }
     }
 
+    @BeforeAll
+    public static void setupDir() {
+        Log.setVerbose(true);
+        OUTPUT_PATH.toFile().mkdirs();
+    }
+
     @Test
     public void testFullKeyIndex() throws Exception {
         if (TOOLS_PATH.toFile().exists()) {
@@ -73,7 +80,20 @@ public class JsonDataTest {
             fullIndex(index, TOOLS_PATH);
 
             Path p = OUTPUT_PATH.resolve("allIndex.json");
-            index.writeFilterIndex(p);
+            index.writeIndex(p);
+        }
+    }
+
+    @Test
+    public void testFilteredKeyIndex() throws Exception {
+        if (TOOLS_PATH.toFile().exists()) {
+            List<String> source = List.of("PHB", "DMG", "XGE");
+
+            JsonIndex index = new JsonIndex(source);
+            fullIndex(index, TOOLS_PATH);
+
+            Path p = OUTPUT_PATH.resolve("filteredIndex.json");
+            index.writeSourceIndex(p);
         }
     }
 
@@ -197,7 +217,7 @@ public class JsonDataTest {
     @Test
     public void testAllItems() throws Exception {
         if (TOOLS_PATH.toFile().exists()) {
-            List<String> source = List.of("PHB", "DMG", "XGE", "ERLW");
+            List<String> source = List.of("*");
             JsonIndex index = new JsonIndex(source)
                     .importTree(doParse(TOOLS_PATH.resolve("items-base.json")))
                     .importTree(doParse(TOOLS_PATH.resolve("items.json")))
@@ -223,7 +243,7 @@ public class JsonDataTest {
             JsonIndex index = new JsonIndex(source);
             try (Stream<Path> stream = Files.list(classes)) {
                 stream
-                        .filter(p -> p.toFile().getName().startsWith("bestiary-"))
+                        .filter(p -> p.toFile().getName().contains("bestiary-"))
                         .filter(p -> p.toFile().getName().endsWith(".json"))
                         .forEach(p -> {
                             try {

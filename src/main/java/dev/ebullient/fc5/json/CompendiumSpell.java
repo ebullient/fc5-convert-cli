@@ -20,10 +20,9 @@ public class CompendiumSpell extends CompendiumBase {
     String name;
     XmlSpellType fc5Spell;
     List<JAXBElement<?>> attributes;
-    CompendiumSources sources;
 
-    public CompendiumSpell(String key, JsonIndex index, XmlObjectFactory factory) {
-        super(key, index, factory);
+    public CompendiumSpell(CompendiumSources sources, JsonIndex index, XmlObjectFactory factory) {
+        super(sources, index, factory);
     }
 
     public XmlSpellType getXmlCompendiumObject() {
@@ -31,15 +30,15 @@ public class CompendiumSpell extends CompendiumBase {
     }
 
     @Override
-    public boolean convert(JsonNode jsonSource) {
-        this.sources = new CompendiumSources(key, jsonSource);
+    public List<CompendiumBase> convert(JsonNode jsonSource) {
+        if (index.keyIsExcluded(sources.key)) {
+            Log.debugf("Excluded %s", sources.key);
+            return List.of(); // do not include
+        }
+
         this.fc5Spell = factory.createSpellType();
         this.attributes = fc5Spell.getNameOrLevelOrSchool();
         this.name = jsonSource.get("name").asText();
-
-        if (index.excludeElement(key, jsonSource, sources)) {
-            return false; // do not include
-        }
 
         attributes.add(factory.createSpellTypeName(name));
         addSpellLevel(jsonSource);
@@ -52,7 +51,7 @@ public class CompendiumSpell extends CompendiumBase {
         addSpellClasses(jsonSource);
         addSpellTextAndRolls(name, jsonSource);
 
-        return true; // do not include
+        return List.of(this);
     }
 
     void addSpellLevel(JsonNode jsonSource) {
@@ -89,7 +88,7 @@ public class CompendiumSpell extends CompendiumBase {
             }
         });
         node.withArray("fromSubclass").forEach(s -> {
-            String className = s.get("class").get("name").asText();
+            String className = s.get("class").get("name").asText().trim();
             if (classes.contains(className)) {
                 return;
             }
@@ -110,22 +109,12 @@ public class CompendiumSpell extends CompendiumBase {
 
     private boolean includeClass(String className, String classSource) {
         String finalKey = index.getClassKey(className, classSource);
-        JsonNode classNode = index.getNode(finalKey);
-        if (classNode != null) {
-            CompendiumSources sources = new CompendiumSources(finalKey, classNode);
-            return !index.excludeElement(finalKey, classNode, sources);
-        }
-        return !index.keyIsExcluded(finalKey) && index.sourceIncluded(classSource);
+        return index.keyIsIncluded(finalKey);
     }
 
     private boolean includeSubclass(String className, String classSource, String subclassName) {
-        String finalKey = index.getSubclassKey(subclassName, className, classSource);
-        JsonNode subclassNode = index.getNode(finalKey);
-        if (subclassNode != null) {
-            CompendiumSources sources = new CompendiumSources(finalKey, subclassNode);
-            return !index.excludeElement(finalKey, subclassNode, sources);
-        }
-        return !index.keyIsExcluded(finalKey) && index.sourceIncluded(classSource);
+        String finalKey = index.getSubclassKey(subclassName.trim(), className.trim(), classSource.trim());
+        return index.keyIsIncluded(finalKey);
     }
 
     private void addSpellComponents(JsonNode jsonSource) {
@@ -259,7 +248,7 @@ public class CompendiumSpell extends CompendiumBase {
         String sourceText = sources.getSourceText();
 
         try {
-            jsonSource.withArray("entries").forEach(entry -> appendEntryToText(name, text, entry, diceRolls));
+            jsonSource.withArray("entries").forEach(entry -> appendEntryToText(text, entry, diceRolls));
             maybeAddBlankLine(text); // before Source
         } catch (Exception e) {
             Log.errorf(e, "Unable to parse text for %s", name);

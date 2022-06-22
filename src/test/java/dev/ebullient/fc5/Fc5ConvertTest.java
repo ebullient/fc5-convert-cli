@@ -56,15 +56,6 @@ public class Fc5ConvertTest {
     }
 
     @Test
-    @Launch({ "5etools", "--help" })
-    void test5etoolsCommandHelp(LaunchResult result) {
-        result.echoSystemOut();
-        Assertions.assertTrue(
-                result.getOutput().contains("Usage: fc5-convert 5etools"),
-                "Result should contain the CLI help message. Found: " + dump(result));
-    }
-
-    @Test
     @Launch({ "validate", "--help" })
     void testValidateCommandHelp(LaunchResult result) {
         result.echoSystemOut();
@@ -177,7 +168,7 @@ public class Fc5ConvertTest {
         Assertions.assertFalse(path.toFile().exists());
     }
 
-    String dump(LaunchResult result) {
+    public static String dump(LaunchResult result) {
         return "\n" + result.getOutput() + "\nSystem err:\n" + result.getErrorOutput();
     }
 }

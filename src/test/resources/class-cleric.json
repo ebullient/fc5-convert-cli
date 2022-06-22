@@ -439,7 +439,6 @@
 			],
 			"classFeatures": [
 				"Spellcasting|Cleric||1",
-				"Cantrip Versatility|Cleric||1|UAClassFeatureVariants",
 				{
 					"classFeature": "Divine Domain|Cleric||1",
 					"gainSubclassFeature": true
@@ -448,15 +447,11 @@
 					"classFeature": "Channel Divinity|Cleric||2",
 					"tableDisplayName": "Channel Divinity (1/rest)"
 				},
-				"Channel Divinity: Harness Divine Power|Cleric||2|UAClassFeatureVariants",
-				"Channel Divinity: Harness Divine Power|Cleric||2|TCE",
 				{
 					"classFeature": "Divine Domain feature|Cleric||2",
 					"gainSubclassFeature": true
 				},
 				"Ability Score Improvement|Cleric||4",
-				"Proficiency Versatility|Cleric||4|UAClassFeatureVariants",
-				"Cantrip Versatility|Cleric||4|TCE",
 				"Destroy Undead (CR 1/2)|Cleric||5",
 				{
 					"classFeature": "Channel Divinity|Cleric||6",
@@ -467,7 +462,6 @@
 					"gainSubclassFeature": true
 				},
 				"Ability Score Improvement|Cleric||8",
-				"Proficiency Versatility|Cleric||8|UAClassFeatureVariants",
 				"Destroy Undead (CR 1)|Cleric||8",
 				{
 					"classFeature": "Divine Domain feature|Cleric||8",
@@ -476,10 +470,8 @@
 				"Divine Intervention|Cleric||10",
 				"Destroy Undead (CR 2)|Cleric||11",
 				"Ability Score Improvement|Cleric||12",
-				"Proficiency Versatility|Cleric||12|UAClassFeatureVariants",
 				"Destroy Undead (CR 3)|Cleric||14",
 				"Ability Score Improvement|Cleric||16",
-				"Proficiency Versatility|Cleric||16|UAClassFeatureVariants",
 				"Destroy Undead (CR 4)|Cleric||17",
 				{
 					"classFeature": "Divine Domain feature|Cleric||17",
@@ -490,7 +482,6 @@
 					"tableDisplayName": "Channel Divinity (3/rest)"
 				},
 				"Ability Score Improvement|Cleric||19",
-				"Proficiency Versatility|Cleric||19|UAClassFeatureVariants",
 				"Divine Intervention Improvement|Cleric||20"
 			],
 			"subclassTitle": "Divine Domain",
@@ -584,8 +575,6 @@
 				"Channel Divinity: Preserve Life|Cleric||Life||2",
 				"Blessed Healer|Cleric||Life||6",
 				"Divine Strike|Cleric||Life||8",
-				"Blessed Strikes|Cleric||Life||8|UAClassFeatureVariants",
-				"Blessed Strikes|Cleric||Life||8|TCE",
 				"Supreme Healing|Cleric||Life||17"
 			]
 		}

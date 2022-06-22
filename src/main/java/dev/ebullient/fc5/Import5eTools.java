@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,12 +31,29 @@ import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
 
 @Command(name = "5etools", mixinStandardHelpOptions = true, header = "Convert 5etools data to markdown", description = {
-        "This will read from a 5etools json file and will produce xml or markdown documents (based on options)."
+        "This will read from a 5etools json file (or the 5etools data directory) and will produce xml or markdown documents (based on options).",
 }, footer = {
         "Use the sources option to filter converted items by source. If no sources",
         "are specified, only items from the SRD will be included.",
         "Specify values as they appear in the exported json, e.g. -s PHB -s DMG.",
-        "Only include items from sources you own."
+        "Only include items from sources you own.",
+        "",
+        "You can describe sources and specify specific identifiers to be excluded in a json file, e.g.",
+        "{",
+        "  \"from\" : [",
+        "    \"PHB\",",
+        "    \"DMG\",",
+        "    \"SCAG\",",
+        "  ]",
+        "  \"exclude\" : [",
+        "    \"background|sage|phb\",",
+        "  ]",
+        "  \"excludePattern\" : [",
+        "    \"race|.*|dmg\",",
+        "  ]",
+        "}",
+        "",
+        "Pass this file in as another input source. Use the identifiers from the generated index files in the list of excluded rules."
 })
 public class Import5eTools implements Callable<Integer> {
     public final static ObjectMapper MAPPER = new ObjectMapper()
@@ -77,15 +96,13 @@ public class Import5eTools implements Callable<Integer> {
                     "Must specify an input file");
         }
 
-        if (source.size() == 1 && source.contains(",")) {
+        if (source.size() == 1 && source.get(0).contains(",")) {
             String tmp = source.remove(0);
             source = List.of(tmp.split(","));
         }
 
-        Log.outPrintf("Importing/Converting items from 5e tools %s to %s. %s\n",
-                parent.input, output, source.isEmpty()
-                        ? "Including only SRD items."
-                        : "Including items from " + source);
+        Log.outPrintf("Importing/Converting items from 5e tools %s to %s.\n",
+                parent.input, output);
 
         output.toFile().mkdirs();
 
@@ -94,16 +111,27 @@ public class Import5eTools implements Callable<Integer> {
 
         for (Path inputPath : parent.input) {
             try {
-                Log.debugf("⏱  Reading %s; will filter ", inputPath);
-                File f = inputPath.toFile();
-                JsonNode node = MAPPER.readTree(f);
-                if (node.has("name")) {
-                    processNameList(node.get("name"), index);
-                    Log.outPrintln("✅ Finished processing names from " + inputPath);
-                    continue;
+                if (inputPath.toFile().isDirectory()) {
+                    Log.outPrintf("⏱  Reading 5eTools data from %s", inputPath);
+                    List<String> inputs = List.of("backgrounds.json", "fluff-backgrounds.json", "bestiary", "class",
+                            "feats.json", "items.json", "items-base.json", "fluff-items.json", "optionalfeatures.json",
+                            "races.json", "fluff-races.json",
+                            "spells", "variantrules.json");
+                    for (String input : inputs) {
+                        Path filePath = inputPath.resolve(input);
+                        File file = filePath.toFile();
+                        if (file.exists() && file.isFile()) {
+                            readFile(index, filePath);
+                        } else if (file.exists() && file.isDirectory()) {
+                            fullIndex(index, filePath);
+                        } else {
+                            Log.debugf("Skipping %s, not found / doesn't exist", filePath);
+                        }
+                    }
+                    Log.outPrintln("✅ finished reading 5etools data.");
+                } else {
+                    readFile(index, inputPath);
                 }
-                index.importTree(node);
-                Log.outPrintf("🔖 Finished reading %s\n", inputPath);
             } catch (IOException e) {
                 Log.error(e, "  Exception: " + e.getMessage());
                 allOk = false;
@@ -111,17 +139,62 @@ public class Import5eTools implements Callable<Integer> {
         }
 
         if (filterIndex) {
-            index.writeFilterIndex(output);
+            index.writeIndex(output.resolve("all-index.json"));
+            index.writeSourceIndex(output.resolve("src-index.json"));
         }
 
         if (createXml) {
             getConverter(index)
                     .parseElements()
                     .writeToXml(output.resolve("compendium.xml"))
-                    .writeTypeToXml(IndexType.background, output.resolve("backgrounds.xml"));
+                    .writeTypeToXml(IndexType.background, output.resolve("backgrounds.xml"))
+                    .writeTypeToXml(IndexType.classtype, output.resolve("classes.xml"))
+                    .writeTypeToXml(IndexType.feat, output.resolve("feats.xml"))
+                    .writeTypeToXml(IndexType.item, output.resolve("items.xml"))
+                    .writeTypeToXml(IndexType.monster, output.resolve("monsters.xml"))
+                    .writeTypeToXml(IndexType.race, output.resolve("races.xml"))
+                    .writeTypeToXml(IndexType.spell, output.resolve("spells.xml"));
         }
 
         return allOk ? ExitCode.OK : ExitCode.SOFTWARE;
+    }
+
+    protected void fullIndex(JsonIndex index, Path resourcePath) throws IOException {
+        Log.outPrintf("📁 %s\n", resourcePath);
+        String basename = resourcePath.getFileName().toString();
+
+        try (Stream<Path> stream = Files.list(resourcePath)) {
+            stream.forEach(p -> {
+                File f = p.toFile();
+                String name = p.getFileName().toString();
+                if (f.isDirectory()) {
+                    try {
+                        fullIndex(index, p);
+                    } catch (Exception e) {
+                        Log.errorf(e, "Error parsing %s", p.toString());
+                    }
+                } else if ((name.startsWith("fluff") || name.startsWith(basename))
+                        && name.endsWith(".json")) {
+                    try {
+                        readFile(index, p);
+                    } catch (Exception e) {
+                        Log.errorf(e, "Error parsing %s", p.toString());
+                    }
+                }
+            });
+        }
+    }
+
+    void readFile(JsonIndex index, Path inputPath) throws IOException {
+        File f = inputPath.toFile();
+        JsonNode node = MAPPER.readTree(f);
+        if (node.has("name")) {
+            processNameList(node.get("name"), index);
+            Log.outPrintln("✅ Finished processing names from " + inputPath);
+        } else {
+            index.importTree(node);
+            Log.outPrintf("🔖 Finished reading %s\n", inputPath);
+        }
     }
 
     CompendiumConverter getConverter(JsonIndex index) {

@@ -16,13 +16,12 @@ import dev.ebullient.fc5.xml.XmlTraitType;
 public class CompendiumBackground extends CompendiumBase {
     final static String NODE_TYPE = "background";
 
-    String name;
     XmlBackgroundType fc5Background;
     List<JAXBElement<?>> attributes;
-    CompendiumSources sources;
+    String backgroundName;
 
-    public CompendiumBackground(String key, JsonIndex index, XmlObjectFactory factory) {
-        super(key, index, factory);
+    public CompendiumBackground(CompendiumSources sources, JsonIndex index, XmlObjectFactory factory) {
+        super(sources, index, factory);
     }
 
     public XmlBackgroundType getXmlCompendiumObject() {
@@ -30,45 +29,45 @@ public class CompendiumBackground extends CompendiumBase {
     }
 
     @Override
-    public boolean convert(JsonNode jsonSource) {
-        this.sources = new CompendiumSources(key, jsonSource);
+    public List<CompendiumBase> convert(JsonNode jsonSource) {
+        if (index.keyIsExcluded(sources.key)) {
+            Log.debugf("Excluded %s", sources.key);
+            return List.of(); // do not include
+        }
+        jsonSource = index.handleCopy(IndexType.background, jsonSource);
+
         this.fc5Background = factory.createBackgroundType();
         this.attributes = fc5Background.getNameOrProficiencyOrTrait();
-        this.name = jsonSource.get("name").asText();
+        this.backgroundName = decoratedTypeName(getName(), sources);
 
-        if (index.excludeElement(key, jsonSource, sources)) {
-            return false; // do not include
-        }
-        jsonSource = handleCopy(IndexType.background, jsonSource);
-
-        attributes.add(factory.createBackgroundTypeName(name));
+        attributes.add(factory.createBackgroundTypeName(backgroundName));
 
         addBackgroundSkillProficiency(jsonSource);
         addBackgroundTraits(jsonSource);
-        return true; // do not include
+        return List.of(this); // do not include
     }
 
     private void addBackgroundSkillProficiency(JsonNode value) {
         JsonNode skills = value.withArray("skillProficiencies");
         String list = jsonToSkillList(skills);
-        if (list != null && !list.isEmpty()) {
+        if (!list.isEmpty()) {
             attributes.add(factory.createBackgroundTypeProficiency(list));
         }
     }
 
-    public void addBackgroundTraits(JsonNode value) {
+    public void addBackgroundTraits(JsonNode jsonSource) {
         List<String> text = new ArrayList<>();
         try {
-            getFluffDescription(name, value, IndexType.backgroundfluff, text);
+            getFluffDescription(jsonSource, IndexType.backgroundfluff, text);
             maybeAddBlankLine(text);
         } catch (Exception e) {
-            Log.errorf(e, "Unable to parse traits for %s", name);
+            Log.errorf(e, "Unable to parse traits for %s", sources);
         }
         text.add("Source: " + sources.getSourceText());
         XmlTraitType description = createTraitType("Description", text);
         attributes.add(factory.createBackgroundTypeTrait(description));
 
-        List<XmlTraitType> traits = collectTraits(name, value);
+        List<XmlTraitType> traits = collectTraitsFromEntries(backgroundName, jsonSource);
         traits.forEach(t -> attributes.add(factory.createBackgroundTypeTrait(t)));
     }
 }

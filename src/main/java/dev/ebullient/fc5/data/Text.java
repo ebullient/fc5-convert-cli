@@ -124,7 +124,6 @@ public class Text {
                         .replaceAll("[\\| ]+", "-")
                         .toLowerCase()
                         .replaceAll("[^0-9a-z-]", "");
-                System.out.println(diceRollHeading);
             }
             boolean newHeaderRow = (tableMode != newTableMode) || (tableMode && diceRollTable);
 

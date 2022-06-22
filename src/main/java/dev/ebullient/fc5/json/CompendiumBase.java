@@ -1,13 +1,7 @@
 package dev.ebullient.fc5.json;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -15,13 +9,9 @@ import java.util.stream.StreamSupport;
 
 import javax.xml.bind.JAXBElement;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import dev.ebullient.fc5.Import5eTools;
 import dev.ebullient.fc5.Log;
 import dev.ebullient.fc5.json.JsonIndex.IndexType;
 import dev.ebullient.fc5.xml.XmlModifierType;
@@ -30,10 +20,6 @@ import dev.ebullient.fc5.xml.XmlSizeEnum;
 import dev.ebullient.fc5.xml.XmlTraitType;
 
 public abstract class CompendiumBase {
-    final static Pattern itemPattern = Pattern.compile("\\{@item ([^|}]+)\\|?([^|}]*)\\|?([^|}]*)?\\}");
-    final static Pattern spellPattern = Pattern.compile("\\{@spell ([^|}]+)\\|?([^|}]*)\\|?([^|}]*)?\\}");
-    final static Pattern dicePattern = Pattern.compile("\\{@(dice|damage) ([^|}]+)[^}]*\\}");
-    final static Pattern chancePattern = Pattern.compile("\\{@chance ([^}]+)\\}");
     final static Pattern featPattern = Pattern.compile("([^|]+)\\|?.*");
 
     public static final String LI = "• ";
@@ -52,25 +38,25 @@ public abstract class CompendiumBase {
             "Unarmored Defense: Strength",
             "Unarmored Defense: Wisdom");
 
-    final String key;
+    final CompendiumSources sources;
     final JsonIndex index;
     final XmlObjectFactory factory;
 
-    public CompendiumBase(String key, JsonIndex index, XmlObjectFactory factory) {
-        this.key = key;
+    public CompendiumBase(CompendiumSources sources, JsonIndex index, XmlObjectFactory factory) {
+        this.sources = sources;
         this.index = index;
         this.factory = factory;
     }
 
-    public abstract boolean convert(JsonNode value);
+    public abstract List<CompendiumBase> convert(JsonNode value);
 
     public abstract Object getXmlCompendiumObject();
 
-    List<CompendiumBase> variants() {
-        return List.of(this);
+    String getName() {
+        return this.sources.name;
     }
 
-    XmlSizeEnum getSize(String name, JsonNode value) {
+    XmlSizeEnum getSize(JsonNode value) {
         JsonNode size = value.get("size");
         try {
             if (size == null) {
@@ -80,13 +66,13 @@ public abstract class CompendiumBase {
             } else if (size.isArray()) {
                 return XmlSizeEnum.fromValue(size.get(0).asText());
             }
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException ignored) {
         }
-        Log.errorf("Unable to parse size for %s from %s", name, size.toPrettyString());
+        Log.errorf("Unable to parse size for %s from %s", sources, size.toPrettyString());
         return XmlSizeEnum.M;
     }
 
-    BigInteger getSpeed(String name, JsonNode value) {
+    BigInteger getSpeed(JsonNode value) {
         JsonNode speed = value.get("speed");
         try {
             if (speed == null) {
@@ -96,52 +82,47 @@ public abstract class CompendiumBase {
             } else if (speed.has("walk")) {
                 return BigInteger.valueOf(speed.get("walk").asLong());
             }
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException ignored) {
         }
-        Log.errorf("Unable to parse size for %s from %s", name, speed.toPrettyString());
+        Log.errorf("Unable to parse size for %s from %s", sources, speed);
         return BigInteger.valueOf(30);
     }
 
-    void appendEntryToText(String name, List<String> text, JsonNode entry) {
-        appendEntryToText(name, text, entry, new ArrayList<>());
+    void appendEntryToText(List<String> text, JsonNode entry) {
+        appendEntryToText(text, entry, new ArrayList<>());
     }
 
-    void appendEntryToText(String name, List<String> text, JsonNode entry, final Collection<String> diceRolls) {
+    void appendEntryToText(List<String> text, JsonNode entry, final Collection<String> diceRolls) {
         if (entry == null) {
             return;
         }
         if (entry.isTextual()) {
             text.add(replaceText(entry.asText(), diceRolls));
         } else if (entry.isArray()) {
-            entry.elements().forEachRemaining(f -> appendEntryToText(name, text, f, diceRolls));
+            entry.elements().forEachRemaining(f -> appendEntryToText(text, f, diceRolls));
         } else if (entry.isObject()) {
             String objectType = entry.get("type").asText();
             switch (objectType) {
-                case "entries": {
-                    List<String> inner = new ArrayList<>();
-                    if (entry.has("entries")) {
-                        appendEntryToText(name, inner, entry.get("entries"), diceRolls);
-                    } else if (entry.has("entry")) {
-                        appendEntryToText(name, inner, entry.get("entry"), diceRolls);
-                    }
-                    prependField(entry, "name", inner);
-                    text.addAll(inner);
-                    break;
-                }
+                case "entry":
+                case "entries":
                 case "itemSpell":
                 case "item": {
                     List<String> inner = new ArrayList<>();
-                    appendEntryToText(name, inner, entry.get("entry"), diceRolls);
+                    appendEntryToText(inner, entry.get("entry"), diceRolls);
+                    appendEntryToText(inner, entry.get("entries"), diceRolls);
                     prependField(entry, "name", inner);
                     text.addAll(inner);
                     break;
                 }
+                case "link": {
+                    text.add(entry.get("text").asText());
+                }
                 case "list": {
-                    appendList(name, text, entry, diceRolls);
+                    appendList(text, entry, diceRolls);
                     break;
                 }
                 case "table": {
-                    appendTable(name, text, entry, diceRolls);
+                    appendTable(text, entry, diceRolls);
                     break;
                 }
                 case "abilityDc":
@@ -153,20 +134,25 @@ public abstract class CompendiumBase {
                             asAbilityEnum(entry.withArray("attributes").get(0))));
                     break;
                 case "refClassFeature": {
-                    appendClassFeature(name, text, "classFeature", IndexType.classfeature, entry);
+                    appendClassFeature(text, "classFeature", IndexType.classfeature, entry);
                     break;
                 }
                 case "refSubclassFeature": {
-                    appendClassFeature(name, text, "subclassFeature", IndexType.subclassfeature, entry);
+                    appendClassFeature(text, "subclassFeature", IndexType.subclassfeature, entry);
                     break;
                 }
                 case "refOptionalfeature":
-                    appendOptionalFeature(name, text, entry);
+                    appendOptionalFeature(text, entry);
                     break;
                 case "options": {
                     maybeAddBlankLine(text);
-                    appendOptions(name, text, entry);
+                    appendOptions(text, entry);
                     break;
+                }
+                case "inline": {
+                    List<String> inner = new ArrayList<>();
+                    appendEntryToText(inner, entry.get("entries"), diceRolls);
+                    text.add(String.join("", inner));
                 }
                 case "quote":
                 case "section":
@@ -175,10 +161,10 @@ public abstract class CompendiumBase {
                     // skip this type
                     break;
                 default:
-                    Log.errorf("Unknown entry object type %s from %s: %s", objectType, name, entry.toPrettyString());
+                    Log.errorf("Unknown entry object type %s from %s: %s", objectType, sources, entry.toPrettyString());
             }
         } else {
-            Log.errorf("Unknown entry type in %s: %s", name, entry.toPrettyString());
+            Log.errorf("Unknown entry type in %s: %s", sources, entry.toPrettyString());
         }
     }
 
@@ -210,32 +196,30 @@ public abstract class CompendiumBase {
         return text.startsWith(prefix) ? text : prefix + text;
     }
 
-    private void appendList(String name, List<String> text, JsonNode entry, final Collection<String> diceRolls) {
-        appendList(name, "items", text, entry, diceRolls);
-    }
-
-    public void appendList(String name, String fieldName, List<String> text, JsonNode entry) {
-        appendList(name, fieldName, text, entry, new ArrayList<>());
-    }
-
-    public void appendList(String name, String fieldName, List<String> text, JsonNode entry,
-            final Collection<String> diceRolls) {
+    private void appendList(List<String> text, JsonNode entry, final Collection<String> diceRolls) {
+        appendList("items", text, entry, diceRolls);
         maybeAddBlankLine(text);
+    }
+
+    public void appendList(String fieldName, List<String> text, JsonNode entry) {
+        appendList(fieldName, text, entry, new ArrayList<>());
+    }
+
+    public void appendList(String fieldName, List<String> text, JsonNode entry, final Collection<String> diceRolls) {
         entry.withArray(fieldName).forEach(e -> {
             List<String> listText = new ArrayList<>();
-            appendEntryToText(name, listText, e, diceRolls);
+            appendEntryToText(listText, e, diceRolls);
             if (listText.size() > 0) {
                 prependText(LI, listText);
                 text.addAll(listText);
             }
         });
-        maybeAddBlankLine(text);
     }
 
-    private void appendTable(String name, List<String> text, JsonNode entry, final Collection<String> diceRolls) {
+    private void appendTable(List<String> text, JsonNode entry, final Collection<String> diceRolls) {
         StringBuilder table = new StringBuilder();
         if (entry.has("caption")) {
-            table.append(entry.get("caption").asText() + ":\n");
+            table.append(entry.get("caption").asText()).append(":\n");
         }
         table.append(StreamSupport.stream(entry.withArray("colLabels").spliterator(), false)
                 .map(x -> replaceText(x.asText(), diceRolls))
@@ -251,11 +235,11 @@ public abstract class CompendiumBase {
         text.add(table.toString());
     }
 
-    private void appendOptions(String name, List<String> text, JsonNode entry) {
+    private void appendOptions(List<String> text, JsonNode entry) {
         List<String> list = new ArrayList<>();
         entry.withArray("entries").forEach(e -> {
             List<String> item = new ArrayList<>();
-            appendEntryToText(name, item, e);
+            appendEntryToText(item, e);
             prependText(LI, item);
             list.addAll(item);
         });
@@ -273,37 +257,35 @@ public abstract class CompendiumBase {
         }
     }
 
-    private void appendOptionalFeature(String name, List<String> text, JsonNode entry) {
+    private void appendOptionalFeature(List<String> text, JsonNode entry) {
         String finalKey = index.getRefKey(IndexType.optionalfeature, entry.get("optionalfeature").asText());
         if (index.keyIsExcluded(finalKey)) {
             return;
         }
+
         JsonNode ref = index.getNode(finalKey);
         if (ref == null) {
-            Log.errorf("Could not find %s from %s", finalKey, name);
+            Log.errorf("Could not find %s from %s", finalKey, sources);
         } else if (index.sourceIncluded(ref.get("source").asText())) {
-            String featureKey = index.getKey(IndexType.optionalfeature, ref);
-            String featureName = ref.get("name").asText();
-            CompendiumSources sources = new CompendiumSources(featureKey, ref);
-            text.add(decoratedFeatureTypeName(sources, "", featureName, ref));
+            CompendiumSources featureSources = index.constructSources(IndexType.optionalfeature, ref);
+            text.add(decoratedFeatureTypeName(featureSources, "", ref));
         }
     }
 
-    private void appendClassFeature(String name, List<String> text, String field, IndexType type, JsonNode entry) {
+    private void appendClassFeature(List<String> text, String field, IndexType type, JsonNode entry) {
         String finalKey = index.getRefKey(type, entry.get(field).asText());
-        if (index.keyIsExcluded(finalKey)) {
-            return;
-        }
         JsonNode ref = index.getNode(finalKey);
         if (ref == null) {
-            Log.errorf("Could not find %s from %s", finalKey, name);
-        } else if (index.sourceIncluded(ref.get("source").asText())) {
-            String classKey = index.getKey(type, ref);
-            String featureName = ref.get("name").asText();
-            String subclassShortName = getTextOrEmpty(ref, "subclassShortName");
-            CompendiumSources sources = new CompendiumSources(classKey, ref);
-            text.add(LI + decoratedFeatureTypeName(sources, subclassShortName, featureName, ref));
+            Log.errorf("Could not find %s from %s", finalKey, sources);
+            return;
         }
+        CompendiumSources featureSources = index.constructSources(type, ref);
+        if (index.keyIsExcluded(featureSources.key)) {
+            Log.debugf("Excluded: ", sources);
+            return;
+        }
+        String subclassShortName = getTextOrEmpty(ref, "subclassShortName");
+        text.add(LI + decoratedFeatureTypeName(featureSources, subclassShortName, ref));
     }
 
     String replaceText(String input) {
@@ -311,65 +293,8 @@ public abstract class CompendiumBase {
     }
 
     String replaceText(String input, final Collection<String> diceRolls) {
-        // {@item Ball Bearings (Bag of 1,000)|phb|bag of ball bearings}
-        // {@item sphere of annihilation}
-        // {@item spellbook|phb}
-        Matcher m = itemPattern.matcher(input);
-        String result = m.replaceAll((match) -> {
-            return match.group(1);
-        });
-
-        m = spellPattern.matcher(result);
-        result = m.replaceAll((match) -> {
-            return match.group(1)
-                    + (match.groupCount() > 2 ? '*' : "");
-        });
-
-        m = dicePattern.matcher(result);
-        result = m.replaceAll((match) -> {
-            diceRolls.add(match.group(2));
-            return match.group(2);
-        });
-
-        m = chancePattern.matcher(result);
-        result = m.replaceAll((match) -> {
-            diceRolls.add("1d100");
-            return match.group(1) + "% chance";
-        });
-
-        return result
-                .replaceAll("\\{@link ([^}|]+)\\|([^}]+)\\}", "$1 ($2)") // this must come first
-                .replaceAll("\\{@5etools ([^}|]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@action ([^}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@creature([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@condition ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@dc ([^}]+)\\}", "DC $1")
-                .replaceAll("\\{@d20 ([^}]+?)\\}", "$1")
-                .replaceAll("\\{@filter ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@background ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@classFeature ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@item ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@race ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@adventure ([^|}]+)\\|([^|}]+)\\|[^|}]*\\}", "$1 of $2")
-                .replaceAll("\\{@adventure ([^|}]+)\\|[^|}]*\\}", "$1")
-                .replaceAll("\\{@deity ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@language ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@quickref ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@table ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@variantrule ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@optfeature ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@feat ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@book ([^}|]+)\\|?[^}]*\\}", "\"$1\"")
-                .replaceAll("\\{@class ([^|}]+)\\|[^|]*\\|?([^|}]*)\\|?[^}]*\\}", "$2") // {@class Class||Usethis|...}
-                .replaceAll("\\{@class ([^|}]+)\\}", "$1") // {@class Bard}
-                .replaceAll("\\{@hit ([^}]+)\\}", "+$1")
-                .replaceAll("\\{@h\\}", "Hit: ")
-                .replaceAll("\\{@b ([^}]+?)\\}", "$1")
-                .replaceAll("\\{@i ([^}]+?)\\}", "$1")
-                .replaceAll("\\{@italic ([^}]+)\\}", "$1")
-                .replaceAll("\\{@sense ([^}]+)\\}", "$1")
-                .replaceAll("\\{@skill ([^}]+)\\}", "$1")
-                .replaceAll("\\{@note (\\*|Note:)?\\s?([^}]+)\\}", "$1");
+        String result = index.replaceDiceTxt(input, diceRolls);
+        return index.replaceAttributes(result);
     }
 
     String asAbilityEnum(JsonNode textNode) {
@@ -394,17 +319,28 @@ public abstract class CompendiumBase {
         return ability;
     }
 
-    public String getFluffDescription(String name, JsonNode value, IndexType fluffType, List<String> text) {
+    public void getFluffDescription(JsonNode value, IndexType fluffType, List<String> text) {
         if (booleanOrDefault(value, "hasFluff", false)) {
             JsonNode fluffNode = index.getNode(fluffType, value);
-            if (fluffNode != null && fluffNode.has("entries")) {
-                appendEntryToText(name, text, fluffNode.get("entries"));
+            if (fluffNode != null) {
+                fluffNode = index.handleCopy(fluffType, fluffNode);
+                if (fluffNode.has("entries")) {
+                    appendEntryToText(text, fluffNode.get("entries"));
+                }
             }
         }
-        return text.toString();
     }
 
-    public List<XmlTraitType> collectTraits(String name, JsonNode value) {
+    public List<XmlTraitType> collectTraits(JsonNode array) {
+        List<XmlTraitType> traits = new ArrayList<>();
+        if (array != null) {
+            array.forEach(entry -> traits.add(jsonToTraitType(entry)));
+        }
+
+        return traits;
+    }
+
+    public List<XmlTraitType> collectTraitsFromEntries(String properName, JsonNode value) {
         List<XmlTraitType> traits = new ArrayList<>();
         List<String> text = new ArrayList<>();
         Set<String> diceRolls = new HashSet<>();
@@ -414,58 +350,92 @@ public abstract class CompendiumBase {
                 text.add(replaceText(entry.asText(), diceRolls));
             } else if (entry.isObject()) {
                 if (entry.has("type") && "list".equals(entry.get("type").asText())) {
-                    entry.withArray("items").forEach(item -> {
-                        XmlTraitType trait = jsonToTraitType(name, item, diceRolls);
-                        traits.add(trait);
-                    });
+                    traits.addAll(collectTraits(entry.withArray("items")));
                 } else {
-                    XmlTraitType trait = jsonToTraitType(name, entry, diceRolls);
+                    XmlTraitType trait = jsonToTraitType(entry);
                     traits.add(trait);
                 }
             }
         });
 
         if (text.size() > 0) {
-            XmlTraitType baseTrait = createTraitType(name, text);
+            XmlTraitType baseTrait = createTraitType(properName, text, diceRolls);
             traits.add(baseTrait);
         }
         return traits;
     }
 
-    public XmlTraitType jsonToTraitType(String name, JsonNode jsonElement, Collection<String> diceRolls) {
+    public XmlTraitType jsonToTraitType(JsonNode jsonElement) {
         XmlTraitType trait = factory.createTraitType();
+        Set<String> diceRolls = new HashSet<>();
 
+        String traitName = "";
         List<JAXBElement<String>> traitAttributes = trait.getNameOrTextOrAttack();
         if (jsonElement.has("name")) {
-            String traitName = jsonElement.get("name").asText().replaceAll(":$", "");
+
+            final Pattern rechargePattern = Pattern.compile("\\{@recharge *(\\d*).*\\}");
+            Matcher m = rechargePattern.matcher(jsonElement.get("name").asText());
+            traitName = m.replaceAll((match) -> {
+                if (match.group(1).length() > 0) {
+                    traitAttributes.add(factory.createTraitTypeRecharge("D" + match.group(1)));
+                    return "(Recharge " + match.group(1) + "-6)";
+                }
+                traitAttributes.add(factory.createTraitTypeRecharge("D6"));
+                return "(Recharge 6)";
+            });
+
+            traitName = replaceText(traitName).replaceAll(":$", "");
             traitAttributes.add(factory.createTraitTypeName(traitName));
-            if (SPECIAL.contains(name)) {
-                traitAttributes.add(factory.createTraitTypeSpecial(name));
+            if (SPECIAL.contains(traitName)) {
+                traitAttributes.add(factory.createTraitTypeSpecial(traitName));
             }
         }
 
         List<String> traitText = new ArrayList<>();
         if (jsonElement.has("entries")) {
-            appendEntryToText(name, traitText, jsonElement.get("entries"), diceRolls);
+            appendEntryToText(traitText, jsonElement.get("entries"), diceRolls);
         } else if (jsonElement.has("entry")) {
-            appendEntryToText(name, traitText, jsonElement.get("entry"), diceRolls);
+            appendEntryToText(traitText, jsonElement.get("entry"), diceRolls);
         }
         traitText.forEach(t -> traitAttributes.add(factory.createTraitTypeText(t)));
 
+        final String attackName = traitName;
+        diceRolls.forEach(r -> {
+            if (r.contains("|")) { // attack
+                traitAttributes.add(factory.createTraitTypeAttack(attackName + r.trim()));
+            } else {
+                if (r.startsWith("d")) {
+                    r = "1" + r;
+                }
+                traitAttributes.add(factory.createItemTypeRoll(r));
+            }
+        });
+
         return trait;
     }
 
-    public XmlTraitType createTraitType(String name, List<String> text) {
-        XmlTraitType baseTrait = factory.createTraitType();
-        List<JAXBElement<String>> baseTraitAttributes = baseTrait.getNameOrTextOrAttack();
-        baseTraitAttributes.add(factory.createTraitTypeName(name));
-        text.forEach(t -> baseTraitAttributes.add(factory.createTraitTypeText(t)));
-        return baseTrait;
+    public XmlTraitType createTraitType(String traitName, List<String> text) {
+        return createTraitType(traitName, text, List.of());
     }
 
-    public XmlTraitType addTraitTypeText(XmlTraitType trait, String text) {
+    public XmlTraitType createTraitType(String traitName, List<String> text, Collection<String> diceRolls) {
+        XmlTraitType trait = factory.createTraitType();
+        List<JAXBElement<String>> traitAttributes = trait.getNameOrTextOrAttack();
+
+        traitAttributes.add(factory.createTraitTypeName(traitName));
+        text.forEach(t -> traitAttributes.add(factory.createTraitTypeText(t)));
+
+        diceRolls.forEach(r -> {
+            if (r.startsWith("d")) {
+                r = "1" + r;
+            }
+            traitAttributes.add(factory.createItemTypeRoll(r));
+        });
+        return trait;
+    }
+
+    public void addTraitTypeText(XmlTraitType trait, String text) {
         trait.getNameOrTextOrAttack().add(factory.createTraitTypeText(text));
-        return trait;
     }
 
     List<XmlModifierType> collectModifierTypes(JsonNode value) {
@@ -532,96 +502,51 @@ public abstract class CompendiumBase {
         if (listNode.isObject()
                 && !listNode.toString().contains("choose")) {
             List<String> list = new ArrayList<>();
-            listNode.fieldNames().forEachRemaining(f -> list.add(f));
+            listNode.fieldNames().forEachRemaining(list::add);
             return String.join(", ", list);
         } else if (listNode.isArray()) {
             List<String> list = new ArrayList<>();
-            listNode.elements().forEachRemaining(f -> list.add(jsonToSkillList(f)));
-            return String.join(", ", list);
-        }
-        return null;
-    }
-
-    public String jsonToSkillBonusList(JsonNode listNode) {
-        if (listNode.size() == 1 && !listNode.toString().contains("choose")) {
-            List<String> list = new ArrayList<>();
-            listNode.fields().forEachRemaining(f -> {
-                list.add(String.format("%s %s", f.getKey(), f.getValue().asText()));
+            listNode.elements().forEachRemaining(f -> {
+                String inner = jsonToSkillList(f);
+                if (!inner.isEmpty()) {
+                    list.add(inner);
+                }
             });
             return String.join(", ", list);
         }
-        return null;
+        return "";
     }
 
-    JsonNode handleCopy(IndexType type, JsonNode jsonSource) {
-        if (jsonSource.has("_copy")) {
-            JsonNode copy = jsonSource.get("_copy");
-            // is the copy a copy?
-            JsonNode baseNode = handleCopy(type, index.getNode(type, copy));
-            try {
-                jsonSource = mergeNodes(type, baseNode, jsonSource);
-            } catch (JsonProcessingException e) {
-                throw new IllegalStateException("Unable to find copy " + copy.toPrettyString());
+    public String jsonArrayObjectToSkillBonusList(JsonNode listNode) {
+        if (listNode.size() == 1 && !listNode.toString().contains("choose")) {
+            List<String> list = new ArrayList<>();
+            listNode.forEach(
+                    e -> e.fields().forEachRemaining(f -> list.add(String.format("%s %s", f.getKey(), f.getValue().asText()))));
+            return String.join(", ", list);
+        }
+        return "";
+    }
+
+    public String jsonObjectToSkillBonusList(JsonNode listNode) {
+        if (listNode != null) {
+            List<String> list = new ArrayList<>();
+            listNode.fields().forEachRemaining(f -> list.add(String.format("%s %s", f.getKey(), f.getValue().asText())));
+            if (!list.isEmpty()) {
+                return String.join(", ", list);
             }
         }
-        return jsonSource;
+        return "";
     }
 
-    JsonNode mergeNodes(IndexType type, JsonNode baseNode, JsonNode value)
-            throws JsonMappingException, JsonProcessingException {
-        ObjectNode mergedNode = (ObjectNode) Import5eTools.MAPPER.readTree(baseNode.toString());
-        mergedNode.put("merged", true);
-        mergedNode.remove("srd");
-        mergedNode.remove("source");
-        mergedNode.remove("page");
-        mergedNode.remove("basicRules");
-        mergedNode.remove("reprintedAs");
-        mergedNode.remove("hasFluff");
-
-        value.fieldNames().forEachRemaining(f -> {
-            JsonNode sourceNode = value.get(f);
-            switch (f) {
-                default:
-                    mergedNode.replace(f, sourceNode);
-                    break;
-                case "_mod":
-                    JsonNode modEntries = sourceNode.get("entries");
-                    if (modEntries.isObject()) {
-                        updateEntries(mergedNode, modEntries);
-                    } else if (modEntries.isArray()) {
-                        modEntries.elements().forEachRemaining(m -> updateEntries(mergedNode, m));
-                    } else {
-                        throw new IllegalStateException("Unknown modification: " + sourceNode.toPrettyString());
-                    }
-                    break;
-                case "_copy":
-                    Log.debugf("Merge: Skipping field %s", f);
+    public void addAdditionalEntries(JsonNode jsonElement, List<String> text, Collection<String> diceRolls, String altSource) {
+        jsonElement.withArray("additionalEntries").forEach(entry -> {
+            if (entry.has("source") && !index.sourceIncluded(entry.get("source").asText())) {
+                return;
+            } else if (!index.sourceIncluded(altSource)) {
+                return;
             }
+            appendEntryToText(text, entry, diceRolls);
         });
-
-        return mergedNode;
-    }
-
-    void updateEntries(JsonNode mergedNode, JsonNode modification) {
-        ArrayNode entries = mergedNode.withArray("entries");
-        switch (modification.get("mode").asText()) {
-            case "insertArr":
-                int index = modification.get("index").asInt();
-                JsonNode items = modification.get("items");
-                if (items.isArray()) {
-                    // iterate backwards so they end up in the right order @ desired index
-                    for (int i = items.size() - 1; i >= 0; i--) {
-                        entries.insert(index, items.get(i));
-                    }
-                } else {
-                    entries.insert(index, items);
-                }
-                break;
-            case "replaceArr":
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown modification mode: " + modification.toPrettyString());
-        }
     }
 
     public List<String> listPrerequisites(JsonNode value) {
@@ -631,18 +556,12 @@ public abstract class CompendiumBase {
             if (entry.has("level")) {
                 prereqs.add(levelToText(entry.get("level")));
             }
-            entry.withArray("race").forEach(r -> {
-                prereqs.add(index.lookupName(IndexType.race, raceToText(r)));
-            });
+            entry.withArray("race").forEach(r -> prereqs.add(index.lookupName(IndexType.race, raceToText(r))));
 
             Map<String, List<String>> abilityScores = new HashMap<>();
-            entry.withArray("ability").forEach(a -> {
-                a.fields().forEachRemaining(score -> {
-                    abilityScores.computeIfAbsent(
-                            score.getValue().asText(),
-                            k -> new ArrayList<>()).add(asAbilityEnum(score.getKey()));
-                });
-            });
+            entry.withArray("ability").forEach(a -> a.fields().forEachRemaining(score -> abilityScores.computeIfAbsent(
+                    score.getValue().asText(),
+                    k -> new ArrayList<>()).add(asAbilityEnum(score.getKey()))));
             abilityScores.forEach(
                     (k, v) -> prereqs.add(String.format("%s %s or higher", String.join(" or ", v), k)));
 
@@ -659,33 +578,26 @@ public abstract class CompendiumBase {
                 String text = s.asText().replaceAll("#c", "");
                 prereqs.add(index.lookupName(IndexType.spell, text));
             });
-            entry.withArray("feat").forEach(f -> {
-                prereqs.add(featPattern.matcher(f.asText()).replaceAll(m -> index.lookupName(IndexType.feat, m.group(1))));
-            });
-            entry.withArray("feature").forEach(f -> {
-                prereqs.add(featPattern.matcher(f.asText())
-                        .replaceAll(m -> index.lookupName(IndexType.optionalfeature, m.group(1))));
-            });
-            entry.withArray("background").forEach(f -> {
-                prereqs.add(index.lookupName(IndexType.background, f.get("name").asText()) + " background");
-            });
-            entry.withArray("item").forEach(i -> {
-                prereqs.add(index.lookupName(IndexType.item, i.asText()));
-            });
+            entry.withArray("feat").forEach(f -> prereqs
+                    .add(featPattern.matcher(f.asText()).replaceAll(m -> index.lookupName(IndexType.feat, m.group(1)))));
+            entry.withArray("feature").forEach(f -> prereqs.add(featPattern.matcher(f.asText())
+                    .replaceAll(m -> index.lookupName(IndexType.optionalfeature, m.group(1)))));
+            entry.withArray("background")
+                    .forEach(f -> prereqs.add(index.lookupName(IndexType.background, f.get("name").asText()) + " background"));
+            entry.withArray("item").forEach(i -> prereqs.add(index.lookupName(IndexType.item, i.asText())));
+
             if (entry.has("psionics")) {
                 prereqs.add("Psionics");
             }
 
             List<String> profs = new ArrayList<>();
-            entry.withArray("proficiency").forEach(f -> {
-                f.fields().forEachRemaining(field -> {
-                    String key = field.getKey();
-                    if ("weapon".equals(key)) {
-                        key += "s";
-                    }
-                    profs.add(String.format("%s %s", key, field.getValue().asText()));
-                });
-            });
+            entry.withArray("proficiency").forEach(f -> f.fields().forEachRemaining(field -> {
+                String key = field.getKey();
+                if ("weapon".equals(key)) {
+                    key += "s";
+                }
+                profs.add(String.format("%s %s", key, field.getValue().asText()));
+            }));
             prereqs.add(String.format("Proficiency with %s", String.join(" or ", profs)));
 
             if (entry.has("other")) {
@@ -739,7 +651,6 @@ public abstract class CompendiumBase {
         }
     }
 
-
     String joinAndReplace(ArrayNode array) {
         List<String> list = new ArrayList<>();
         array.forEach(v -> list.add(replaceText(v.asText())));
@@ -753,9 +664,21 @@ public abstract class CompendiumBase {
         return "";
     }
 
+    String getTextOrDefault(JsonNode x, String field, String value) {
+        if (x.has(field)) {
+            return x.get(field).asText();
+        }
+        return value;
+    }
+
     boolean booleanOrDefault(JsonNode source, String key, boolean value) {
         JsonNode result = source.get(key);
         return result == null ? value : result.asBoolean(value);
+    }
+
+    BigInteger integerOrDefault(JsonNode source, String key, long value) {
+        JsonNode result = source.get(key);
+        return BigInteger.valueOf(result == null ? value : result.asLong());
     }
 
     String decoratedTypeName(String name, CompendiumSources sources) {
@@ -768,10 +691,10 @@ public abstract class CompendiumBase {
         return name;
     }
 
-    public String decoratedFeatureTypeName(CompendiumSources sources, String subclassTitle, String name, JsonNode value) {
-        name = decoratedTypeName(name, sources);
-
+    public String decoratedFeatureTypeName(CompendiumSources valueSources, String subclassTitle, JsonNode value) {
+        String name = decoratedTypeName(value.get("name").asText(), valueSources);
         String type = getTextOrEmpty(value, "featureType");
+
         if (!type.isEmpty()) {
             switch (type) {
                 case "ED":
@@ -822,7 +745,6 @@ public abstract class CompendiumBase {
         if (subclassTitle != null && !subclassTitle.isBlank()) {
             return subclassTitle + ": " + name;
         }
-
         return name;
     }
 }

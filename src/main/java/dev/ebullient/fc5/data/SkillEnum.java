@@ -73,6 +73,12 @@ public enum SkillEnum implements SkillOrAbility {
         if (v == null || v.isBlank()) {
             return false;
         }
-        return allSkills.contains(v.toLowerCase());
+        String lower = v.toLowerCase();
+        for (SkillEnum s : SkillEnum.values()) {
+            if (lower.equals(s.longValue.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

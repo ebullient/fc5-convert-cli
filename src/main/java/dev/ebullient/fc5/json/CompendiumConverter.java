@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -29,35 +30,46 @@ public class CompendiumConverter {
     }
 
     public CompendiumConverter parseElements() {
-        index.elements().forEach(e -> {
-            CompendiumBase base = null;
-            if (e.getKey().startsWith("background|")) {
-                base = new CompendiumBackground(e.getKey(), index, factory);
-            } else if (e.getKey().startsWith("classtype|")) {
-                base = new CompendiumClass(e.getKey(), index, factory);
-            } else if (e.getKey().startsWith("feat|")) {
-                base = new CompendiumFeat(e.getKey(), index, factory);
-            } else if (e.getKey().startsWith("item|")) {
-                base = new CompendiumItem(e.getKey(), index, factory);
-            } else if (e.getKey().startsWith("monster|")) {
-                base = new CompendiumMonster(e.getKey(), index, factory);
-            } else if (e.getKey().startsWith("race|")) {
-                base = new CompendiumRace(e.getKey(), index, factory);
-            } else if (e.getKey().startsWith("spell|")) {
-                base = new CompendiumSpell(e.getKey(), index, factory);
-            } else {
-                return;
-            }
+        StreamSupport.stream(index.elements().spliterator(), false)
+                .filter(e -> e.getValue().has("name"))
+                .forEach(e -> {
+                    CompendiumBase base = null;
+                    IndexType type = IndexType.fromKey(e.getKey());
+                    CompendiumSources sources = new CompendiumSources(type, e.getKey(), e.getValue());
+                    switch (type) {
+                        case background:
+                            base = new CompendiumBackground(sources, index, factory);
+                            break;
+                        case classtype:
+                            base = new CompendiumClass(sources, index, factory);
+                            break;
+                        case feat:
+                            base = new CompendiumFeat(sources, index, factory);
+                            break;
+                        case item:
+                            base = new CompendiumItem(sources, index, factory);
+                            break;
+                        case monster:
+                            base = new CompendiumMonster(sources, index, factory);
+                            break;
+                        case race:
+                            base = new CompendiumRace(sources, index, factory);
+                            break;
+                        case spell:
+                            base = new CompendiumSpell(sources, index, factory);
+                            break;
+                        default:
+                            // Fluff or other utility type
+                            return;
+                    }
 
-            // parse/convert, and filter to allowed sources
-            try {
-                if (base.convert(e.getValue())) {
-                    convertedElements.put(e.getKey(), base);
-                }
-            } catch (Exception ex) {
-                Log.errorf(ex, "Error converting %s: ", e.getKey());
-            }
-        });
+                    // parse/convert, and filter to allowed sources
+                    try {
+                        base.convert(e.getValue()).forEach(x -> convertedElements.put(x.sources.key, x));
+                    } catch (Exception ex) {
+                        Log.errorf(ex, "Error converting %s: %s", e.getKey(), ex.toString());
+                    }
+                });
         Log.debugf("%s converted elements", convertedElements.size());
         return this;
     }
@@ -89,8 +101,7 @@ public class CompendiumConverter {
 
         List<Object> compendiumElements = compendium.getElements();
         convertedElements.values().stream()
-                .filter(v -> type == null || v.key.startsWith(type.name()))
-                .flatMap(v -> v.variants().stream())
+                .filter(v -> type == null || type.matches(v.sources.type))
                 .forEach(v -> compendiumElements.add(v.getXmlCompendiumObject()));
         compendiumElements.sort(null);
         return compendium;

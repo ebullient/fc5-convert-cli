@@ -11,13 +11,9 @@ import java.util.stream.StreamSupport;
 
 import javax.xml.bind.JAXBElement;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import dev.ebullient.fc5.Import5eTools;
 import dev.ebullient.fc5.Log;
 import dev.ebullient.fc5.data.SkillEnum;
 import dev.ebullient.fc5.json.JsonIndex.IndexType;
@@ -33,15 +29,14 @@ import dev.ebullient.fc5.xml.XmlSlotsType;
 public class CompendiumClass extends CompendiumBase {
     final static String INFUSIONS_KNOWN_FEAT = "classfeature|infusions known|artificer|tce|2";
 
-    String name;
     XmlClassType fc5Class;
     List<JAXBElement<?>> attributes;
-    CompendiumSources sources;
     Map<String, List<String>> startingText = new HashMap<>();
     boolean additionalFromBackground;
+    boolean isSidekick;
 
-    public CompendiumClass(String key, JsonIndex index, XmlObjectFactory factory) {
-        super(key, index, factory);
+    public CompendiumClass(CompendiumSources sources, JsonIndex index, XmlObjectFactory factory) {
+        super(sources, index, factory);
     }
 
     public XmlClassType getXmlCompendiumObject() {
@@ -49,32 +44,37 @@ public class CompendiumClass extends CompendiumBase {
     }
 
     @Override
-    public boolean convert(JsonNode classNode) {
-        this.sources = new CompendiumSources(key, classNode);
+    public List<CompendiumBase> convert(JsonNode classNode) {
+        if (index.keyIsExcluded(sources.key)) {
+            Log.debugf("Excluded %s", sources.key);
+            return List.of(); // do not include
+        }
         this.fc5Class = factory.createClassType();
         this.attributes = fc5Class.getNameOrHdOrProficiency();
-        this.name = classNode.get("name").asText();
-
-        if (index.excludeElement(key, classNode, sources)) {
-            return false; // do not include
-        }
-        if (classNode.has("isReprinted")) {
-            Log.debugf("Skipping %s (has been reprinted)", name);
-            return false; // the reprint will be used instead of this one.
-        }
 
         if (classNode.has("className") || classNode.has("_copy")) {
-            classNode = cloneOrCopy(classNode);
+            classNode = index.cloneOrCopy(sources.key, classNode,
+                    IndexType.classtype, classNode.get("className").asText(), classNode.get("classSource").asText());
+        }
+        if (classNode.has("isReprinted")) {
+            Log.debugf("Skipping %s (has been reprinted)", sources);
+            return List.of(); // the reprint will be used instead of this one.
         }
 
-        attributes.add(factory.createClassTypeName(decoratedTypeName(name, sources)));
-        addClassHitDice(classNode);
-        addClassProficiencies(classNode);
-        addClassSpellAbility(classNode);
-        addClassWealth(classNode);
-        addStartingLevel(classNode);
-        addClassAutoLevels(classNode);
-        return true;
+        attributes.add(factory.createClassTypeName(decoratedTypeName(getName(), sources)));
+        if (getName().toLowerCase().contains("sidekick")) {
+            isSidekick = true;
+            addClassSpellAbility(classNode);
+            addClassAutoLevels(classNode);
+        } else {
+            addClassHitDice(classNode);
+            addClassProficiencies(classNode);
+            addClassSpellAbility(classNode);
+            addClassWealth(classNode);
+            addStartingLevel(classNode);
+            addClassAutoLevels(classNode);
+        }
+        return List.of(this);
     }
 
     private void addClassWealth(JsonNode classNode) {
@@ -87,7 +87,7 @@ public class CompendiumClass extends CompendiumBase {
 
             additionalFromBackground = booleanOrDefault(equipment, "additionalFromBackground", true);
             List<String> text = new ArrayList<>();
-            appendList(name, "default", text, equipment);
+            appendList("default", text, equipment);
             startingText.put("equipment", text);
         }
     }
@@ -120,7 +120,7 @@ public class CompendiumClass extends CompendiumBase {
 
         JsonNode startingProf = value.get("startingProficiencies");
         if (startingProf == null) {
-            Log.errorf("%s has no starting proficiencies", name);
+            Log.errorf("%s has no starting proficiencies", sources);
         } else {
             if (startingProf.has("armor")) {
                 String armor = getArmor(startingProf);
@@ -168,7 +168,6 @@ public class CompendiumClass extends CompendiumBase {
         }
 
         classNode.withArray("classTableGroups").forEach(x -> {
-            ArrayNode spellProgression = x.withArray("rowsSpellProgression");
             ArrayNode cols = x.withArray("colLabels");
             ArrayNode rows = x.withArray("rows");
 
@@ -177,18 +176,12 @@ public class CompendiumClass extends CompendiumBase {
                 labels[c] = replaceText(cols.get(c).asText());
             }
 
-            for (int r = 0; r < spellProgression.size(); r++) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(cantrips.size() > 0
-                        ? cantrips.get(r).asText()
-                        : "0").append(", ");
-                sb.append(joinAndReplace((ArrayNode) spellProgression.get(r)));
-
-                XmlSlotsType slots = factory.createSlotsType();
-                slots.setValue(sb.toString());
-
-                List<JAXBElement<?>> content = levels.get(r).getContent();
-                content.add(factory.createAutolevelTypeSlots(slots));
+            if (x.has("title") && x.get("title").asText().equals("Spell Slots per Spell Level")) {
+                constructSpellSlots(rows, cantrips, levels);
+            }
+            if (x.has("rowsSpellProgression")) {
+                ArrayNode spellProgression = x.withArray("rowsSpellProgression");
+                constructSpellSlots(spellProgression, cantrips, levels);
             }
 
             for (int r = 0; r < rows.size(); r++) {
@@ -293,7 +286,7 @@ public class CompendiumClass extends CompendiumBase {
                     }
                 }
 
-                if (name.equals("Bard")) {
+                if (getName().equals("Bard")) {
                     final XmlCounterType counter;
                     if (r < 5) {
                         counter = createCounter("Bardic die (BI)", 6, null);
@@ -318,10 +311,14 @@ public class CompendiumClass extends CompendiumBase {
 
             Set<CompendiumClassFeature> levelFeatures = classFeatures.get((r + 1) + "");
             if (levelFeatures != null) {
+                int finalR = r;
                 levelFeatures.forEach(f -> {
                     content.add(factory.createAutolevelTypeFeature(f.getXmlCompendiumObject()));
-                    if (f.name.equals("Ability Score Improvement")) {
+                    if (f.getName().equals("Ability Score Improvement")) {
                         autolevel.setScoreImprovement("YES");
+                    }
+                    if (isSidekick && finalR == 0 && f.getName().equals("Bonus Proficiencies")) {
+                        addSidekickProficiencies(f);
                     }
                 });
             }
@@ -330,6 +327,83 @@ public class CompendiumClass extends CompendiumBase {
                 // add autolevel to the class
                 attributes.add(factory.createClassTypeAutolevel(autolevel));
             }
+        }
+    }
+
+    private void addSidekickProficiencies(CompendiumClassFeature f) {
+        JsonNode sidekickClassFeature = index.getNode(f);
+        List<String> skills = new ArrayList<>();
+        sidekickClassFeature.withArray("entries").forEach(e -> {
+            String line = e.asText();
+            if (line.contains("saving throw")) {
+                //"The sidekick gains proficiency in one saving throw of your choice: Dexterity, Intelligence, or Charisma.",
+                //"The sidekick gains proficiency in one saving throw of your choice: Wisdom, Intelligence, or Charisma.",
+                //"The sidekick gains proficiency in one saving throw of your choice: Strength, Dexterity, or Constitution.",
+                String text = line.replaceAll(".*in one saving throw of your choice: (.*)", "$1")
+                        .replaceAll("or ", "").replace(".", "");
+                skills.add(text);
+            }
+            if (line.contains("skills")) {
+                // "In addition, the sidekick gains proficiency in five skills of your choice, and it gains proficiency with light armor. If it is a humanoid or has a simple or martial weapon in its stat block, it also gains proficiency with all simple weapons and with two tools of your choice."
+                // "In addition, the sidekick gains proficiency in two skills of your choice from the following list: {@skill Arcana}, {@skill History}, {@skill Insight}, {@skill Investigation}, {@skill Medicine}, {@skill Performance}, {@skill Persuasion}, and {@skill Religion}.",
+                // "In addition, the sidekick gains proficiency in two skills of your choice from the following list: {@skill Acrobatics}, {@skill Animal Handling}, {@skill Athletics}, {@skill Intimidation}, {@skill Nature}, {@skill Perception}, and {@skill Survival}.",
+                String numSkills = line.replaceAll(".* proficiency in (.*) skills .*", "$1");
+                attributes.add(factory.createClassTypeNumSkills(textToInt(numSkills)));
+                int start = line.indexOf("list:");
+                if (start >= 0) {
+                    int end = line.indexOf('.');
+                    String text = line.substring(start + 5, end).trim()
+                            .replaceAll("\\{@skill ([^}]+)}", "$1")
+                            .replace(".", "")
+                            .replace("and ", "");
+                    skills.add(text);
+                } else {
+                    skills.addAll(SkillEnum.allSkills);
+                }
+            }
+            if (line.contains("armor")) {
+                // "In addition, the sidekick gains proficiency in five skills of your choice, and it gains proficiency with light armor. If it is a humanoid or has a simple or martial weapon in its stat block, it also gains proficiency with all simple weapons and with two tools of your choice."
+                // "The sidekick gains proficiency with light armor, and if it is a humanoid or has a simple or martial weapon in its stat block, it also gains proficiency with all simple weapons."
+                // "The sidekick gains proficiency with all armor, and if it is a humanoid or has a simple or martial weapon in its stat block, it gains proficiency with shields and all simple and martial weapons."
+                if (line.contains("all armor")) { // Warrior Sidekick
+                    attributes.add(factory.createClassTypeArmor("light, medium, heavy, shields"));
+                    attributes.add(factory.createClassTypeWeapons("simple, martial"));
+                } else {
+                    attributes.add(factory.createClassTypeArmor("light"));
+                    attributes.add(factory.createClassTypeWeapons("simple"));
+                }
+            }
+            if (line.contains("tools")) {
+                attributes.add(factory.createClassTypeTools("two tools of your choice"));
+            }
+        });
+        attributes.add(factory.createClassTypeProficiency(String.join(", ", skills)));
+    }
+
+    private String textToInt(String text) {
+        switch (text) {
+            case "two":
+                return "2";
+            case "three":
+                return "3";
+            case "five":
+                return "5";
+            default:
+                Log.errorf("Unknown number of skills (%s) listed in sidekick class features (%s)", text, sources);
+                return "1";
+        }
+    }
+
+    private void constructSpellSlots(ArrayNode spellProgression, ArrayNode cantrips, List<XmlAutolevelType> levels) {
+        for (int r = 0; r < spellProgression.size(); r++) {
+            String sb = (cantrips.size() > 0 ? cantrips.get(r).asText() : "0")
+                    + ", " + joinAndReplace((ArrayNode) spellProgression.get(r));
+
+            XmlSlotsType slots = factory.createSlotsType();
+            slots.setValue(sb);
+
+            List<JAXBElement<?>> content = levels.get(r).getContent();
+            content.add(factory.createAutolevelTypeSlots(slots));
         }
     }
 
@@ -350,8 +424,8 @@ public class CompendiumClass extends CompendiumBase {
                     if (level != null && hasSubclasses.isEmpty()) {
                         // subclasses introduced.
                         // Find index elements for the relevant subclasses and add them to the map
-                        index.classElementsMatching(IndexType.subclass, name, classSource)
-                                .forEach(x -> addSubclassToMap(featuresByLevel, level, x, subclassTitle));
+                        index.classElementsMatching(IndexType.subclass, getName(), classSource)
+                                .forEach(x -> addSubclassToMap(featuresByLevel, x, subclassTitle));
                     }
                     hasSubclasses.add(level);
                 }
@@ -360,19 +434,21 @@ public class CompendiumClass extends CompendiumBase {
         return featuresByLevel;
     }
 
-    private void addSubclassToMap(Map<String, Set<CompendiumClassFeature>> featuresByLevel, String level,
+    private void addSubclassToMap(Map<String, Set<CompendiumClassFeature>> featuresByLevel,
             JsonNode subclassNode, String subclassTitle) {
         String scKey = index.getKey(IndexType.subclass, subclassNode);
-        CompendiumClassFeature feature = new CompendiumClassFeature(scKey, index, factory, IndexType.subclass, subclassTitle);
+        CompendiumSources subclassSources = new CompendiumSources(IndexType.subclass, scKey, subclassNode);
+        CompendiumClassFeature feature = new CompendiumClassFeature(subclassSources, index, factory, subclassTitle);
 
-        if (feature.convert(subclassNode)) {
+        if (!feature.convert(subclassNode).isEmpty()) {
             // does the subclass have subclass features? add those to the map...
             subclassNode.withArray("subclassFeatures").forEach(f -> {
                 if (f.isTextual()) {
                     String scf = f.asText();
-                    addNodeToMap(featuresByLevel, IndexType.subclassfeature, scf, getPrefix(subclassTitle, feature.name, scf));
+                    addNodeToMap(featuresByLevel, IndexType.subclassfeature, scf,
+                            getPrefix(subclassTitle, feature.getName(), scf));
                 } else {
-                    Log.errorf("Unexpected subclass feature type for name %s: %s", name, f.toPrettyString());
+                    Log.errorf("Unexpected subclass feature type for name %s: %s", sources, f.toPrettyString());
                 }
             });
         }
@@ -391,45 +467,51 @@ public class CompendiumClass extends CompendiumBase {
         // "Ability Score Improvement|Paladin||4",
         String level = lookup.replaceAll(".*\\|(\\d+)\\|?.*", "$1");
         String finalKey = index.getRefKey(type, lookup);
-        JsonNode value = index.getNode(finalKey);
-        if (value != null) {
-            CompendiumClassFeature feature = new CompendiumClassFeature(finalKey, index, factory, type, title);
-            if (feature.convert(value)) {
-                featureByLevel
-                        .computeIfAbsent(level, k -> new TreeSet<>((a, b) -> a.fc5ClassFeature.compareTo(b.fc5ClassFeature)))
-                        .add(feature);
-
-                StreamSupport.stream(value.withArray("entries").spliterator(), false)
-                        .filter(x -> x.isObject())
-                        .filter(x -> x.has("type"))
-                        .forEach(node -> {
-                            switch (node.get("type").asText()) {
-                                case "refClassFeature": {
-                                    String cf = node.get("classFeature").asText();
-                                    addNodeToMap(featureByLevel, IndexType.classfeature, cf, null);
-                                    break;
-                                }
-                                case "refSubclassFeature": {
-                                    String scf = node.get("subclassFeature").asText();
-                                    addNodeToMap(featureByLevel, IndexType.subclassfeature, scf,
-                                            getPrefix(title, feature.name, scf));
-                                    break;
-                                }
-                                case "refOptionalfeature": {
-                                    String of = node.get("optionalfeature").asText();
-                                    addNodeToMap(featureByLevel, IndexType.optionalfeature, of, null);
-                                    break;
-                                }
-                            }
-                        });
-
-                return level;
-            }
-            return null; // skip this
-        } else {
-            Log.errorf("Unable to find %s in Index (referenced from %s)", finalKey, name);
+        JsonNode featureJson = index.getNode(finalKey);
+        if (featureJson == null) {
+            Log.errorf("Unable to find %s in Index (referenced from %s)", finalKey, sources);
             return null;
         }
+        CompendiumSources featureSources = new CompendiumSources(type, finalKey, featureJson);
+        if (index.excludeElement(featureJson, featureSources)) {
+            Log.debugf("Source of %s is excluded (referenced from %s)", finalKey, sources);
+            return null;
+        }
+
+        CompendiumClassFeature feature = new CompendiumClassFeature(featureSources, index, factory, title);
+        if (feature.convert(featureJson).isEmpty()) {
+            return null; // skip this
+        }
+
+        featureByLevel
+                .computeIfAbsent(level, k -> new TreeSet<>((a, b) -> a.fc5ClassFeature.compareTo(b.fc5ClassFeature)))
+                .add(feature);
+
+        StreamSupport.stream(featureJson.withArray("entries").spliterator(), false)
+                .filter(JsonNode::isObject)
+                .filter(x -> x.has("type"))
+                .forEach(node -> {
+                    switch (node.get("type").asText()) {
+                        case "refClassFeature": {
+                            String cf = node.get("classFeature").asText();
+                            addNodeToMap(featureByLevel, IndexType.classfeature, cf, null);
+                            break;
+                        }
+                        case "refSubclassFeature": {
+                            String scf = node.get("subclassFeature").asText();
+                            addNodeToMap(featureByLevel, IndexType.subclassfeature, scf,
+                                    getPrefix(title, feature.getName(), scf));
+                            break;
+                        }
+                        case "refOptionalfeature": {
+                            String of = node.get("optionalfeature").asText();
+                            addNodeToMap(featureByLevel, IndexType.optionalfeature, of, null);
+                            break;
+                        }
+                    }
+                });
+
+        return level;
     }
 
     XmlCounterType createCounter(String counterName, int value, XmlResetEnum reset) {
@@ -441,37 +523,6 @@ public class CompendiumClass extends CompendiumBase {
             attrs.add(reset);
         }
         return counter;
-    }
-
-    JsonNode cloneOrCopy(JsonNode value) {
-        JsonNode classNode = index.getNode(IndexType.classtype,
-                value.get("className").asText(),
-                value.get("classSource").asText());
-
-        JsonNode copyNode = index.getNode(IndexType.classtype, value.get("_copy"));
-        try {
-            if (classNode == null) {
-                value = mergeClassNodes(copyNode, value);
-            } else if (copyNode == null) {
-                value = mergeClassNodes(classNode, value);
-            } else {
-                // base type first
-                JsonNode mergeNode = mergeClassNodes(classNode, copyNode);
-                value = mergeClassNodes(mergeNode, value);
-                Log.errorf("Check my work: %s is a copy of %s based on %s",
-                        name, getTextOrEmpty(copyNode, "name"), getTextOrEmpty(classNode, "name"));
-            }
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Unable to resolve class " + name);
-        }
-        return value;
-    }
-
-    JsonNode mergeClassNodes(JsonNode baseNode, JsonNode value) throws JsonMappingException, JsonProcessingException {
-        ObjectNode mergedNode = (ObjectNode) Import5eTools.MAPPER.readTree(baseNode.toString());
-        mergedNode.put("merged", true);
-        mergedNode.remove("srd");
-        return null;
     }
 
     void addStartingLevel(JsonNode classNode) {
@@ -506,8 +557,8 @@ public class CompendiumClass extends CompendiumBase {
         feature.setOptional("YES");
 
         List<JAXBElement<?>> fAttr = feature.getNameOrTextOrSpecial();
-        fAttr.add(factory.createFeatureTypeName(String.format("Starting %s", name)));
-        text.stream().forEach(line -> fAttr.add(factory.createFeatureTypeText(line)));
+        fAttr.add(factory.createFeatureTypeName(String.format("Starting %s", getName())));
+        text.forEach(line -> fAttr.add(factory.createFeatureTypeText(line)));
 
         content.add(factory.createAutolevelTypeFeature(feature));
 
@@ -521,10 +572,9 @@ public class CompendiumClass extends CompendiumBase {
     void addMulticlassing(JsonNode multiclassing, List<JAXBElement<?>> content) {
         final List<String> t2 = new ArrayList<>();
 
-        t2.add(String.format("To multiclass as a %s, you must meet the following prerequisites:", name));
-        multiclassing.with("requirements").fields().forEachRemaining(ability -> {
-            t2.add(String.format("%s%s %s", LI, asAbilityEnum(ability.getKey()), ability.getValue().asText()));
-        });
+        t2.add(String.format("To multiclass as a %s, you must meet the following prerequisites:", getName()));
+        multiclassing.with("requirements").fields().forEachRemaining(
+                ability -> t2.add(String.format("%s%s %s", LI, asAbilityEnum(ability.getKey()), ability.getValue().asText())));
 
         JsonNode gained = multiclassing.get("proficienciesGained");
         if (gained != null) {
@@ -551,8 +601,8 @@ public class CompendiumClass extends CompendiumBase {
         f2.setOptional("YES");
 
         List<JAXBElement<?>> f2Attr = f2.getNameOrTextOrSpecial();
-        f2Attr.add(factory.createFeatureTypeName(String.format("Multiclassing %s", name)));
-        t2.stream().forEach(line -> f2Attr.add(factory.createFeatureTypeText(line)));
+        f2Attr.add(factory.createFeatureTypeName(String.format("Multiclassing %s", getName())));
+        t2.forEach(line -> f2Attr.add(factory.createFeatureTypeText(line)));
         f2Attr.add(factory.createFeatureTypeText("Source: " + sources.getSourceText()));
 
         content.add(factory.createAutolevelTypeFeature(f2));
@@ -579,7 +629,7 @@ public class CompendiumClass extends CompendiumBase {
     int getSkills(JsonNode source, List<String> list) {
         ArrayNode skillNode = source.withArray("skills");
         if (skillNode.size() > 1) {
-            Log.errorf("Multivalue skill array in %s: %s", name, source.toPrettyString());
+            Log.errorf("Multivalue skill array in %s: %s", sources, source.toPrettyString());
         }
         JsonNode skills = skillNode.get(0);
 
@@ -594,7 +644,7 @@ public class CompendiumClass extends CompendiumBase {
             list.addAll(SkillEnum.allSkills);
         } else {
             Log.errorf("Unexpected skills in starting proficiencies for %s: %s",
-                    name, source.toPrettyString());
+                    sources, source.toPrettyString());
         }
 
         return count;

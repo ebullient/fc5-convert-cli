@@ -13,17 +13,16 @@ import dev.ebullient.fc5.xml.XmlFeatureType;
 import dev.ebullient.fc5.xml.XmlObjectFactory;
 
 public class CompendiumClassFeature extends CompendiumBase {
-    String name;
+
     XmlFeatureType fc5ClassFeature;
     List<JAXBElement<?>> attributes;
-    CompendiumSources sources;
 
     final IndexType type;
     String subclassTitle; // only set for subclasses
 
-    public CompendiumClassFeature(String key, JsonIndex index, XmlObjectFactory factory, IndexType type, String subclassName) {
-        super(key, index, factory);
-        this.type = type;
+    public CompendiumClassFeature(CompendiumSources sources, JsonIndex index, XmlObjectFactory factory, String subclassName) {
+        super(sources, index, factory);
+        this.type = sources.type;
         this.subclassTitle = subclassName;
     }
 
@@ -33,21 +32,16 @@ public class CompendiumClassFeature extends CompendiumBase {
     }
 
     @Override
-    public boolean convert(JsonNode value) {
-        this.sources = new CompendiumSources(key, value);
+    public List<CompendiumBase> convert(JsonNode value) {
+        if (index.keyIsExcluded(sources.key)) {
+            Log.debugf("Excluded %s", sources.key);
+            return List.of(); // do not include
+        }
+
         this.fc5ClassFeature = factory.createFeatureType();
         this.attributes = fc5ClassFeature.getNameOrTextOrSpecial();
-        this.name = value.get("name").asText();
 
-        if (index.excludeElement(key, value, sources)) {
-            return false; // do not include
-        }
-        if (value.has("isReprinted")) {
-            Log.debugf("Skipping %s, has been reprinted", key);
-            return false; // the reprint will be used instead of this one.
-        }
-
-        attributes.add(factory.createFeatureTypeName(decoratedFeatureTypeName(sources, subclassTitle, name, value)));
+        attributes.add(factory.createFeatureTypeName(decoratedFeatureTypeName(sources, subclassTitle, value)));
         if (type.isOptional() || sources.isFromUA()) {
             fc5ClassFeature.setOptional("YES");
         }
@@ -58,11 +52,11 @@ public class CompendiumClassFeature extends CompendiumBase {
             attributes.add(factory.createFeatureTypeModifier(m));
         });
         // proficiency
-        return true;
+        return List.of(this);
     }
 
     public void addClassFeatureSpecial(JsonNode value) {
-        if (name.startsWith("Unarmored Defense")) {
+        if (sources.name.startsWith("Unarmored Defense")) {
             String content = value.get("entries").toString();
             if (content.contains("Constitution modifier")) {
                 attributes.add(factory.createFeatureTypeSpecial("Unarmored Defense: Constitution"));
@@ -71,20 +65,20 @@ public class CompendiumClassFeature extends CompendiumBase {
             } else if (content.contains("Charisma modifier")) {
                 attributes.add(factory.createFeatureTypeSpecial("Unarmored Defense: Charisma"));
             } else {
-                Log.errorf("Unhandled Unarmored Defense for %s: %s", name, content);
+                Log.errorf("Unhandled Unarmored Defense for %s: %s", sources, content);
             }
-        } else if (SPECIAL.contains(name)) {
-            attributes.add(factory.createFeatureTypeSpecial(name));
+        } else if (SPECIAL.contains(sources.name)) {
+            attributes.add(factory.createFeatureTypeSpecial(sources.name));
         }
     }
 
     public void addClassFeatureText(JsonNode value) {
         List<String> text = new ArrayList<>();
         try {
-            value.withArray("entries").forEach(entry -> appendEntryToText(name, text, entry));
+            value.withArray("entries").forEach(entry -> appendEntryToText(text, entry));
             maybeAddBlankLine(text);
         } catch (Exception e) {
-            Log.errorf(e, "Unable to parse text for %s", name);
+            Log.errorf(e, "Unable to parse text for %s", sources);
         }
         text.add("Source: " + sources.getSourceText());
         text.forEach(t -> attributes.add(factory.createFeatureTypeText(t)));

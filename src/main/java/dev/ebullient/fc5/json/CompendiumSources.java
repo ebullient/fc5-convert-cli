@@ -10,13 +10,19 @@ import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import dev.ebullient.fc5.json.JsonIndex.IndexType;
+
 public class CompendiumSources {
+    final IndexType type;
     final String key;
+    final String name;
     final Set<String> bookSources = new HashSet<>();
     final String sourceText;
 
-    CompendiumSources(String key, JsonNode jsonElement) {
+    CompendiumSources(IndexType type, String key, JsonNode jsonElement) {
+        this.type = type;
         this.key = key;
+        this.name = jsonElement.get("name").asText();
         this.sourceText = findSourceText(jsonElement);
     }
 
@@ -77,5 +83,10 @@ public class CompendiumSources {
             i.next();
         }
         return i.next();
+    }
+
+    @Override
+    public String toString() {
+        return "sources[" + key + ']';
     }
 }

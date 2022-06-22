@@ -14,13 +14,11 @@ import dev.ebullient.fc5.xml.XmlFeatType;
 import dev.ebullient.fc5.xml.XmlObjectFactory;
 
 public class CompendiumFeat extends CompendiumBase {
-    String name;
     XmlFeatType fc5Feat;
     List<JAXBElement<?>> attributes;
-    CompendiumSources sources;
 
-    public CompendiumFeat(String key, JsonIndex index, XmlObjectFactory factory) {
-        super(key, index, factory);
+    public CompendiumFeat(CompendiumSources sources, JsonIndex index, XmlObjectFactory factory) {
+        super(sources, index, factory);
     }
 
     public XmlFeatType getXmlCompendiumObject() {
@@ -28,16 +26,16 @@ public class CompendiumFeat extends CompendiumBase {
     }
 
     @Override
-    public boolean convert(JsonNode value) {
-        this.sources = new CompendiumSources(key, value);
-        this.fc5Feat = factory.createFeatType();
-        this.attributes = fc5Feat.getNameOrPrerequisiteOrSpecial();
-        this.name = value.get("name").asText();
-
-        if (index.excludeElement(key, value, sources)) {
-            return false; // do not include
+    public List<CompendiumBase> convert(JsonNode value) {
+        if (index.keyIsExcluded(sources.key)) {
+            Log.debugf("Excluded %s", sources.key);
+            return List.of(); // do not include
         }
 
+        this.fc5Feat = factory.createFeatType();
+        this.attributes = fc5Feat.getNameOrPrerequisiteOrSpecial();
+
+        String name = getName();
         attributes.add(factory.createFeatTypeName(name));
         addFeatPrerequisite(value);
         if (SPECIAL.contains(name)) {
@@ -48,7 +46,7 @@ public class CompendiumFeat extends CompendiumBase {
         collectModifierTypes(value).stream().forEach(m -> {
             attributes.add(factory.createFeatTypeModifier(m));
         });
-        return true; // do not include
+        return List.of(this);
     }
 
     public void addFeatText(JsonNode value) {
@@ -59,18 +57,11 @@ public class CompendiumFeat extends CompendiumBase {
         String altSource = sources.alternateSource();
 
         try {
-            value.withArray("entries").forEach(entry -> appendEntryToText(name, text, entry, diceRolls));
-            value.withArray("additionalEntries").forEach(entry -> {
-                if (entry.has("source") && !index.sourceIncluded(entry.get("source").asText())) {
-                    return;
-                } else if (!index.sourceIncluded(altSource)) {
-                    return;
-                }
-                appendEntryToText(name, text, entry, diceRolls);
-            });
+            value.withArray("entries").forEach(entry -> appendEntryToText(text, entry, diceRolls));
+            addAdditionalEntries(value, text, diceRolls, altSource);
             maybeAddBlankLine(text); // before Source
         } catch (Exception e) {
-            Log.errorf(e, "Unable to parse text for %s", name);
+            Log.errorf(e, "Unable to parse text for %s", sources);
         }
         text.add("Source: " + sourceText);
         text.forEach(t -> attributes.add(factory.createFeatTypeText(t)));
