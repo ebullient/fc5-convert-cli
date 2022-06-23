@@ -17,10 +17,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 
-import dev.ebullient.fc5.data.MarkdownWriter;
-import dev.ebullient.fc5.json.CompendiumConverter;
-import dev.ebullient.fc5.json.JsonIndex;
-import dev.ebullient.fc5.json.JsonIndex.IndexType;
+import dev.ebullient.fc5.json2xml.CompendiumConverter;
+import dev.ebullient.fc5.json5e.JsonIndex;
+import dev.ebullient.fc5.json5e.JsonIndex.IndexType;
+import dev.ebullient.fc5.pojo.MarkdownWriter;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ExitCode;

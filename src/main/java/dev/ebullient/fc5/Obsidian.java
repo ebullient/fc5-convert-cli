@@ -8,10 +8,10 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
-import dev.ebullient.fc5.data.CompendiumType;
-import dev.ebullient.fc5.data.CompendiumXmlReader;
-import dev.ebullient.fc5.data.MarkdownWriter;
-import dev.ebullient.fc5.data.MarkdownWriter.WrappedIOException;
+import dev.ebullient.fc5.fc5data.CompendiumType;
+import dev.ebullient.fc5.fc5data.CompendiumXmlReader;
+import dev.ebullient.fc5.pojo.MarkdownWriter;
+import dev.ebullient.fc5.pojo.MarkdownWriter.WrappedIOException;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;

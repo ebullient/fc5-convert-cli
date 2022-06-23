@@ -12,7 +12,7 @@ aliases: ["{resource.name}"]
 
 - **Casting time:** {resource.time}{#if resource.ritual} unless cast as a ritual{/if}
 - **Range:** {resource.range}
-- **Duration:** {resource.range}
+- **Duration:** {resource.duration}
 - **Components:** {resource.components}
 
 {resource.text}

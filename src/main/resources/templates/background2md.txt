@@ -10,7 +10,7 @@ aliases: ["{resource.name}"]
 # {resource.name}
 
 * **Skill Proficiencies**: {resource.proficiency}
-{#for trait in resource.trait}
+{#for trait in resource.traits}
 
 ## {trait.name}
 
