@@ -8,8 +8,8 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
-import dev.ebullient.fc5.fc5data.CompendiumType;
-import dev.ebullient.fc5.fc5data.CompendiumXmlReader;
+import dev.ebullient.fc5.fc5data.Fc5Compendium;
+import dev.ebullient.fc5.fc5data.Fc5XmlReader;
 import dev.ebullient.fc5.pojo.MarkdownWriter;
 import dev.ebullient.fc5.pojo.MarkdownWriter.WrappedIOException;
 import picocli.CommandLine;
@@ -31,13 +31,13 @@ public class Obsidian implements Callable<Integer> {
     Fc5ConvertCli parent;
 
     final Templates tpl;
-    final CompendiumXmlReader reader;
+    final Fc5XmlReader reader;
 
     Path output;
 
     Obsidian(Templates tpl) {
         this.tpl = tpl;
-        reader = new CompendiumXmlReader();
+        reader = new Fc5XmlReader();
     }
 
     @Option(names = "-o", description = "Output directory", required = true)
@@ -67,7 +67,7 @@ public class Obsidian implements Callable<Integer> {
             Log.outPrintln("⏱ Reading " + sourcePath.getFileName());
 
             try (InputStream is = new BufferedInputStream(new FileInputStream(sourcePath.toFile()))) {
-                CompendiumType compendium = reader.parseXMLInputStream(is);
+                Fc5Compendium compendium = reader.parseXMLInputStream(is);
                 Log.outPrintln("  ✅ Done.");
 
                 writer.writeFiles(compendium.getBackgrounds(), "Backgrounds");

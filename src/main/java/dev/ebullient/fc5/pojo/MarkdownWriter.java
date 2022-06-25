@@ -53,7 +53,7 @@ public class MarkdownWriter {
         this.templates = templates;
     }
 
-    public <T extends BaseType> void writeFiles(List<T> elements, String typeName) throws IOException {
+    public <T extends QuteSource> void writeFiles(List<T> elements, String typeName) throws IOException {
         if (elements.isEmpty()) {
             return;
         }
@@ -66,25 +66,25 @@ public class MarkdownWriter {
             try {
                 switch (dirName) {
                     case "backgrounds":
-                        writeFile(fileMap, dirName, templates.renderBackground((MdBackground) x));
+                        writeFile(fileMap, dirName, templates.renderBackground((QuteBackground) x));
                         break;
                     case "classes":
-                        writeFile(fileMap, dirName, templates.renderClass((MdClass) x));
+                        writeFile(fileMap, dirName, templates.renderClass((QuteClass) x));
                         break;
                     case "feats":
-                        writeFile(fileMap, dirName, templates.renderFeat((MdFeat) x));
+                        writeFile(fileMap, dirName, templates.renderFeat((QuteFeat) x));
                         break;
                     case "items":
-                        writeFile(fileMap, dirName, templates.renderItem((MdItem) x));
+                        writeFile(fileMap, dirName, templates.renderItem((QuteItem) x));
                         break;
                     case "monsters":
-                        writeFile(fileMap, dirName, templates.renderMonster((MdMonster) x));
+                        writeFile(fileMap, dirName, templates.renderMonster((QuteMonster) x));
                         break;
                     case "races":
-                        writeFile(fileMap, dirName, templates.renderRace((MdRace) x));
+                        writeFile(fileMap, dirName, templates.renderRace((QuteRace) x));
                         break;
                     case "spells":
-                        writeFile(fileMap, dirName, templates.renderSpell((MdSpell) x));
+                        writeFile(fileMap, dirName, templates.renderSpell((QuteSpell) x));
                         break;
                 }
             } catch (IOException e) {

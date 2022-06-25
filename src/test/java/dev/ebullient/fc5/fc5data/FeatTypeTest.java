@@ -13,13 +13,13 @@ public class FeatTypeTest extends ParsingTestBase {
 
     @Test
     public void testActorFeat() throws Exception {
-        CompendiumType compendium = doParseInputResource("featActor.xml");
+        Fc5Compendium compendium = doParseInputResource("featActor.xml");
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.feats.isEmpty(),
                 "Feats should not be empty, found " + compendium);
 
-        FeatType feat = compendium.feats.get(0);
+        Fc5Feat feat = compendium.feats.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Actor", feat.getName()),
                 () -> assertEquals("", feat.prerequisite),
@@ -29,13 +29,13 @@ public class FeatTypeTest extends ParsingTestBase {
 
     @Test
     public void testDefensiveDuelistFeat() throws Exception {
-        CompendiumType compendium = doParseInputResource("featDefensiveDuelist.xml");
+        Fc5Compendium compendium = doParseInputResource("featDefensiveDuelist.xml");
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.feats.isEmpty(),
                 "Feats should not be empty, found " + compendium);
 
-        FeatType feat = compendium.feats.get(0);
+        Fc5Feat feat = compendium.feats.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Defensive Duelist", feat.getName()),
                 () -> assertEquals("Dexterity 13 or higher", feat.prerequisite),

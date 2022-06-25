@@ -18,13 +18,13 @@ public class MonsterTypeTest extends ParsingTestBase {
 
     @Test
     public void testAnkheg() throws Exception {
-        CompendiumType compendium = doParseInputResource("monsterAnkheg.xml");
+        Fc5Compendium compendium = doParseInputResource("monsterAnkheg.xml");
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.monsters.isEmpty(),
                 "Monsters should not be empty, found " + compendium);
 
-        MonsterType monster = compendium.monsters.get(0);
+        Fc5Monster monster = compendium.monsters.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Ankheg", monster.getName()),
                 () -> assertEquals(SizeEnum.LARGE.value(), monster.getSize()),
@@ -75,13 +75,13 @@ public class MonsterTypeTest extends ParsingTestBase {
 
     @Test
     public void testAboleth() throws Exception {
-        CompendiumType compendium = doParseInputResource("monsterAboleth.xml");
+        Fc5Compendium compendium = doParseInputResource("monsterAboleth.xml");
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.monsters.isEmpty(),
                 "Monsters should not be empty, found " + compendium);
 
-        MonsterType monster = compendium.monsters.get(0);
+        Fc5Monster monster = compendium.monsters.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Aboleth", monster.getName()),
                 () -> assertEquals(SizeEnum.LARGE.value(), monster.getSize()),

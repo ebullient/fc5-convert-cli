@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import dev.ebullient.fc5.pojo.MdRace;
-import dev.ebullient.fc5.pojo.SkillOrAbility;
+import dev.ebullient.fc5.pojo.QuteRace;
 import dev.ebullient.fc5.pojo.SizeEnum;
+import dev.ebullient.fc5.pojo.SkillOrAbility;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -15,13 +15,13 @@ public class RaceTypeTest extends ParsingTestBase {
 
     @Test
     public void testDragonbornRace() throws Exception {
-        CompendiumType compendium = doParseInputResource("raceDragonborn.xml");
+        Fc5Compendium compendium = doParseInputResource("raceDragonborn.xml");
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.races.isEmpty(),
                 "Races should not be empty, found " + compendium);
 
-        MdRace race = compendium.races.get(0);
+        QuteRace race = compendium.races.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Dragonborn", race.getName()),
                 () -> assertEquals(SizeEnum.MEDIUM, race.getSize()),
@@ -29,15 +29,15 @@ public class RaceTypeTest extends ParsingTestBase {
                 () -> assertEquals("Str 2, Cha 1", race.getAbility()),
                 () -> assertEquals("", race.getProficiency()),
                 () -> assertEquals(SkillOrAbility.None.name(), race.getSpellAbility()),
-                () -> assertEquals(8, race.getTraits().size()),
-                () -> assertEquals("Description", race.getTraits().get(0).getName()),
-                () -> assertEquals("Age", race.getTraits().get(1).getName()),
-                () -> assertEquals("Alignment", race.getTraits().get(2).getName()),
-                () -> assertEquals("Size", race.getTraits().get(3).getName()),
-                () -> assertEquals("Draconic Ancestry", race.getTraits().get(4).getName()),
-                () -> assertEquals("Breath Weapon", race.getTraits().get(5).getName()),
-                () -> assertEquals("Damage Resistance", race.getTraits().get(6).getName()),
-                () -> assertEquals("Languages", race.getTraits().get(7).getName()));
+                () -> assertEquals(8, race.getTrait().size()),
+                () -> assertEquals("Description", race.getTrait().get(0).getName()),
+                () -> assertEquals("Age", race.getTrait().get(1).getName()),
+                () -> assertEquals("Alignment", race.getTrait().get(2).getName()),
+                () -> assertEquals("Size", race.getTrait().get(3).getName()),
+                () -> assertEquals("Draconic Ancestry", race.getTrait().get(4).getName()),
+                () -> assertEquals("Breath Weapon", race.getTrait().get(5).getName()),
+                () -> assertEquals("Damage Resistance", race.getTrait().get(6).getName()),
+                () -> assertEquals("Languages", race.getTrait().get(7).getName()));
 
         String content = templates.renderRace(race);
         Assertions.assertAll(

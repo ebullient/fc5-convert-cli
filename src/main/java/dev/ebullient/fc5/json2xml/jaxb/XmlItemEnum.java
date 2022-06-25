@@ -7,10 +7,10 @@
 
 package dev.ebullient.fc5.json2xml.jaxb;
 
-import dev.ebullient.fc5.pojo.ItemEnum;
-
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlType;
+
+import dev.ebullient.fc5.pojo.ItemEnum;
 
 /**
  * <p>

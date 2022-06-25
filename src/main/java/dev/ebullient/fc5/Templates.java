@@ -52,7 +52,7 @@ public class Templates {
     @Inject
     public Template background2md;
 
-    public String renderBackground(MdBackground resource) {
+    public String renderBackground(QuteBackground resource) {
         Template tpl = templates.computeIfAbsent("background2md.txt", k -> customTemplateOrDefault(k, background2md));
         return tpl
                 .data("resource", resource)
@@ -62,7 +62,7 @@ public class Templates {
     @Inject
     public Template class2md;
 
-    public String renderClass(MdClass resource) {
+    public String renderClass(QuteClass resource) {
         Template tpl = templates.computeIfAbsent("class2md.txt", k -> customTemplateOrDefault(k, class2md));
         return tpl
                 .data("resource", resource)
@@ -72,7 +72,7 @@ public class Templates {
     @Inject
     public Template feat2md;
 
-    public String renderFeat(MdFeat resource) {
+    public String renderFeat(QuteFeat resource) {
         Template tpl = templates.computeIfAbsent("feat2md.txt", k -> customTemplateOrDefault(k, feat2md));
         return tpl
                 .data("resource", resource)
@@ -82,7 +82,7 @@ public class Templates {
     @Inject
     public Template item2md;
 
-    public String renderItem(MdItem resource) {
+    public String renderItem(QuteItem resource) {
         Template tpl = templates.computeIfAbsent("item2md.txt", k -> customTemplateOrDefault(k, item2md));
         return tpl
                 .data("resource", resource)
@@ -92,7 +92,7 @@ public class Templates {
     @Inject
     public Template monster2md;
 
-    public String renderMonster(MdMonster resource) {
+    public String renderMonster(QuteMonster resource) {
         Template tpl = templates.computeIfAbsent("monster2md.txt", k -> customTemplateOrDefault(k, monster2md));
         return tpl
                 .data("resource", resource)
@@ -102,7 +102,7 @@ public class Templates {
     @Inject
     public Template race2md;
 
-    public String renderRace(MdRace resource) {
+    public String renderRace(QuteRace resource) {
         Template tpl = templates.computeIfAbsent("race2md.txt", k -> customTemplateOrDefault(k, race2md));
         return tpl
                 .data("resource", resource)
@@ -112,7 +112,7 @@ public class Templates {
     @Inject
     public Template spell2md;
 
-    public String renderSpell(MdSpell resource) {
+    public String renderSpell(QuteSpell resource) {
         Template tpl = templates.computeIfAbsent("spell2md.txt", k -> customTemplateOrDefault(k, spell2md));
         return tpl
                 .data("resource", resource)

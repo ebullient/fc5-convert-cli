@@ -1,7 +1,5 @@
 package dev.ebullient.fc5.pojo;
 
-import io.quarkus.qute.TemplateData;
-
 /**
  * <p>
  * Java class for modifierType complex type.
@@ -19,7 +17,6 @@ import io.quarkus.qute.TemplateData;
  * &lt;/complexType>
  * </pre>
  */
-@TemplateData
 public class Modifier {
     public static final Modifier NONE = new Modifier();
 

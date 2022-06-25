@@ -17,7 +17,7 @@ public class SpellTypeTest extends ParsingTestBase {
 
     @Test
     public void testAcidSplashSpell() throws Exception {
-        CompendiumType compendium = doParseInputResource("spellAcidSplash.xml");
+        Fc5Compendium compendium = doParseInputResource("spellAcidSplash.xml");
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.spells.isEmpty(),
@@ -30,7 +30,7 @@ public class SpellTypeTest extends ParsingTestBase {
                 "spell/class/sorcerer",
                 "spell/class/wizard");
 
-        SpellType spell = compendium.spells.get(0);
+        Fc5Spell spell = compendium.spells.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Acid Splash", spell.getName()),
                 () -> assertEquals("cantrip", spell.getLevel()),
@@ -59,7 +59,7 @@ public class SpellTypeTest extends ParsingTestBase {
 
     @Test
     public void testAlarmSpell() throws Exception {
-        CompendiumType compendium = doParseInputResource("spellAlarm.xml");
+        Fc5Compendium compendium = doParseInputResource("spellAlarm.xml");
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.spells.isEmpty(),
@@ -77,7 +77,7 @@ public class SpellTypeTest extends ParsingTestBase {
                 "spell/class/wizard-ritual-caster",
                 "spell/ritual");
 
-        SpellType spell = compendium.spells.get(0);
+        Fc5Spell spell = compendium.spells.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Alarm", spell.getName()),
                 () -> assertEquals("1st-level", spell.getLevel()),

@@ -1,7 +1,5 @@
 package dev.ebullient.fc5.pojo;
 
-import io.quarkus.qute.TemplateData;
-
 /**
  * <p>
  * Java class for categoryEnum.
@@ -23,8 +21,7 @@ import io.quarkus.qute.TemplateData;
  * </pre>
  *
  */
-@TemplateData
-public enum ModifierCategoryEnum implements ConvertedEnumType {
+public enum ModifierCategoryEnum {
 
     BONUS("Bonus"),
     ABILITY_SCORE("Ability Score"),

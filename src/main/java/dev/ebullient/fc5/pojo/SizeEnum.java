@@ -1,7 +1,5 @@
 package dev.ebullient.fc5.pojo;
 
-import io.quarkus.qute.TemplateData;
-
 /**
  * <p>
  * Java class for sizeEnum.
@@ -24,8 +22,7 @@ import io.quarkus.qute.TemplateData;
  * </pre>
  *
  */
-@TemplateData
-public enum SizeEnum implements ConvertedEnumType {
+public enum SizeEnum {
 
     TINY("Tiny", "T"),
     SMALL("Small", "S"),
@@ -43,12 +40,10 @@ public enum SizeEnum implements ConvertedEnumType {
         this.encodedValue = xmlValue;
     }
 
-    @Override
     public String value() {
         return longName;
     }
 
-    @Override
     public String getEncodedValue() {
         return encodedValue;
     }

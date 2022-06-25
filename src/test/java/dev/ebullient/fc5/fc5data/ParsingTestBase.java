@@ -15,16 +15,16 @@ import dev.ebullient.fc5.Templates;
 public class ParsingTestBase {
     static final Path output = Paths.get(System.getProperty("user.dir")).toAbsolutePath().resolve("target");
 
-    protected CompendiumXmlReader reader = new CompendiumXmlReader();
+    protected Fc5XmlReader reader = new Fc5XmlReader();
 
     @Inject
     protected Templates templates;
 
-    protected CompendiumType doParse(String input) throws Exception {
+    protected Fc5Compendium doParse(String input) throws Exception {
         return reader.parseXMLInputStream(new ByteArrayInputStream(input.getBytes()));
     }
 
-    protected CompendiumType doParseInputResource(String resourceName) throws Exception {
+    protected Fc5Compendium doParseInputResource(String resourceName) throws Exception {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourceName)) {
             return reader.parseXMLInputStream(is);
         }
@@ -33,11 +33,12 @@ public class ParsingTestBase {
     protected boolean textContains(String text, String content) {
         return text.contains(content);
     }
-    protected boolean textContains(Text textField, String content) {
+
+    protected boolean textContains(Fc5Text textField, String content) {
         return String.join("", textField.content).contains(content);
     }
 
-    protected boolean rollContains(List<Roll> rollList, String roll) {
+    protected boolean rollContains(List<Fc5Roll> rollList, String roll) {
         return rollList.stream().anyMatch(x -> x.textContent.equals(roll));
     }
 

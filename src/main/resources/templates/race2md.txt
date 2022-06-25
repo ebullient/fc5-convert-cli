@@ -21,7 +21,7 @@ aliases: ["{resource.name}"]
 {#for modifier in resource.modifiers}
 - **{modifier.category}**: {modifier.value}
 {/for}
-{#for trait in resource.traits}
+{#for trait in resource.trait}
 
 ## {trait.name}
 

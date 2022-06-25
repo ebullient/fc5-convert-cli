@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import dev.ebullient.fc5.json5e.JsonIndex;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import dev.ebullient.fc5.Import5eTools;
 import dev.ebullient.fc5.Log;
+import dev.ebullient.fc5.json5e.JsonIndex;
 import dev.ebullient.fc5.json5e.JsonIndex.IndexType;
 
 public class JsonDataTest {
@@ -47,22 +47,25 @@ public class JsonDataTest {
 
     protected void fullIndex(JsonIndex index, Path resourcePath) throws Exception {
         try (Stream<Path> stream = Files.list(resourcePath)) {
-            stream.forEach(p -> {
-                File f = p.toFile();
-                if (f.isDirectory()) {
-                    try {
-                        fullIndex(index, p);
-                    } catch (Exception e) {
-                        Log.errorf(e, "Error parsing %s", p.toString());
-                    }
-                } else if (f.getName().endsWith(".json")) {
-                    try {
-                        index.importTree(doParse(p));
-                    } catch (Exception e) {
-                        Log.errorf(e, "Error parsing %s", p.toString());
-                    }
-                }
-            });
+            stream
+                    .filter(p -> !p.toFile().getName().startsWith("foundry"))
+                    .filter(p -> !p.toFile().getName().startsWith("roll20"))
+                    .forEach(p -> {
+                        File f = p.toFile();
+                        if (f.isDirectory()) {
+                            try {
+                                fullIndex(index, p);
+                            } catch (Exception e) {
+                                Log.errorf(e, "Error parsing %s", p.toString());
+                            }
+                        } else if (f.getName().endsWith(".json")) {
+                            try {
+                                index.importTree(doParse(p));
+                            } catch (Exception e) {
+                                Log.errorf(e, "Error parsing %s", p.toString());
+                            }
+                        }
+                    });
         }
     }
 
@@ -103,7 +106,7 @@ public class JsonDataTest {
         List<String> source = List.of("PHB", "DMG", "XGE");
         JsonNode data = doParse("backgrounds.json");
         JsonIndex index = new JsonIndex(source).importTree(data);
-        CompendiumConverter converter = new CompendiumConverter(index).parseElements();
+        Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
 
         Path p = OUTPUT_PATH.resolve("backgrounds.xml");
         converter.writeToXml(p);
@@ -118,7 +121,7 @@ public class JsonDataTest {
                     .importTree(doParse(TOOLS_PATH.resolve("backgrounds.json")))
                     .importTree(doParse(TOOLS_PATH.resolve("fluff-backgrounds.json")));
 
-            CompendiumConverter converter = new CompendiumConverter(index).parseElements();
+            Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
 
             Path p1 = OUTPUT_PATH.resolve("5etools_all_backgrounds.xml");
             Path p2 = OUTPUT_PATH.resolve("5etools_backgrounds.xml");
@@ -134,7 +137,7 @@ public class JsonDataTest {
         List<String> source = List.of("PHB", "DMG", "XGE");
         JsonNode data = doParse("class-cleric.json");
         JsonIndex index = new JsonIndex(source).importTree(data);
-        CompendiumConverter converter = new CompendiumConverter(index).parseElements();
+        Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
 
         Path p = OUTPUT_PATH.resolve("class.xml");
         converter.writeToXml(p);
@@ -162,7 +165,7 @@ public class JsonDataTest {
             }
             index.importTree(doParse(TOOLS_PATH.resolve("optionalfeatures.json")));
 
-            CompendiumConverter converter = new CompendiumConverter(index).parseElements();
+            Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
 
             Path p1 = OUTPUT_PATH.resolve("5etools_all_classes.xml");
             Path p2 = OUTPUT_PATH.resolve("5etools_classes.xml");
@@ -178,7 +181,7 @@ public class JsonDataTest {
         List<String> source = List.of("PHB", "DMG", "XGE");
         JsonNode data = doParse("feats.json");
         JsonIndex index = new JsonIndex(source).importTree(data);
-        CompendiumConverter converter = new CompendiumConverter(index).parseElements();
+        Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
 
         Path p = OUTPUT_PATH.resolve("feats.xml");
         converter.writeToXml(p);
@@ -192,7 +195,7 @@ public class JsonDataTest {
             JsonIndex index = new JsonIndex(source)
                     .importTree(doParse(TOOLS_PATH.resolve("feats.json")));
 
-            CompendiumConverter converter = new CompendiumConverter(index).parseElements();
+            Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
 
             Path p1 = OUTPUT_PATH.resolve("5etools_all_feats.xml");
             Path p2 = OUTPUT_PATH.resolve("5etools_feats.xml");
@@ -208,7 +211,7 @@ public class JsonDataTest {
         List<String> source = List.of("PHB", "DMG", "XGE");
         JsonNode data = doParse("items.json");
         JsonIndex index = new JsonIndex(source).importTree(data);
-        CompendiumConverter converter = new CompendiumConverter(index).parseElements();
+        Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
 
         Path p = OUTPUT_PATH.resolve("items.xml");
         converter.writeToXml(p);
@@ -224,7 +227,7 @@ public class JsonDataTest {
                     .importTree(doParse(TOOLS_PATH.resolve("items.json")))
                     .importTree(doParse(TOOLS_PATH.resolve("fluff-items.json")));
 
-            CompendiumConverter converter = new CompendiumConverter(index).parseElements();
+            Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
 
             Path p1 = OUTPUT_PATH.resolve("5etools_all_items.xml");
             Path p2 = OUTPUT_PATH.resolve("5etools_items.xml");
@@ -255,7 +258,7 @@ public class JsonDataTest {
                         });
             }
 
-            CompendiumConverter converter = new CompendiumConverter(index).parseElements();
+            Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
 
             Path p1 = OUTPUT_PATH.resolve("5etools_all_monsters.xml");
             Path p2 = OUTPUT_PATH.resolve("5etools_monsters.xml");
@@ -271,7 +274,7 @@ public class JsonDataTest {
         List<String> source = List.of("PHB", "DMG", "XGE");
         JsonNode data = doParse("races.json");
         JsonIndex index = new JsonIndex(source).importTree(data);
-        CompendiumConverter converter = new CompendiumConverter(index).parseElements();
+        Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
 
         Path p = OUTPUT_PATH.resolve("races.xml");
         converter.writeToXml(p);
@@ -286,7 +289,7 @@ public class JsonDataTest {
                     .importTree(doParse(TOOLS_PATH.resolve("races.json")))
                     .importTree(doParse(TOOLS_PATH.resolve("fluff-races.json")));
 
-            CompendiumConverter converter = new CompendiumConverter(index).parseElements();
+            Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
 
             Path p1 = OUTPUT_PATH.resolve("5etools_all_races.xml");
             Path p2 = OUTPUT_PATH.resolve("5etools_races.xml");
@@ -315,7 +318,7 @@ public class JsonDataTest {
                             }
                         });
             }
-            CompendiumConverter converter = new CompendiumConverter(index).parseElements();
+            Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
 
             Path p1 = OUTPUT_PATH.resolve("5etools_all_spells.xml");
             Path p2 = OUTPUT_PATH.resolve("5etools_spells.xml");

@@ -2,7 +2,6 @@ package dev.ebullient.fc5.fc5data;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.List;
 
@@ -16,13 +15,13 @@ import io.quarkus.test.junit.QuarkusTest;
 public class ClassTypeTest extends ParsingTestBase {
     @Test
     public void testBarbarianClass() throws Exception {
-        CompendiumType compendium = doParseInputResource("classBarbarian.xml");
+        Fc5Compendium compendium = doParseInputResource("classBarbarian.xml");
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.classes.isEmpty(),
                 "Classes should not be empty, found " + compendium);
 
-        ClassType barbarian = compendium.classes.get(0);
+        Fc5Class barbarian = compendium.classes.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Barbarian", barbarian.getName()),
                 () -> assertEquals(12, barbarian.getHitDice()),
@@ -31,16 +30,15 @@ public class ClassTypeTest extends ParsingTestBase {
                         barbarian.getProficiency()),
                 () -> assertEquals(SkillOrAbility.None, barbarian.spellAbility),
                 () -> assertEquals(2, barbarian.getNumSkills()),
-                () -> assertNotEquals(Autolevel.NONE, barbarian.autolevel),
                 () -> assertEquals("light, medium, shields", barbarian.getArmor()),
                 () -> assertEquals("simple, martial", barbarian.getWeapons()),
                 () -> assertEquals("none", barbarian.getTools()),
                 () -> assertEquals("2d4x10", barbarian.wealth));
 
-        List<Autolevel> autolevels = barbarian.autolevel;
+        List<Fc5Autolevel> autolevels = barbarian.autolevel;
         Assertions.assertAll(
                 () -> assertEquals(52, autolevels.size()),
-                () -> assertEquals(1, autolevels.get(1).level),
+                () -> assertEquals(1, autolevels.get(1).getLevel()),
                 () -> assertFalse(autolevels.stream().anyMatch(x -> x.features.size() == 0)));
 
         autolevels.stream()

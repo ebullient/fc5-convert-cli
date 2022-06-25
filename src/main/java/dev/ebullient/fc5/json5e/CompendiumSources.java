@@ -10,7 +10,6 @@ import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import dev.ebullient.fc5.fc5data.ItemType;
 import dev.ebullient.fc5.json5e.JsonIndex.IndexType;
 
 public class CompendiumSources {

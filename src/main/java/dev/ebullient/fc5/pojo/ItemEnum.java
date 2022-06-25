@@ -2,8 +2,6 @@ package dev.ebullient.fc5.pojo;
 
 import java.util.List;
 
-import io.quarkus.qute.TemplateData;
-
 /**
  * <p>
  * Java class for
@@ -36,18 +34,17 @@ import io.quarkus.qute.TemplateData;
  * </pre>
  *
  */
-@TemplateData
-public enum ItemEnum implements ConvertedEnumType {
+public enum ItemEnum {
 
     LIGHT_ARMOR("Light Armor", "LA", ""),
     MEDIUM_ARMOR("Medium Armor", "MA", ""),
     HEAVY_ARMOR("Heavy Armor", "HA", ""),
     SHIELD("Shield", "S", ""),
     MELEE_WEAPON("Melee Weapon", "M", ""),
-    EXPLOSIVE("Ranged Weapon", "EXP", "Explosive"),
+    EXPLOSIVE("Ranged Weapon", "EXP", "explosive"),
     RANGED_WEAPON("Ranged Weapon", "R", ""),
     AMMUNITION("Ammunition", "A", ""),
-    AMMUNITION_FUTURISTIC("Ammunition", "AF", "Futuristic"),
+    AMMUNITION_FUTURISTIC("Ammunition", "AF", "ammunition (futuristic)"),
     ROD("Rod", "RD", ""),
     STAFF("Staff", "ST", ""),
     WAND("Wand", "WD", ""),
@@ -94,6 +91,9 @@ public enum ItemEnum implements ConvertedEnumType {
         if (lower.equals("ammunition")) {
             return "A";
         }
+        if (lower.equals("ranged weapon")) {
+            return "R";
+        }
         if (lower.equals("wondrous item")) {
             return "W";
         }
@@ -101,11 +101,11 @@ public enum ItemEnum implements ConvertedEnumType {
     }
 
     public String getSpecializedType() {
-        return additionalType.isBlank() ? longName : additionalType;
+        return additionalType.isBlank() ? lower : additionalType.toLowerCase();
     }
 
     public String value() {
-        return longName;
+        return lower;
     }
 
     public static ItemEnum fromEncodedValue(String v) {
@@ -138,10 +138,6 @@ public enum ItemEnum implements ConvertedEnumType {
 
     public boolean isMoney() {
         return this == WEALTH;
-    }
-
-    public boolean canBeMagic() {
-        return isWondrousItem() || isArmor() || isWeapon();
     }
 
     public boolean isWondrousItem() {

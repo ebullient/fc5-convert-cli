@@ -1,7 +1,5 @@
 package dev.ebullient.fc5.pojo;
 
-import io.quarkus.qute.TemplateData;
-
 /**
  * <p>
  * Java class for schoolEnum.
@@ -26,9 +24,7 @@ import io.quarkus.qute.TemplateData;
  * </pre>
  *
  */
-@TemplateData
-public enum SchoolEnum implements ConvertedEnumType {
-
+public enum SchoolEnum {
     Abjuration("abjuration", "A"),
     Conjuration("conjuration", "C"),
     Divination("divination", "D"),
@@ -47,12 +43,10 @@ public enum SchoolEnum implements ConvertedEnumType {
         this.encodedValue = xmlValue;
     }
 
-    @Override
     public String value() {
         return longName;
     }
 
-    @Override
     public String getEncodedValue() {
         return encodedValue;
     }
@@ -60,6 +54,12 @@ public enum SchoolEnum implements ConvertedEnumType {
     public static SchoolEnum fromEncodedValue(String v) {
         if (v == null || v.isBlank()) {
             return None;
+        }
+        if ("V".equals(v)) {
+            return Evocation;
+        }
+        if ("E".equals(v)) {
+            return Enchantment;
         }
         for (SchoolEnum p : SchoolEnum.values()) {
             if (p.encodedValue.equals(v)) {

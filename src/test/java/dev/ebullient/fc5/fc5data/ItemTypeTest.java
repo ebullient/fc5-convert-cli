@@ -17,17 +17,17 @@ class ItemTypeTest extends ParsingTestBase {
 
     @Test
     public void testJugItem() throws Exception {
-        CompendiumType compendium = doParseInputResource("itemJug.xml");
+        Fc5Compendium compendium = doParseInputResource("itemJug.xml");
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.items.isEmpty(),
                 "Items should not be empty, found " + compendium);
 
-        ItemType item = compendium.items.get(0);
+        Fc5Item item = compendium.items.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Jug", item.getName()),
                 () -> assertEquals(ItemEnum.GEAR, item.getType()),
-                () -> assertEquals("Adventuring Gear", item.getDetail()),
+                () -> assertEquals("adventuring gear", item.getDetail()),
                 () -> assertEquals(4d, item.getWeight()),
                 () -> assertEquals(0.02, item.getCost()),
                 () -> assertTrue(textContains(item.text, "A jug holds")));
@@ -35,7 +35,7 @@ class ItemTypeTest extends ParsingTestBase {
         String content = templates.renderItem(item);
         Assertions.assertAll(
                 () -> assertContains(content, "# Jug"),
-                () -> assertContains(content, "Adventuring Gear"),
+                () -> assertContains(content, "adventuring gear"),
                 () -> assertContains(content, "item/gear"),
                 () -> assertContains(content, "aliases: [\"Jug\"]"));
 
@@ -43,17 +43,17 @@ class ItemTypeTest extends ParsingTestBase {
 
     @Test
     public void testLanceItem() throws Exception {
-        CompendiumType compendium = doParseInputResource("itemLance.xml");
+        Fc5Compendium compendium = doParseInputResource("itemLance.xml");
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.items.isEmpty(),
                 "Items should not be empty, found " + compendium);
 
-        ItemType item = compendium.items.get(0);
+        Fc5Item item = compendium.items.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Lance", item.getName()),
                 () -> assertEquals(ItemEnum.MELEE_WEAPON, item.getType()),
-                () -> assertEquals("Martial Melee Weapon", item.getDetail()),
+                () -> assertEquals("martial melee weapon", item.getDetail()),
                 () -> assertEquals(6d, item.getWeight()),
                 () -> assertEquals(10.0, item.getCost()),
                 () -> assertEquals("1d12 piercing", item.getDamage()),
@@ -63,7 +63,7 @@ class ItemTypeTest extends ParsingTestBase {
         String content = templates.renderItem(item);
         Assertions.assertAll(
                 () -> assertContains(content, "# Lance"),
-                () -> assertContains(content, "Martial Melee Weapon"),
+                () -> assertContains(content, "martial melee weapon"),
                 () -> assertContains(content, "item/weapon/martial/melee"),
                 () -> assertContains(content, "Special: You have disadvantage"),
                 () -> assertContains(content, "aliases: [\"Lance\"]"));
@@ -72,7 +72,7 @@ class ItemTypeTest extends ParsingTestBase {
 
     @Test
     public void testMoreItems() throws Exception {
-        CompendiumType compendium = doParseInputResource("items.xml");
+        Fc5Compendium compendium = doParseInputResource("items.xml");
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.items.isEmpty(),
@@ -84,7 +84,7 @@ class ItemTypeTest extends ParsingTestBase {
         boolean poison = false;
         boolean scimitar = false;
         boolean spikedarmor = false;
-        for (ItemType item : compendium.items) {
+        for (Fc5Item item : compendium.items) {
             String content = templates.renderItem(item);
             if ("Light Crossbow".equals(item.getName())) {
                 crossbow = true;
@@ -97,7 +97,7 @@ class ItemTypeTest extends ParsingTestBase {
                 assertContains(content, "item/armor/medium");
                 assertContains(content, "item/property/major");
                 assertContains(content, "item/property/legendary");
-                assertContains(content, "*Medium Armor, Major, Legendary*");
+                assertContains(content, "*medium armor, major, legendary*");
                 assertContains(content, "**Base Armor Class**: 14 + DEX (max of +2)");
                 assertContains(content, "- **Bonus**: AC +3");
             } else if ("Double-Bladed Scimitar of Vengeance".equals(item.getName())) {
@@ -106,18 +106,18 @@ class ItemTypeTest extends ParsingTestBase {
                 assertContains(content, "item/property/major");
                 assertContains(content, "item/property/uncommon");
                 assertContains(content, "item/property/cursed");
-                assertContains(content, "*Martial Melee Weapon, Major, Uncommon, Cursed Item*");
+                assertContains(content, "*martial melee weapon, major, uncommon, cursed item*");
             } else if ("Carpet of Flying, 6 ft. × 9 ft.".equals(item.getName())) {
                 carpet = true;
                 assertContains(content, "item/wondrous");
                 assertContains(content, "item/property/major");
-                assertContains(content, "*Wondrous Item, Major*");
+                assertContains(content, "*wondrous item, major*");
             } else if ("Carrion Crawler Mucus".equals(item.getName())) {
                 poison = true;
                 assertContains(content, "item/gear");
                 assertContains(content, "item/property/major");
                 assertContains(content, "item/property/poison");
-                assertContains(content, "*Adventuring Gear, Major, Poison*");
+                assertContains(content, "*adventuring gear, major, poison*");
             }
         }
 
@@ -129,11 +129,11 @@ class ItemTypeTest extends ParsingTestBase {
         assertTrue(spikedarmor, "Should have found a spikedarmor");
     }
 
-    private void validateLongsword(ItemType longsword, String content) {
+    private void validateLongsword(Fc5Item longsword, String content) {
         Assertions.assertAll(
                 () -> assertEquals("Longsword of Life Stealing", longsword.getName()),
                 () -> assertEquals(ItemEnum.MELEE_WEAPON, longsword.getType()),
-                () -> assertEquals("Martial Melee Weapon, Major, Rare", longsword.getDetail()),
+                () -> assertEquals("martial melee weapon, major, rare", longsword.getDetail()),
                 () -> assertEquals(3d, longsword.getWeight()),
                 () -> assertTrue(textContains(longsword.text, "Source:")),
                 () -> assertTrue(rollContains(longsword.roll, "3d6")),
@@ -143,16 +143,16 @@ class ItemTypeTest extends ParsingTestBase {
 
         Assertions.assertAll(
                 () -> assertContains(content, "# Longsword of Life Stealing"),
-                () -> assertContains(content, "Martial Melee Weapon, Major, Rare"),
+                () -> assertContains(content, "martial melee weapon, major, rare"),
                 () -> assertContains(content, "item/weapon/martial/melee"),
                 () -> assertContains(content, "aliases: [\"Longsword of Life Stealing\"]"));
     }
 
-    private void validateCrossbow(ItemType crossbow, String content) {
+    private void validateCrossbow(Fc5Item crossbow, String content) {
         Assertions.assertAll(
                 () -> assertEquals("Light Crossbow", crossbow.getName()),
                 () -> assertEquals(ItemEnum.RANGED_WEAPON, crossbow.getType()),
-                () -> assertEquals("Simple Ranged Weapon", crossbow.getDetail()),
+                () -> assertEquals("simple ranged weapon", crossbow.getDetail()),
                 () -> assertEquals(5d, crossbow.getWeight()),
                 () -> assertTrue(textContains(crossbow.text, "Source:")),
                 () -> assertEquals(25.0, crossbow.getCost()),
@@ -164,7 +164,7 @@ class ItemTypeTest extends ParsingTestBase {
 
         Assertions.assertAll(
                 () -> assertContains(content, "# Light Crossbow"),
-                () -> assertContains(content, "Simple Ranged Weapon"),
+                () -> assertContains(content, "simple ranged weapon"),
                 () -> assertContains(content, "item/weapon/simple/ranged"),
                 () -> assertContains(content, "aliases: [\"Light Crossbow\"]"));
     }

@@ -17,11 +17,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 
-import dev.ebullient.fc5.json2xml.CompendiumConverter;
+import dev.ebullient.fc5.json2xml.Json2XmlConverter;
 import dev.ebullient.fc5.json5e.JsonIndex;
 import dev.ebullient.fc5.json5e.JsonIndex.IndexType;
 import dev.ebullient.fc5.pojo.MarkdownWriter;
 import picocli.CommandLine;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ExitCode;
 import picocli.CommandLine.Model.CommandSpec;
@@ -59,6 +60,12 @@ public class Import5eTools implements Callable<Integer> {
     public final static ObjectMapper MAPPER = new ObjectMapper()
             .setVisibility(VisibilityChecker.Std.defaultInstance().with(JsonAutoDetect.Visibility.ANY));
 
+    final Templates tpl;
+
+    Import5eTools(Templates tpl) {
+        this.tpl = tpl;
+    }
+
     @Spec
     CommandSpec spec;
 
@@ -77,8 +84,10 @@ public class Import5eTools implements Callable<Integer> {
     @Option(names = "--index", description = "Create index of keys that can be used to exclude entries")
     boolean filterIndex;
 
+    @ArgGroup(exclusive = false)
+    TemplatePaths paths = new TemplatePaths();
+
     Path output;
-    CompendiumConverter converter = null;
 
     @Option(names = "-o", description = "Output directory", required = true)
     void setOutputPath(File outputDir) {
@@ -110,25 +119,21 @@ public class Import5eTools implements Callable<Integer> {
         JsonIndex index = new JsonIndex(source);
 
         for (Path inputPath : parent.input) {
+            Log.outPrintf("⏱  Reading 5eTools data from %s%n", inputPath);
             try {
                 if (inputPath.toFile().isDirectory()) {
-                    Log.outPrintf("⏱  Reading 5eTools data from %s", inputPath);
                     List<String> inputs = List.of("backgrounds.json", "fluff-backgrounds.json", "bestiary", "class",
                             "feats.json", "items.json", "items-base.json", "fluff-items.json", "optionalfeatures.json",
                             "races.json", "fluff-races.json",
                             "spells", "variantrules.json");
                     for (String input : inputs) {
-                        Path filePath = inputPath.resolve(input);
-                        File file = filePath.toFile();
-                        if (file.exists() && file.isFile()) {
-                            readFile(index, filePath);
-                        } else if (file.exists() && file.isDirectory()) {
-                            fullIndex(index, filePath);
+                        Path p = inputPath.resolve(input);
+                        if (p.toFile().isFile()) {
+                            readFile(index, p);
                         } else {
-                            Log.debugf("Skipping %s, not found / doesn't exist", filePath);
+                            fullIndex(index, p);
                         }
                     }
-                    Log.outPrintln("✅ finished reading 5etools data.");
                 } else {
                     readFile(index, inputPath);
                 }
@@ -136,6 +141,7 @@ public class Import5eTools implements Callable<Integer> {
                 Log.error(e, "  Exception: " + e.getMessage());
                 allOk = false;
             }
+            Log.outPrintln("✅ finished reading 5etools data.");
         }
 
         if (filterIndex) {
@@ -144,7 +150,7 @@ public class Import5eTools implements Callable<Integer> {
         }
 
         if (createXml) {
-            getConverter(index)
+            new Json2XmlConverter(index)
                     .parseElements()
                     .writeToXml(output.resolve("compendium.xml"))
                     .writeTypeToXml(IndexType.background, output.resolve("backgrounds.xml"))
@@ -156,13 +162,22 @@ public class Import5eTools implements Callable<Integer> {
                     .writeTypeToXml(IndexType.spell, output.resolve("spells.xml"));
         }
 
+        if (createMarkdown) {
+            Log.debugf("Custom templates: %s", paths.customTemplates.toString());
+            tpl.setCustomTemplates(paths);
+            Log.debugf("Defined templates: %s", tpl);
+
+            MarkdownWriter writer = new MarkdownWriter(output, tpl);
+            Log.outPrintln("💡 Writing files to " + output);
+        }
+
         return allOk ? ExitCode.OK : ExitCode.SOFTWARE;
     }
 
     protected void fullIndex(JsonIndex index, Path resourcePath) throws IOException {
-        Log.outPrintf("📁 %s\n", resourcePath);
         String basename = resourcePath.getFileName().toString();
 
+        Log.outPrintf("📁 %s\n", resourcePath);
         try (Stream<Path> stream = Files.list(resourcePath)) {
             stream.forEach(p -> {
                 File f = p.toFile();
@@ -173,15 +188,16 @@ public class Import5eTools implements Callable<Integer> {
                     } catch (Exception e) {
                         Log.errorf(e, "Error parsing %s", p.toString());
                     }
-                } else if ((name.startsWith("fluff") || name.startsWith(basename))
-                        && name.endsWith(".json")) {
+                } else if ((name.startsWith("fluff") || name.startsWith(basename)) && name.endsWith(".json")) {
                     try {
                         readFile(index, p);
                     } catch (Exception e) {
-                        Log.errorf(e, "Error parsing %s", p.toString());
+                        Log.errorf(e, "Error parsing %s", resourcePath.toString());
                     }
                 }
             });
+        } catch (Exception e) {
+            Log.errorf(e, "Error parsing %s", resourcePath.toString());
         }
     }
 
@@ -195,13 +211,6 @@ public class Import5eTools implements Callable<Integer> {
             index.importTree(node);
             Log.outPrintf("🔖 Finished reading %s\n", inputPath);
         }
-    }
-
-    CompendiumConverter getConverter(JsonIndex index) {
-        if (converter == null) {
-            return converter = new CompendiumConverter(index);
-        }
-        return converter;
     }
 
     void processNameList(JsonNode listSource, JsonIndex index) throws IOException {

@@ -45,6 +45,10 @@
          </feature>
       </autolevel>
       <autolevel level="1">
+          <counter>
+              <name>Rage</name>
+              <value>2</value>
+          </counter>
          <feature>
             <name>Rage</name>
             <text>In battle, you fight with primal ferocity. On your turn, you can enter a rage as a bonus action.</text>

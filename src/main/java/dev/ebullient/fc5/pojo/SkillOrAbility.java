@@ -59,13 +59,13 @@ public enum SkillOrAbility {
         if (v == null || v.isBlank()) {
             return None;
         }
-        String lower = v.toLowerCase();
+        String lower = v.toLowerCase().replace(" saving throws", "");
         for (SkillOrAbility s : SkillOrAbility.values()) {
             if (s.lowerValue.equals(lower)) {
                 return s;
             }
         }
-        throw new IllegalArgumentException("Unknown skill or ability value " + v);
+        throw new IllegalArgumentException("Unknown skill or ability value " + v + " (compared using " + lower + ")");
     }
 
     public static final List<String> allSkills = Stream.of(SkillOrAbility.values())

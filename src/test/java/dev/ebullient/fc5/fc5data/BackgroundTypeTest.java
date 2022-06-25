@@ -8,7 +8,7 @@ import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import dev.ebullient.fc5.pojo.MdBackground;
+import dev.ebullient.fc5.pojo.QuteBackground;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -16,7 +16,7 @@ public class BackgroundTypeTest extends ParsingTestBase {
 
     @Test
     public void testSimpleBackground() throws Exception {
-        CompendiumType compendium = doParse(String.join("",
+        Fc5Compendium compendium = doParse(String.join("",
                 "<compendium>",
                 "<background>",
                 "<name>Entertainer</name>",
@@ -28,34 +28,34 @@ public class BackgroundTypeTest extends ParsingTestBase {
         Assertions.assertFalse(compendium.backgrounds.isEmpty(),
                 "Backgrounds should not be empty, found " + compendium);
 
-        MdBackground background = compendium.backgrounds.get(0);
+        QuteBackground background = compendium.backgrounds.get(0);
         Assertions.assertEquals("Entertainer", background.getName());
 
         Assertions.assertAll(
                 () -> assertNotNull(background.getProficiency()),
                 () -> assertNotNull(background.getAbilitySkills().getSkillNames()),
-                () -> assertEquals(Collections.emptyList(), background.getTraits()));
+                () -> assertEquals(Collections.emptyList(), background.getTrait()));
     }
 
     @Test
     public void testAcolyteBackground() throws Exception {
-        CompendiumType compendium = doParseInputResource("backgroundAcolyte.xml");
+        Fc5Compendium compendium = doParseInputResource("backgroundAcolyte.xml");
 
         Assertions.assertNotNull(compendium);
         Assertions.assertFalse(compendium.backgrounds.isEmpty(),
                 "Backgrounds should not be empty, found " + compendium);
 
-        MdBackground background = compendium.backgrounds.get(0);
+        QuteBackground background = compendium.backgrounds.get(0);
         Assertions.assertEquals("Acolyte", background.getName());
         Assertions.assertNotNull(background.getProficiency());
-        Assertions.assertEquals(3, background.getTraits().size());
+        Assertions.assertEquals(3, background.getTrait().size());
 
         Assertions.assertAll(
                 () -> assertNotNull(background.getAbilitySkills()),
                 () -> assertNotNull(background.getAbilitySkills().getSkillNames()),
-                () -> assertEquals("Description", background.getTraits().get(0).getName()),
-                () -> assertEquals("Feature: Shelter of the Faithful", background.getTraits().get(1).getName()),
-                () -> assertEquals("Suggested Characteristics", background.getTraits().get(2).getName()));
+                () -> assertEquals("Description", background.getTrait().get(0).getName()),
+                () -> assertEquals("Feature: Shelter of the Faithful", background.getTrait().get(1).getName()),
+                () -> assertEquals("Suggested Characteristics", background.getTrait().get(2).getName()));
 
         String content = templates.renderBackground(background);
         Assertions.assertAll(

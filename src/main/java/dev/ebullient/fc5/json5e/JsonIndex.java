@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
@@ -20,18 +18,9 @@ import com.fasterxml.jackson.databind.node.TextNode;
 
 import dev.ebullient.fc5.Import5eTools;
 import dev.ebullient.fc5.Log;
-import dev.ebullient.fc5.json2xml.CompendiumBase;
+import dev.ebullient.fc5.json2xml.Json2XmlBase;
 
-public class JsonIndex {
-    final static Pattern itemPattern = Pattern.compile("\\{@item ([^|}]+)\\|?([^|}]*)\\|?([^|}]*)?\\}");
-    final static Pattern spellPattern = Pattern.compile("\\{@spell ([^|}]+)\\|?([^|}]*)\\|?([^|}]*)?\\}");
-    final static Pattern dicePattern = Pattern.compile("\\{@(dice|damage) ([^|}]+)[^}]*\\}");
-    final static Pattern chancePattern = Pattern.compile("\\{@chance ([^}]+)\\}");
-
-    final static String damage = "\\(([0-9d+ -]+)\\)";
-    final static String onlyDamage = ".*?" + damage + ".*";
-    final static String additive = damage + "[a-z, ]+plus [0-9 ]+" + damage;
-    final static Pattern alternate = Pattern.compile(damage + "[a-z, ]+or [0-9 ]+" + damage + " (.*)");
+public class JsonIndex implements JsonBase {
 
     final static int CR_UNKNOWN = 100001;
     final static int CR_CUSTOM = 100000;
@@ -318,7 +307,7 @@ public class JsonIndex {
         return nodeIndex.get(finalKey);
     }
 
-    public JsonNode getNode(CompendiumBase compendiumBase) {
+    public JsonNode getNode(Json2XmlBase compendiumBase) {
         return nodeIndex.get(compendiumBase.getSources().key);
     }
 
@@ -486,7 +475,8 @@ public class JsonIndex {
         return jsonSource;
     }
 
-    public JsonNode cloneOrCopy(String originKey, JsonNode value, IndexType parentType, String parentName, String parentSource) {
+    public JsonNode cloneOrCopy(String originKey, JsonNode value, IndexType parentType, String parentName,
+            String parentSource) {
         JsonNode parentNode = parentName == null ? null : getNode(parentType, parentName, parentSource);
         JsonNode copyNode = getNode(parentType, value.get("_copy"));
         if (parentNode == null && copyNode == null) {
@@ -594,25 +584,6 @@ public class JsonIndex {
         }
 
         return target;
-    }
-
-    private String getTextOrEmpty(JsonNode x, String field) {
-        return getTextOrDefault(x, field, "").trim();
-    }
-
-    private String getOrEmptyIfEqual(JsonNode x, String field, String expected) {
-        if (x.has(field)) {
-            String value = x.get(field).asText().trim();
-            return value.equalsIgnoreCase(expected) ? "" : value;
-        }
-        return "";
-    }
-
-    private String getTextOrDefault(JsonNode x, String field, String defaultValue) {
-        if (x.has(field)) {
-            return x.get(field).asText();
-        }
-        return defaultValue;
     }
 
     JsonNode copyNode(JsonNode sourceNode) {
@@ -934,10 +905,6 @@ public class JsonIndex {
         }
     }
 
-    Stream<JsonNode> streamOf(ArrayNode array) {
-        return StreamSupport.stream(array.spliterator(), false);
-    }
-
     void appendToArray(ArrayNode tgtArray, JsonNode items) {
         if (items == null) {
             return;
@@ -1040,120 +1007,6 @@ public class JsonIndex {
         return -1;
     }
 
-    public String replaceDiceTxt(String input, Collection<String> diceRolls) {
-        String result = input;
-        Matcher m;
-
-        if (result.contains("{@atk")) {
-            String attack = result
-                    .replaceAll("\\(\\{@(damage|dice) ([^}]+)\\}\\)", "($2)")
-                    .replaceAll("\\{@(damage|dice) ([^}]+)\\}", "($2)");
-            String toHit = attack.replaceAll(".*\\{@hit ([^}]+)\\}.*", "$1");
-            if (toHit.matches("\\d+") && result.contains("{@damage")) {
-                m = alternate.matcher(attack);
-                if (m.find()) {
-                    // alternate attacks
-                    diceRolls.add(String.format("|+%s|%s%n", toHit, String.format("(%s) %s", m.group(1), m.group(3))
-                            .replaceAll(additive, "($1 + $2)") // combine additive rolls
-                            .replaceAll(onlyDamage, "$1")
-                            .replaceAll(" ", "")));
-                    diceRolls.add(String.format("|+%s|%s%n", toHit, String.format("(%s) %s", m.group(2), m.group(3))
-                            .replaceAll(additive, "($1 + $2)") // combine additive rolls
-                            .replaceAll(onlyDamage, "$1")
-                            .replaceAll(" ", "")));
-                } else {
-                    diceRolls.add(String.format("|+%s|%s%n", toHit, attack
-                            .replaceAll(additive, "($1 + $2)") // combine additive rolls
-                            .replaceAll(onlyDamage, "$1")
-                            .replaceAll(" ", "")));
-                }
-            }
-            result = dicePattern.matcher(result).replaceAll(match -> match.group(2));
-        } else {
-            m = dicePattern.matcher(result);
-            result = m.replaceAll((match) -> {
-                diceRolls.add(match.group(2));
-                return match.group(2);
-            });
-        }
-
-        m = chancePattern.matcher(result);
-        result = m.replaceAll((match) -> {
-            diceRolls.add("1d100");
-            return match.group(1) + "% chance";
-        });
-
-        return result;
-    }
-
-    public String replaceAttributes(String input) {
-        String result = input;
-        Matcher m;
-
-        // {@item Ball Bearings (Bag of 1,000)|phb|bag of ball bearings}
-        // {@item sphere of annihilation}
-        // {@item spellbook|phb}
-        m = itemPattern.matcher(input);
-        result = m.replaceAll((match) -> match.group(1));
-
-        m = spellPattern.matcher(result);
-        result = m.replaceAll((match) -> match.group(1)
-                + (match.groupCount() > 2 && match.group(2).length() > 0 ? '*' : ""));
-
-        m = spellPattern.matcher(result);
-        result = m.replaceAll((match) -> match.group(1)
-                + (match.groupCount() > 2 && match.group(2).length() > 0 ? '*' : ""));
-
-        return result
-                .replace("{@hitYourSpellAttack}", "the summoner's spell attack modifier")
-                .replaceAll("\\{@link ([^}|]+)\\|([^}]+)\\}", "$1 ($2)") // this must come first
-                .replaceAll("\\{@5etools ([^}|]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@area ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@action ([^}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@creature([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@condition ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@disease ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@hazard ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@reward ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@dc ([^}]+)\\}", "DC $1")
-                .replaceAll("\\{@d20 ([^}]+?)\\}", "$1")
-                .replaceAll("\\{@recharge ([^}]+?)\\}", "(Recharge $1-6)")
-                .replaceAll("\\{@recharge\\}", "(Recharge 6)")
-                .replaceAll("\\{@filter ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@background ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@classFeature ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@item ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@race ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@cult ([^|}]+)\\|([^|}]+)\\|[^|}]*\\}", "$2")
-                .replaceAll("\\{@cult ([^|}]+)\\|[^}]*\\}", "$1")
-                .replaceAll("\\{@deity ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@language ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@quickref ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@table ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@variantrule ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@optfeature ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@feat ([^|}]+)\\|?[^}]*\\}", "$1")
-                .replaceAll("\\{@book ([^}|]+)\\|?[^}]*\\}", "\"$1\"")
-                .replaceAll("\\{@class ([^|}]+)\\|[^|]*\\|?([^|}]*)\\|?[^}]*\\}", "$2") // {@class Class||Usethis|...}
-                .replaceAll("\\{@class ([^|}]+)\\}", "$1") // {@class Bard}
-                .replaceAll("\\{@hit ([^}]+)\\}", "+$1")
-                .replaceAll("\\{@h\\}", "Hit: ")
-                .replaceAll("\\{@atk m\\}", "Melee Attack:")
-                .replaceAll("\\{@atk mw\\}", "Melee Weapon Attack:")
-                .replaceAll("\\{@atk rw\\}", "Ranged Weapon Attack:")
-                .replaceAll("\\{@atk mw,rw\\}", "Melee or Ranged Weapon Attack:")
-                .replaceAll("\\{@atk ms\\}", "Melee Spell Attack:")
-                .replaceAll("\\{@atk rs\\}", "Ranged Spell Attack:")
-                .replaceAll("\\{@atk ms,rs\\}", "Melee or Ranged Spell Attack:")
-                .replaceAll("\\{@b ([^}]+?)\\}", "$1")
-                .replaceAll("\\{@i ([^}]+?)\\}", "$1")
-                .replaceAll("\\{@adventure ([^|}]+)\\|[^}]*\\}", "$1")
-                .replaceAll("\\{@italic ([^}]+)\\}", "$1")
-                .replaceAll("\\{@sense ([^}]+)\\}", "$1")
-                .replaceAll("\\{@skill ([^}]+)\\}", "$1")
-                .replaceAll("\\{@note (\\*|Note:)?\\s?([^}]+)\\}", "✧ $2");
-    }
-
     int crToPb(JsonNode cr) {
         if (cr == null || cr.isTextual() && cr.asText().equals("Unknown")) {
             return 0;
@@ -1226,5 +1079,15 @@ public class JsonIndex {
                 return "cha";
         }
         throw new IllegalArgumentException("Unknown skill: " + skill);
+    }
+
+    @Override
+    public JsonIndex getIndex() {
+        return this;
+    }
+
+    @Override
+    public CompendiumSources getSources() {
+        return null;
     }
 }
