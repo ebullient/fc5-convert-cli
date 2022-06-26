@@ -1,7 +1,9 @@
 package dev.ebullient.fc5.pojo;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.quarkus.qute.TemplateData;
@@ -10,26 +12,29 @@ import io.quarkus.qute.TemplateData;
 public class QuteItem implements QuteSource {
     protected final String name;
     protected final ItemEnum type;
+    protected final boolean magic;
     protected final String detail;
-    protected final int ac;
-    protected final double cost;
     protected final double weight;
+    protected final List<String> text;
+
+    protected final double cost;
+    protected final List<Modifier> modifiers;
+    protected final int ac;
     protected final int strengthRequirement;
     protected final boolean stealthPenalty;
     protected final String damage;
     protected final String damage2H;
-    protected final String range;
     protected final List<PropertyEnum> properties;
-    protected final List<Modifier> modifiers;
+    protected final String range;
     protected final List<String> tags;
-    protected final List<String> text;
 
-    protected QuteItem(String name, String detail, ItemEnum type, int ac,
+    protected QuteItem(String name, boolean magic, String detail, ItemEnum type, int ac,
             double cost, double weight, int strength, boolean stealth,
             String damage, String damage2H, String range, List<String> tags,
             List<Modifier> modifiers, List<PropertyEnum> properties,
             List<String> text) {
         this.name = name;
+        this.magic = magic;
         this.detail = detail;
         this.type = type;
         this.ac = ac;
@@ -43,7 +48,7 @@ public class QuteItem implements QuteSource {
         this.modifiers = modifiers;
         this.properties = properties;
         this.tags = tags;
-        this.text = text;
+        this.text = Objects.requireNonNull(text);
     }
 
     public String getName() {
@@ -145,6 +150,7 @@ public class QuteItem implements QuteSource {
         protected String name;
         protected ItemEnum type;
         protected String detail;
+        protected boolean magic;
         protected int ac;
         protected double cost;
         protected double weight;
@@ -154,9 +160,9 @@ public class QuteItem implements QuteSource {
         protected String damage2H;
         protected String range;
         protected List<PropertyEnum> properties = new ArrayList<>();
-        protected List<Modifier> modifiers;
+        protected List<Modifier> modifiers = new ArrayList<>();
+        protected List<String> text = new ArrayList<>();
         protected List<String> tags;
-        protected List<String> text;
 
         public Builder setName(String name) {
             this.name = name;
@@ -178,23 +184,36 @@ public class QuteItem implements QuteSource {
             return this;
         }
 
-        public Builder setAc(int ac) {
-            this.ac = ac;
+        public Builder setMagic(boolean magic) {
+            this.magic = magic;
             return this;
         }
 
-        public Builder setCost(double cost) {
-            this.cost = cost;
+        public Builder setAc(Integer v) {
+            if (v != null) {
+                this.ac = v;
+            }
             return this;
         }
 
-        public Builder setWeight(double weight) {
-            this.weight = weight;
+        public Builder setCost(Double v) {
+            if (v != null) {
+                this.cost = v;
+            }
             return this;
         }
 
-        public Builder setStrengthRequirement(int strengthRequirement) {
-            this.strengthRequirement = strengthRequirement;
+        public Builder setWeight(Double v) {
+            if (v != null) {
+                this.weight = v;
+            }
+            return this;
+        }
+
+        public Builder setStrengthRequirement(Integer v) {
+            if (v != null) {
+                this.strengthRequirement = v;
+            }
             return this;
         }
 
@@ -231,8 +250,15 @@ public class QuteItem implements QuteSource {
             return this;
         }
 
-        public Builder setText(List<String> text) {
-            this.text = text;
+        public Builder addText(String t) {
+            this.text.add(t);
+            return this;
+        }
+
+        public Builder addText(Collection<String> t) {
+            if (t != null) {
+                this.text.addAll(t);
+            }
             return this;
         }
 
@@ -240,7 +266,7 @@ public class QuteItem implements QuteSource {
             PropertyEnum.findAdditionalProperties(name, type, properties, s -> text.stream().anyMatch(l -> l.matches(s)));
             tags = getTags(type, properties);
 
-            return new QuteItem(name, detail, type, ac, cost, weight,
+            return new QuteItem(name, magic, detail, type, ac, cost, weight,
                     strengthRequirement, stealthPenalty, damage, damage2H, range, tags,
                     modifiers, properties, text);
         }

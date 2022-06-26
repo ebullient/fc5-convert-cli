@@ -1,7 +1,9 @@
 package dev.ebullient.fc5.pojo;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,7 +37,7 @@ public class QuteSpell implements QuteSource {
         this.classes = classes;
         this.classSlugs = Stream.of(classes.split("\\s*,\\s*"))
                 .map(x -> MarkdownWriter.slugifier().slugify(x)).collect(Collectors.toList());
-        this.text = text;
+        this.text = Objects.requireNonNull(text);
     }
 
     public String getName() {
@@ -116,7 +118,7 @@ public class QuteSpell implements QuteSource {
         protected String duration;
         protected String classes;
         protected String source;
-        protected List<String> text;
+        protected List<String> text = new ArrayList<>();
 
         public Builder setName(String name) {
             this.name = name;
@@ -168,8 +170,13 @@ public class QuteSpell implements QuteSource {
             return this;
         }
 
-        public Builder setText(List<String> text) {
-            this.text = text;
+        public Builder addText(String t) {
+            this.text.add(t);
+            return this;
+        }
+
+        public Builder addText(Collection<String> t) {
+            this.text.addAll(t);
             return this;
         }
 

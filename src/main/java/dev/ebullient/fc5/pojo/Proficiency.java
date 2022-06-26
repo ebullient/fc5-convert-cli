@@ -1,5 +1,6 @@
 package dev.ebullient.fc5.pojo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -19,7 +20,7 @@ public class Proficiency {
 
     public String getSavingThrows() {
         return skills.stream()
-                .filter(x -> x.isAbility())
+                .filter(SkillOrAbility::isAbility)
                 .sorted(Comparator.comparingInt(Enum::ordinal))
                 .map(x -> x.value() + " Saving Throws")
                 .collect(Collectors.joining(", "));
@@ -27,7 +28,7 @@ public class Proficiency {
 
     public String getSkillNames() {
         return skills.stream()
-                .filter(x -> x.isSkill())
+                .filter(SkillOrAbility::isSkill)
                 .sorted(Comparator.comparingInt(Enum::ordinal))
                 .map(x -> "*" + x.value() + "*")
                 .collect(Collectors.joining(", "));
@@ -36,35 +37,28 @@ public class Proficiency {
     public String toText() {
         return skills.stream()
                 .sorted(Comparator.comparingInt(Enum::ordinal))
-                .map(s -> s.value())
+                .map(SkillOrAbility::value)
                 .collect(Collectors.joining(", "));
     }
 
     public static class Builder {
         final Set<SkillOrAbility> skills = new HashSet<>();
 
-        public Builder addSkills(Collection<SkillOrAbility> skills) {
-            this.skills.addAll(skills);
+        public Builder addSkills(Collection<String> list) {
+            list.forEach(s -> skills.add(SkillOrAbility.fromTextValue(s)));
             return this;
         }
 
-        public Builder addSkill(SkillOrAbility skill) {
-            skills.add(skill);
-            return this;
-        }
-
-        public Builder fromString(String textContent) {
-            if (textContent == null || textContent.trim().isEmpty()) {
+        public Builder fromString(String s) {
+            if (s == null || s.trim().isEmpty()) {
                 return this;
             }
-            Arrays.asList(textContent.trim().split("\\s*,\\s*")).forEach(s -> {
-                skills.add(SkillOrAbility.fromTextValue(s));
-            });
+            Arrays.asList(s.trim().split("\\s*,\\s*")).forEach(skill -> skills.add(SkillOrAbility.fromTextValue(skill)));
             return this;
         }
 
         public Proficiency build() {
-            return new Proficiency(skills.stream().collect(Collectors.toList()));
+            return new Proficiency(new ArrayList<>(skills));
         }
     }
 }

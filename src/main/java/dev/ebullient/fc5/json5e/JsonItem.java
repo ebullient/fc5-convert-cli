@@ -1,8 +1,8 @@
 package dev.ebullient.fc5.json5e;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -30,6 +30,14 @@ public interface JsonItem extends JsonBase {
         return getSources().getName();
     }
 
+    default boolean itemStealthPenalty(JsonNode jsonSource) {
+        JsonNode stealth = jsonSource.get("stealth");
+        if (stealth != null) {
+            return stealth.asBoolean();
+        }
+        return false;
+    }
+
     default String itemDetail(JsonNode jsonSource, List<PropertyEnum> propertyEnums) {
         String tier = getTextOrDefault(jsonSource, "tier", "");
         if (!tier.isEmpty()) {
@@ -46,7 +54,11 @@ public interface JsonItem extends JsonBase {
         return replaceText(detail);
     }
 
-    default List<String> itemTextAndRolls(JsonNode jsonSource, Set<String> diceRolls) {
+    default List<String> itemTextAndRolls(JsonNode jsonSource) {
+        return itemTextAndRolls(jsonSource, new ArrayList<>());
+    }
+
+    default List<String> itemTextAndRolls(JsonNode jsonSource, Collection<String> diceRolls) {
         List<String> text = new ArrayList<>();
         String sourceText = getSources().getSourceText();
         String altSource = getSources().alternateSource();
@@ -82,7 +94,7 @@ public interface JsonItem extends JsonBase {
         return text;
     }
 
-    default void insertItemRefText(List<String> text, JsonNode source, String input, Set<String> diceRolls) {
+    default void insertItemRefText(List<String> text, JsonNode source, String input, Collection<String> diceRolls) {
         JsonIndex index = getIndex();
         String finalKey = index.getRefKey(JsonIndex.IndexType.itementry, input.replaceAll("\\{#itemEntry (.*)\\}", "$1"));
         if (index.keyIsExcluded(finalKey)) {
@@ -122,7 +134,11 @@ public interface JsonItem extends JsonBase {
         return List.of();
     }
 
-    default List<Modifier> itemBonusModifers(JsonNode jsonSource, Set<String> diceRolls) {
+    default List<Modifier> itemBonusModifers(JsonNode jsonSource) {
+        return itemBonusModifers(jsonSource, new ArrayList<>());
+    }
+
+    default List<Modifier> itemBonusModifers(JsonNode jsonSource, Collection<String> diceRolls) {
         List<Modifier> bonuses = new ArrayList<>();
         for (String key : List.of("bonusAbilityCheck", "bonusAc", "bonusProficiencyBonus",
                 "bonusSavingThrow", "bonusSpellAttack", "bonusWeapon",

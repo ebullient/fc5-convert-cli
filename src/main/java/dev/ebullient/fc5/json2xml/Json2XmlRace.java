@@ -1,5 +1,6 @@
 package dev.ebullient.fc5.json2xml;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class Json2XmlRace extends Json2XmlBase implements JsonRace {
 
     List<Json2XmlBase> findVariants() {
         List<Json2XmlBase> variants = new ArrayList<>();
-        index.subraces(getName(), sources).forEach(r -> {
+        index.subraces(sources).forEach(r -> {
             CompendiumSources subraceSources = index.constructSources(IndexType.subrace, r);
             Json2XmlRace subrace = new Json2XmlRace(subraceSources, index, factory);
             variants.addAll(subrace.convert(r));
@@ -61,8 +62,8 @@ public class Json2XmlRace extends Json2XmlBase implements JsonRace {
         this.raceName = decoratedRaceName(jsonSource);
 
         attributes.add(factory.createRaceTypeName(this.raceName));
-        attributes.add(factory.createRaceTypeSize(getSize(jsonSource)));
-        attributes.add(factory.createRaceTypeSpeed(getSpeed(jsonSource, sources)));
+        attributes.add(factory.createRaceTypeSize(getSizeEnum(jsonSource)));
+        attributes.add(factory.createRaceTypeSpeed(getXmlSpeed(jsonSource)));
 
         addRaceAbilities(jsonSource);
         addRaceSpellAbility(jsonSource);
@@ -85,7 +86,7 @@ public class Json2XmlRace extends Json2XmlBase implements JsonRace {
 
     private void addRaceAbilities(JsonNode value) {
         JsonNode ability = value.withArray("ability");
-        String list = jsonArrayObjectToSkillBonusList(ability);
+        String list = jsonArrayObjectToSkillBonusString(ability);
         if (!list.isEmpty()) {
             attributes.add(factory.createRaceTypeAbility(list));
         }
@@ -93,7 +94,7 @@ public class Json2XmlRace extends Json2XmlBase implements JsonRace {
 
     private void addRaceSkillProficiency(JsonNode value) {
         JsonNode skills = value.withArray("skillProficiencies");
-        String list = jsonToSkillList(skills);
+        String list = jsonToSkillString(skills);
         if (!list.isEmpty()) {
             attributes.add(factory.createRaceTypeProficiency(list));
         }
@@ -104,5 +105,10 @@ public class Json2XmlRace extends Json2XmlBase implements JsonRace {
         if (ability != null) {
             attributes.add(factory.createRaceTypeSpellAbility(ability));
         }
+    }
+
+    private BigInteger getXmlSpeed(JsonNode value) {
+        int speed = getSpeed(value);
+        return BigInteger.valueOf(speed);
     }
 }

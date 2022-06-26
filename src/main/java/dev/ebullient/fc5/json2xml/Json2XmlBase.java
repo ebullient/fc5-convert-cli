@@ -8,7 +8,6 @@ import javax.xml.bind.JAXBElement;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import dev.ebullient.fc5.Log;
 import dev.ebullient.fc5.json2xml.jaxb.XmlFeatureType;
 import dev.ebullient.fc5.json2xml.jaxb.XmlModifierType;
 import dev.ebullient.fc5.json2xml.jaxb.XmlObjectFactory;
@@ -33,12 +32,19 @@ public abstract class Json2XmlBase implements JsonBase {
         this.factory = factory;
     }
 
+    @Override
     public JsonIndex getIndex() {
         return index;
     }
 
+    @Override
     public CompendiumSources getSources() {
         return sources;
+    }
+
+    @Override
+    public boolean isMarkdown() {
+        return false;
     }
 
     String getName() {
@@ -49,20 +55,8 @@ public abstract class Json2XmlBase implements JsonBase {
 
     public abstract Object getXmlCompendiumObject();
 
-    XmlSizeEnum getSize(JsonNode value) {
-        JsonNode size = value.get("size");
-        try {
-            if (size == null) {
-                return XmlSizeEnum.M;
-            } else if (size.isTextual()) {
-                return XmlSizeEnum.fromValue(size.asText());
-            } else if (size.isArray()) {
-                return XmlSizeEnum.fromValue(size.get(0).asText());
-            }
-        } catch (IllegalArgumentException ignored) {
-        }
-        Log.errorf("Unable to parse size for %s from %s", sources, size.toPrettyString());
-        return XmlSizeEnum.M;
+    XmlSizeEnum getSizeEnum(JsonNode value) {
+        return XmlSizeEnum.fromValue(getSize(value));
     }
 
     public List<XmlTraitType> collectXmlTraits(JsonNode array) {

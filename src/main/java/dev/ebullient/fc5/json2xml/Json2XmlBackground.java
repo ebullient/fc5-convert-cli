@@ -38,8 +38,8 @@ public class Json2XmlBackground extends Json2XmlBase implements JsonBackground {
 
         this.fc5Background = factory.createBackgroundType();
         this.attributes = fc5Background.getNameOrProficiencyOrTrait();
-        this.backgroundName = decoratedTypeName(getName(), sources);
 
+        this.backgroundName = decoratedTypeName(getName(), sources);
         attributes.add(factory.createBackgroundTypeName(backgroundName));
 
         addBackgroundSkillProficiency(jsonSource);
@@ -49,7 +49,7 @@ public class Json2XmlBackground extends Json2XmlBase implements JsonBackground {
 
     private void addBackgroundSkillProficiency(JsonNode value) {
         JsonNode skills = value.withArray("skillProficiencies");
-        String list = jsonToSkillList(skills);
+        String list = jsonToSkillString(skills);
         if (!list.isEmpty()) {
             attributes.add(factory.createBackgroundTypeProficiency(list));
         }

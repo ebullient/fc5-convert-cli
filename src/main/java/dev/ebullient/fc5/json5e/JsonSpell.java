@@ -13,13 +13,30 @@ import dev.ebullient.fc5.pojo.SchoolEnum;
 
 public interface JsonSpell extends JsonBase {
 
-    default boolean isRitual(JsonNode jsonSource) {
+    default boolean spellIsRitual(JsonNode jsonSource) {
         boolean ritual = false;
         JsonNode meta = jsonSource.get("meta");
         if (meta != null) {
             ritual = booleanOrDefault(meta, "ritual", false);
         }
         return ritual;
+    }
+
+    default int spellLevel(JsonNode jsonSource) {
+        return jsonSource.get("level").asInt();
+    }
+
+    default SchoolEnum spellSchool(JsonNode jsonSource) {
+        return SchoolEnum.fromEncodedValue(jsonSource.get("school").asText());
+    }
+
+    default String spellClassesString(JsonNode jsonSource) {
+        JsonNode node = jsonSource.get("classes");
+        if (node == null || node.isNull()) {
+            return "";
+        }
+        Collection<String> classes = spellClasses(node, jsonSource.get("school"));
+        return String.join(", ", classes);
     }
 
     default Collection<String> spellClasses(JsonNode jsonSource, JsonNode jsonSchool) {
@@ -83,6 +100,10 @@ public interface JsonSpell extends JsonBase {
             }
         });
         return list;
+    }
+
+    default String spellComponentsString(JsonNode jsonSource) {
+        return String.join(", ", spellComponents(jsonSource));
     }
 
     default String spellDuration(JsonNode jsonSource) {
@@ -182,7 +203,8 @@ public interface JsonSpell extends JsonBase {
         return result.toString();
     }
 
-    default String castingTime(JsonNode time) {
+    default String spellCastingTime(JsonNode jsonSource) {
+        JsonNode time = jsonSource.withArray("time").get(0);
         return String.format("%s %s",
                 time.get("number").asText(),
                 time.get("unit").asText());

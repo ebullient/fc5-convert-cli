@@ -443,12 +443,15 @@ public interface JsonClass extends JsonBase {
         Map<String, List<String>> startingText = new HashMap<>();
         boolean additionalFromBackground;
 
+        boolean isMarkdown;
+
         JsonNode subclassSpellcasting;
 
-        public StartingClass(JsonIndex index, CompendiumSources sources, String name) {
+        public StartingClass(JsonIndex index, CompendiumSources sources, String name, boolean isMarkdown) {
             this.index = index;
             this.sources = sources;
             this.name = name;
+            this.isMarkdown = isMarkdown;
         }
 
         @Override
@@ -459,6 +462,11 @@ public interface JsonClass extends JsonBase {
         @Override
         public CompendiumSources getSources() {
             return sources;
+        }
+
+        @Override
+        public boolean isMarkdown() {
+            return isMarkdown;
         }
 
         public String getStartingEquipment(JsonNode classNode) {

@@ -179,7 +179,8 @@ public class JsonIndex implements JsonBase {
         return nodeIndex.entrySet();
     }
 
-    public Stream<JsonNode> subraces(String raceName, CompendiumSources sources) {
+    public Stream<JsonNode> subraces(CompendiumSources sources) {
+        String raceName = sources.getName();
         String raceSource = String.join("|", sources.bookSources);
         String pattern = String.format("%s\\|[^|]+\\|%s\\|(%s)", IndexType.subrace, raceName, raceSource)
                 .toLowerCase();
@@ -465,12 +466,12 @@ public class JsonIndex implements JsonBase {
                 baseNode = handleCopy(type, baseNode);
                 try {
                     String originKey = getKey(type, jsonSource);
-                    return mergeNodes(originKey, baseNode, jsonSource);
+                    jsonSource = mergeNodes(originKey, baseNode, jsonSource);
+                    nodeIndex.put(originKey, jsonSource); // REPLACE IN THE INDEX (xml, then markdown... won't redo)
                 } catch (IllegalStateException | StackOverflowError e) {
                     throw new IllegalStateException("Unable to resolve copy " + _copy.toPrettyString());
                 }
             }
-
         }
         return jsonSource;
     }
@@ -493,6 +494,7 @@ public class JsonIndex implements JsonBase {
             Log.errorf("Check my work: %s is a copy of %s based on %s", originKey,
                     getTextOrEmpty(copyNode, "name"), getTextOrEmpty(parentNode, "name"));
         }
+        nodeIndex.put(originKey, value); // REPLACE IN THE INDEX (xml, then markdown... won't redo)
         return value;
     }
 
@@ -520,12 +522,18 @@ public class JsonIndex implements JsonBase {
                     // skip -- do not copy
                     break;
                 case "ability":
-                    if ((overwrite != null && overwrite.has("ability")) || !baseNode.has("ability")) {
+                    if ((overwrite != null && overwrite.has("ability"))
+                            || !baseNode.has("ability")) {
                         target.set("ability", copyNode(childField));
                     } else {
                         ArrayNode cpyAbility = target.withArray("ability");
+                        if (cpyAbility.size() == 0) {
+                            target.set("ability", copyNode(childField));
+                            break;
+                        }
                         if (cpyAbility.size() != childField.size()) {
-                            Log.errorf("Copy/Merge: Ability array lengths did not match (from %s)", originKey);
+                            Log.errorf("Copy/Merge: Ability array lengths did not match (from %s):%nBASE:%n%s%nCOPY:%n%s",
+                                    originKey, cpyAbility.toPrettyString(), childField.toPrettyString());
                             continue;
                         }
                         for (int i = 0; i < childField.size(); i++) {
@@ -1089,5 +1097,10 @@ public class JsonIndex implements JsonBase {
     @Override
     public CompendiumSources getSources() {
         return null;
+    }
+
+    @Override
+    public boolean isMarkdown() {
+        return false;
     }
 }

@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 
 import dev.ebullient.fc5.json2xml.Json2XmlConverter;
+import dev.ebullient.fc5.json5e.Json2MarkdownConverter;
 import dev.ebullient.fc5.json5e.JsonIndex;
 import dev.ebullient.fc5.json5e.JsonIndex.IndexType;
 import dev.ebullient.fc5.pojo.MarkdownWriter;
@@ -169,6 +170,14 @@ public class Import5eTools implements Callable<Integer> {
 
             MarkdownWriter writer = new MarkdownWriter(output, tpl);
             Log.outPrintln("💡 Writing files to " + output);
+            new Json2MarkdownConverter(index, writer)
+                    .writeFiles(IndexType.background, "Backgrounds")
+                    //                    .writeFiles(IndexType.classtype, "Classes")
+                    .writeFiles(IndexType.feat, "Feats")
+                    .writeFiles(IndexType.item, "Items")
+                    //                    .writeFiles(IndexType.monster, "Monsters")
+                    .writeFiles(IndexType.race, "Races")
+                    .writeFiles(IndexType.spell, "Spells");
         }
 
         return allOk ? ExitCode.OK : ExitCode.SOFTWARE;
@@ -177,7 +186,7 @@ public class Import5eTools implements Callable<Integer> {
     protected void fullIndex(JsonIndex index, Path resourcePath) throws IOException {
         String basename = resourcePath.getFileName().toString();
 
-        Log.outPrintf("📁 %s\n", resourcePath);
+        Log.debugf("📁 %s\n", resourcePath);
         try (Stream<Path> stream = Files.list(resourcePath)) {
             stream.forEach(p -> {
                 File f = p.toFile();
@@ -209,7 +218,7 @@ public class Import5eTools implements Callable<Integer> {
             Log.outPrintln("✅ Finished processing names from " + inputPath);
         } else {
             index.importTree(node);
-            Log.outPrintf("🔖 Finished reading %s\n", inputPath);
+            Log.debugf("🔖 Finished reading %s\n", inputPath);
         }
     }
 

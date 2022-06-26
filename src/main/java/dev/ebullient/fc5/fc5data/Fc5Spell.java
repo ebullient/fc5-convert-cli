@@ -73,7 +73,6 @@ public class Fc5Spell extends QuteSpell implements QuteSource {
             setComponents(context.getOrDefault("components", ""));
             setDuration(context.getOrDefault("duration", ""));
             setClasses(context.getOrDefault("classes", ""));
-            setText(List.of());
 
             textData = context.getOrDefault("text", Fc5Text.NONE);
             roll = context.getOrDefault("roll", Collections.emptyList());

@@ -22,9 +22,9 @@ public class FeatTypeTest extends ParsingTestBase {
         Fc5Feat feat = compendium.feats.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Actor", feat.getName()),
-                () -> assertEquals("", feat.prerequisite),
+                () -> assertEquals("", feat.getPrerequisite()),
                 () -> assertTrue(textContains(feat.text, "Skilled at mimicry")),
-                () -> assertEquals(1, feat.modifier.size(), "Should have found a modifier"));
+                () -> assertEquals(1, feat.getModifier().size(), "Should have found a modifier"));
     }
 
     @Test
@@ -38,9 +38,9 @@ public class FeatTypeTest extends ParsingTestBase {
         Fc5Feat feat = compendium.feats.get(0);
         Assertions.assertAll(
                 () -> assertEquals("Defensive Duelist", feat.getName()),
-                () -> assertEquals("Dexterity 13 or higher", feat.prerequisite),
+                () -> assertEquals("Dexterity 13 or higher", feat.getPrerequisite()),
                 () -> assertTrue(textContains(feat.text, "When you are wielding")),
-                () -> assertEquals(0, feat.modifier.size(), "Should not have found a modifier"));
+                () -> assertEquals(0, feat.getModifier().size(), "Should not have found a modifier"));
 
         String content = templates.renderFeat(feat);
         Assertions.assertAll(

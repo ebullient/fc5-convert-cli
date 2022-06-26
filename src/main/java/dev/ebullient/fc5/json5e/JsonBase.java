@@ -20,6 +20,7 @@ import dev.ebullient.fc5.Log;
 import dev.ebullient.fc5.pojo.Modifier;
 import dev.ebullient.fc5.pojo.ModifierCategoryEnum;
 import dev.ebullient.fc5.pojo.QuteTrait;
+import dev.ebullient.fc5.pojo.SizeEnum;
 
 public interface JsonBase {
     Pattern featPattern = Pattern.compile("([^|]+)\\|?.*");
@@ -51,6 +52,25 @@ public interface JsonBase {
     CompendiumSources getSources();
 
     JsonIndex getIndex();
+
+    boolean isMarkdown();
+
+    static boolean isReprinted(JsonIndex index, String finalKey, JsonNode jsonSource) {
+        if (jsonSource.has("reprintedAs")) {
+            for (Iterator<JsonNode> i = jsonSource.withArray("reprintedAs").elements(); i.hasNext();) {
+                String ra = i.next().asText();
+                if (index.sourceIncluded(ra.substring(ra.lastIndexOf("|") + 1))) {
+                    Log.debugf("Skipping %s in favor of %s", finalKey, ra);
+                    return true; // the reprint will be used instead (stop parsing this one)
+                }
+            }
+        }
+        if (jsonSource.has("isReprinted")) {
+            Log.debugf("Skipping %s (has been reprinted)", finalKey);
+            return true; // the reprint will be used instead of this one.
+        }
+        return false;
+    }
 
     default Stream<JsonNode> streamOf(ArrayNode array) {
         return StreamSupport.stream(array.spliterator(), false);
@@ -97,42 +117,61 @@ public interface JsonBase {
         return result == null ? value : result.asBoolean(value);
     }
 
-    default BigInteger integerOrDefault(JsonNode source, String key, long value) {
+    default BigInteger bigIntegerOrDefault(JsonNode source, String key, Integer value) {
         JsonNode result = source.get(key);
-        return BigInteger.valueOf(result == null ? value : result.asLong());
+        return result == null
+                ? (value == null ? null : BigInteger.valueOf(value))
+                : BigInteger.valueOf(result.asLong());
+    }
+
+    default Integer integerOrDefault(JsonNode source, String key, Integer value) {
+        JsonNode result = source.get(key);
+        return result == null
+                ? value
+                : result.asInt();
+    }
+
+    default Double doubleOrDefault(JsonNode source, String key, Double value) {
+        JsonNode result = source.get(key);
+        return result == null ? value : result.asDouble();
     }
 
     default boolean isReprinted(JsonNode jsonSource) {
-        if (jsonSource.has("reprintedAs")) {
-            for (Iterator<JsonNode> i = jsonSource.withArray("reprintedAs").elements(); i.hasNext();) {
-                String ra = i.next().asText();
-                if (getIndex().sourceIncluded(ra.substring(ra.lastIndexOf("|") + 1))) {
-                    Log.debugf("Skipping %s in favor of %s", getSources(), ra);
-                    return true; // the reprint will be used instead (stop parsing this one)
-                }
-            }
-        }
-        if (jsonSource.has("isReprinted")) {
-            Log.debugf("Skipping %s (has been reprinted)", getSources());
-            return true; // the reprint will be used instead of this one.
-        }
-        return false;
+        return isReprinted(getIndex(), getSources().key, jsonSource);
     }
 
-    default BigInteger getSpeed(JsonNode value, CompendiumSources sources) {
-        JsonNode speed = value.get("speed");
+    default SizeEnum getSize(JsonNode value) {
+        JsonNode size = value.get("size");
+        if (size == null) {
+            throw new IllegalArgumentException("Missing size attribute from " + getSources());
+        }
         try {
-            if (speed == null) {
-                return BigInteger.valueOf(30);
-            } else if (speed.isIntegralNumber()) {
-                return BigInteger.valueOf(speed.asLong());
-            } else if (speed.has("walk")) {
-                return BigInteger.valueOf(speed.get("walk").asLong());
+            if (size != null && size.isTextual()) {
+                return SizeEnum.fromValue(size.asText());
+            } else if (size.isArray()) {
+                String merged = streamOf((ArrayNode) size).map(x -> x.asText()).collect(Collectors.joining());
+                return SizeEnum.fromValue(merged);
             }
         } catch (IllegalArgumentException ignored) {
         }
-        Log.errorf("Unable to parse size for %s from %s", sources, speed);
-        return BigInteger.valueOf(30);
+        Log.errorf("Unable to parse size for %s from %s", getSources(), size.toPrettyString());
+        return SizeEnum.MEDIUM;
+    }
+
+    default int getSpeed(JsonNode value) {
+        JsonNode speed = value.get("speed");
+        try {
+            if (speed == null || speed.isTextual()) {
+                return 30;
+            } else if (speed.isIntegralNumber()) {
+                return speed.asInt();
+            } else if (speed.has("walk")) {
+                return speed.get("walk").asInt();
+            }
+        } catch (IllegalArgumentException ignored) {
+        }
+        Log.errorf("Unable to parse speed for %s from %s", getSources(), speed);
+        return 30;
     }
 
     default void appendEntryToText(List<String> text, JsonNode entry) {
@@ -375,36 +414,46 @@ public interface JsonBase {
         return count;
     }
 
-    default String jsonToSkillList(JsonNode listNode) {
-        if (listNode.isObject()
-                && !listNode.toString().contains("choose")) {
-            List<String> list = new ArrayList<>();
+    default List<String> jsonToSkillsList(JsonNode listNode) {
+        if (listNode == null || listNode.isNull()) {
+            return List.of();
+        }
+        if (listNode.isTextual()) {
+            return List.of(listNode.asText());
+        }
+        List<String> list = new ArrayList<>();
+        if (listNode.isObject() && !listNode.toString().contains("choose")) {
             listNode.fieldNames().forEachRemaining(list::add);
-            return String.join(", ", list);
         } else if (listNode.isArray()) {
-            List<String> list = new ArrayList<>();
             listNode.elements().forEachRemaining(f -> {
-                String inner = jsonToSkillList(f);
+                List<String> inner = jsonToSkillsList(f);
                 if (!inner.isEmpty()) {
-                    list.add(inner);
+                    list.addAll(inner);
                 }
             });
-            return String.join(", ", list);
         }
-        return "";
+        return list;
     }
 
-    default String jsonArrayObjectToSkillBonusList(JsonNode listNode) {
+    default String jsonToSkillString(JsonNode listNode) {
+        return String.join(", ", jsonToSkillsList(listNode));
+    }
+
+    default List<String> jsonArrayObjectToSkillBonusList(JsonNode listNode) {
         if (listNode.size() == 1 && !listNode.toString().contains("choose")) {
             List<String> list = new ArrayList<>();
             listNode.forEach(
                     e -> e.fields().forEachRemaining(f -> list.add(String.format("%s %s", f.getKey(), f.getValue().asText()))));
-            return String.join(", ", list);
+            return list;
         }
-        return "";
+        return List.of();
     }
 
-    default String jsonObjectToSkillBonusList(JsonNode listNode) {
+    default String jsonArrayObjectToSkillBonusString(JsonNode listNode) {
+        return String.join(", ", jsonArrayObjectToSkillBonusList(listNode));
+    }
+
+    default String jsonObjectToSkillBonusString(JsonNode listNode) {
         if (listNode != null) {
             List<String> list = new ArrayList<>();
             listNode.fields().forEachRemaining(f -> list.add(String.format("%s %s", f.getKey(), f.getValue().asText())));
@@ -416,7 +465,6 @@ public interface JsonBase {
     }
 
     default List<QuteTrait> collectTraitsFromEntries(String properName, JsonNode value) {
-        JsonIndex index = getIndex();
         List<QuteTrait> traits = new ArrayList<>();
         List<String> text = new ArrayList<>();
         Set<String> diceRolls = new HashSet<>();
@@ -589,6 +637,10 @@ public interface JsonBase {
             default:
                 return level + "th level";
         }
+    }
+
+    default String decoratedTypeName(CompendiumSources sources) {
+        return decoratedTypeName(sources.name, sources);
     }
 
     default String decoratedTypeName(String name, CompendiumSources sources) {

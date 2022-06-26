@@ -125,6 +125,7 @@ public class MarkdownWriter {
         }
     }
 
+    // IOException -> RuntimeException .. for working w/in stream/function
     public static class WrappedIOException extends RuntimeException {
         WrappedIOException(IOException cause) {
             super(cause);

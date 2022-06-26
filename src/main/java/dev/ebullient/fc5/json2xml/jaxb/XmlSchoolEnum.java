@@ -10,6 +10,8 @@ package dev.ebullient.fc5.json2xml.jaxb;
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlType;
 
+import dev.ebullient.fc5.pojo.SchoolEnum;
+
 /**
  * <p>
  * Java class for schoolEnum.
@@ -61,4 +63,7 @@ public enum XmlSchoolEnum {
         return valueOf(v);
     }
 
+    public static XmlSchoolEnum fromValue(SchoolEnum s) {
+        return fromValue(s.getEncodedValue());
+    }
 }

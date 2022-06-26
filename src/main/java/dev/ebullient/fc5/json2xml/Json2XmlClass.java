@@ -41,7 +41,7 @@ public class Json2XmlClass extends Json2XmlBase implements JsonClass {
 
         this.fc5Class = factory.createClassType();
         this.attributes = fc5Class.getNameOrHdOrProficiency();
-        this.startingClassFeature = new StartingClass(index, sources, getName());
+        this.startingClassFeature = new StartingClass(index, sources, getName(), isMarkdown());
         attributes.add(factory.createClassTypeName(decoratedTypeName(getName(), sources)));
         if (getName().toLowerCase().contains("sidekick")) {
             addClassSpellAbility(classNode);

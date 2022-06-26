@@ -30,7 +30,7 @@ public class Import5eToolsConvertTest {
     }
 
     @Test
-    void testImportData(TestInfo info, QuarkusMainLauncher launcher) throws Exception {
+    void testIndexXmlData(TestInfo info, QuarkusMainLauncher launcher) throws Exception {
         if (TOOLS_PATH.toFile().exists()) {
             LaunchResult result;
             result = launcher.launch("5etools", "--index", "--xml",
@@ -53,6 +53,17 @@ public class Import5eToolsConvertTest {
             assertThat(filteredIndex).doesNotContain("race|aarakocra|dmg");
             assertThat(filteredIndex).contains("classfeature|bardic versatility|bard||4|tce"); // tce added in sources.json
             assertThat(filteredIndex).contains("classfeature|bonus proficiencies|warrior sidekick|tce|1"); // tce added in sources.json
+        }
+    }
+
+    @Test
+    void testMarkdownData(TestInfo info, QuarkusMainLauncher launcher) throws Exception {
+        if (TOOLS_PATH.toFile().exists()) {
+            launcher.launch("5etools", "--index", "--md",
+                    "-o", OUTPUT_PATH.toString(),
+                    "-s", "PHB,DMG,SCAG",
+                    TOOLS_PATH.toString(),
+                    PROJECT_PATH.resolve("src/test/resources/sources.json").toString());
         }
     }
 }

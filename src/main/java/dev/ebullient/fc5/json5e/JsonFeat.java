@@ -90,4 +90,9 @@ public interface JsonFeat extends JsonBase {
         });
         return prereqs;
     }
+
+    default String prerequisitesString(JsonNode jsonSource) {
+        List<String> prereqs = listPrerequisites(jsonSource);
+        return String.join(", ", prereqs);
+    }
 }

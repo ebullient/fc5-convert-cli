@@ -51,12 +51,12 @@ public class Fc5Item extends QuteItem implements QuteSource {
     final Fc5Text text;
     final List<Fc5Roll> roll;
 
-    public Fc5Item(String name, String detail, ItemEnum type, int ac,
+    public Fc5Item(String name, boolean magic, String detail, ItemEnum type, int ac,
             double cost, double weight, int strength, boolean stealth,
             String damage, String damage2H, String range, List<String> tags,
             List<Modifier> modifiers, List<PropertyEnum> properties,
             Fc5Text text, List<Fc5Roll> roll) {
-        super(name, detail, type, ac, cost, weight, strength, stealth,
+        super(name, magic, detail, type, ac, cost, weight, strength, stealth,
                 damage, damage2H, range, tags, modifiers, properties, List.of());
         this.text = text;
         this.roll = roll;
@@ -120,7 +120,7 @@ public class Fc5Item extends QuteItem implements QuteSource {
             setDetail(createDetail(attunement, type, properties));
 
             tags = getTags(type, properties);
-            return new Fc5Item(name, detail, type, ac, cost, weight, strengthRequirement, stealthPenalty,
+            return new Fc5Item(name, magic, detail, type, ac, cost, weight, strengthRequirement, stealthPenalty,
                     damage, damage2H, range, tags, modifiers, properties, text, roll);
         }
     }

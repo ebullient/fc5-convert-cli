@@ -30,6 +30,8 @@ public enum SizeEnum {
     LARGE("Large", "L"),
     HUGE("Huge", "H"),
     GARGANTUAN("Gargantuan", "G"),
+    VARIES("Varies", "V"),
+    S_OR_M("Small or Medium", "SM"),
     UNKNOWN("Unknown", "");
 
     private final String longName;
@@ -48,12 +50,12 @@ public enum SizeEnum {
         return encodedValue;
     }
 
-    public static SizeEnum fromEncodedValue(String v) {
+    public static SizeEnum fromValue(String v) {
         if (v == null || v.isBlank()) {
-            return UNKNOWN;
+            throw new IllegalArgumentException("Empty size value");
         }
         for (SizeEnum i : SizeEnum.values()) {
-            if (i.encodedValue.equals(v)) {
+            if (i.encodedValue.equals(v) || i.longName.equalsIgnoreCase(v)) {
                 return i;
             }
         }

@@ -44,19 +44,19 @@ public class Json2XmlMonster extends Json2XmlBase implements JsonMonster {
         this.attributes = fc5Monster.getNameOrSizeOrType();
 
         attributes.add(factory.createMonsterTypeName(decorateMonsterName(jsonSource)));
-        attributes.add(factory.createMonsterTypeSize(getSize(jsonSource)));
+        attributes.add(factory.createMonsterTypeSize(getSizeEnum(jsonSource)));
 
         attributes.add(factory.createMonsterTypeType(monsterType(jsonSource)));
         attributes.add(factory.createMonsterTypeAlignment(monsterAlignment(jsonSource)));
         attributes.add(factory.createMonsterTypeAc(monsterAc(jsonSource)));
         attributes.add(factory.createMonsterTypeHp(monsterHp(jsonSource)));
         attributes.add(factory.createMonsterTypeSpeed(monsterSpeed(jsonSource)));
-        attributes.add(factory.createMonsterTypeStr(integerOrDefault(jsonSource, "str", 10)));
-        attributes.add(factory.createMonsterTypeDex(integerOrDefault(jsonSource, "dex", 10)));
-        attributes.add(factory.createMonsterTypeCon(integerOrDefault(jsonSource, "con", 10)));
-        attributes.add(factory.createMonsterTypeInt(integerOrDefault(jsonSource, "int", 10)));
-        attributes.add(factory.createMonsterTypeWis(integerOrDefault(jsonSource, "wis", 10)));
-        attributes.add(factory.createMonsterTypeDex(integerOrDefault(jsonSource, "cha", 10)));
+        attributes.add(factory.createMonsterTypeStr(bigIntegerOrDefault(jsonSource, "str", 10)));
+        attributes.add(factory.createMonsterTypeDex(bigIntegerOrDefault(jsonSource, "dex", 10)));
+        attributes.add(factory.createMonsterTypeCon(bigIntegerOrDefault(jsonSource, "con", 10)));
+        attributes.add(factory.createMonsterTypeInt(bigIntegerOrDefault(jsonSource, "int", 10)));
+        attributes.add(factory.createMonsterTypeWis(bigIntegerOrDefault(jsonSource, "wis", 10)));
+        attributes.add(factory.createMonsterTypeDex(bigIntegerOrDefault(jsonSource, "cha", 10)));
         attributes.add(factory.createMonsterTypeCr(getTextOrEmpty(jsonSource, "cr")));
         attributes.add(factory.createMonsterTypeDescription(monsterDescription(jsonSource)));
         addMonsterAbilitySkillBonus(jsonSource);
@@ -75,7 +75,7 @@ public class Json2XmlMonster extends Json2XmlBase implements JsonMonster {
     private void addMonsterAbilitySkillBonus(JsonNode jsonSource) {
         JsonNode savingThrows = jsonSource.get("save");
         if (savingThrows != null) {
-            String list = jsonObjectToSkillBonusList(savingThrows);
+            String list = jsonObjectToSkillBonusString(savingThrows);
             if (!list.isEmpty()) {
                 attributes.add(factory.createMonsterTypeSave(list));
             }
@@ -83,7 +83,7 @@ public class Json2XmlMonster extends Json2XmlBase implements JsonMonster {
 
         JsonNode skills = jsonSource.get("skill");
         if (skills != null) {
-            String list = jsonObjectToSkillBonusList(skills);
+            String list = jsonObjectToSkillBonusString(skills);
             if (!list.isEmpty()) {
                 attributes.add(factory.createMonsterTypeSkill(list));
             }
@@ -98,7 +98,7 @@ public class Json2XmlMonster extends Json2XmlBase implements JsonMonster {
             attributes.add(factory.createMonsterTypeSenses(joinAndReplace(jsonSource.withArray("senses"))));
         }
         if (jsonSource.has("passive")) {
-            attributes.add(factory.createMonsterTypePassive(integerOrDefault(jsonSource, "passive", 10)));
+            attributes.add(factory.createMonsterTypePassive(bigIntegerOrDefault(jsonSource, "passive", 10)));
         }
         if (jsonSource.has("resist")) {
             attributes.add(factory.createMonsterTypeResist(joinAndReplace(jsonSource.withArray("resist"))));

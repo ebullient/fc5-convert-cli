@@ -29,6 +29,7 @@ public enum SkillOrAbility {
     SleightOfHand("Sleight of Hand", true),
     Stealth("Stealth", true),
     Survival("Survival", true),
+    Any("Any", false),
     None("None", false);
 
     private final String longValue;
@@ -40,7 +41,7 @@ public enum SkillOrAbility {
         this.longValue = longValue;
         this.lowerValue = longValue.toLowerCase();
         this.isSkill = isSkill;
-        this.isAbility = !isSkill && !longValue.equals("None");
+        this.isAbility = !isSkill && !longValue.equals("None") && !longValue.equals("Any");
     }
 
     public boolean isAbility() {

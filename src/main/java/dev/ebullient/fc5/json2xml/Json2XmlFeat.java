@@ -37,7 +37,7 @@ public class Json2XmlFeat extends Json2XmlBase implements JsonFeat {
 
         String name = getName();
         attributes.add(factory.createFeatTypeName(name));
-        addFeatPrerequisite(value);
+        attributes.add(factory.createFeatTypePrerequisite(prerequisitesString(value)));
         if (SPECIAL.contains(name)) {
             attributes.add(factory.createFeatureTypeSpecial(name));
         }
@@ -56,14 +56,9 @@ public class Json2XmlFeat extends Json2XmlBase implements JsonFeat {
 
     private void addFeatProficiency(JsonNode value) {
         JsonNode skills = value.withArray("skillProficiencies");
-        String list = jsonToSkillList(skills);
+        String list = jsonToSkillString(skills);
         if (list != null && !list.isEmpty()) {
             attributes.add(factory.createBackgroundTypeProficiency(list));
         }
-    }
-
-    private void addFeatPrerequisite(JsonNode value) {
-        List<String> prereqs = listPrerequisites(value);
-        attributes.add(factory.createFeatTypePrerequisite(String.join(", ", prereqs)));
     }
 }

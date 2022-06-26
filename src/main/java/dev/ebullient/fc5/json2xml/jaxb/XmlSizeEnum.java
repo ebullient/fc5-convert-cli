@@ -10,6 +10,8 @@ package dev.ebullient.fc5.json2xml.jaxb;
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlType;
 
+import dev.ebullient.fc5.pojo.SizeEnum;
+
 /**
  * <p>
  * Java class for sizeEnum.
@@ -51,4 +53,10 @@ public enum XmlSizeEnum {
         return valueOf(v);
     }
 
+    public static XmlSizeEnum fromValue(SizeEnum v) {
+        if (v == SizeEnum.VARIES || v == SizeEnum.S_OR_M) {
+            return M;
+        }
+        return valueOf(v.getEncodedValue());
+    }
 }

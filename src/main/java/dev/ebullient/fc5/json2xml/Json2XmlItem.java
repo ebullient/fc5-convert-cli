@@ -60,7 +60,9 @@ public class Json2XmlItem extends Json2XmlBase implements JsonItem {
         collectXmlModifierTypes(jsonSource).forEach(m -> attributes.add(factory.createItemTypeModifier(m)));
         addItemBonusModifierAttributes(jsonSource);
 
-        addItemStealthAttribute(jsonSource);
+        if (itemStealthPenalty(jsonSource)) {
+            attributes.add(factory.createItemTypeStealth("1"));
+        }
         addItemTextAndRolls(jsonSource);
         addItemDetail(jsonSource);
 
@@ -128,13 +130,6 @@ public class Json2XmlItem extends Json2XmlBase implements JsonItem {
 
         XmlItemEnum xv = XmlItemEnum.mapValue(itemType);
         attributes.add(factory.createItemTypeType(xv));
-    }
-
-    private void addItemStealthAttribute(JsonNode jsonElement) {
-        JsonNode stealth = jsonElement.get("stealth");
-        if (stealth != null && stealth.asBoolean()) {
-            attributes.add(factory.createItemTypeStealth("1"));
-        }
     }
 
     private void addItemDiceRolls(Set<String> diceRolls) {

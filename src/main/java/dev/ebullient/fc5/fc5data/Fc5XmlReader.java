@@ -237,7 +237,7 @@ public class Fc5XmlReader {
                 }
                 return content;
             case "size":
-                return SizeEnum.fromEncodedValue(content);
+                return SizeEnum.fromValue(content);
             case "spellAbility":
                 return SkillOrAbility.fromTextValue(content);
             default:
@@ -279,7 +279,7 @@ public class Fc5XmlReader {
                 compendium.getClasses().add(new Fc5Class.ClassBuilder(context).build());
                 break;
             case "feat":
-                compendium.getFeats().add(new Fc5Feat(context));
+                compendium.getFeats().add(new Fc5Feat.Fc5FeatBuilder(context).build());
                 break;
             case "item":
                 compendium.getItems().add(new Fc5Item.ItemBuilder(context).build());

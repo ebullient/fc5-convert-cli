@@ -3,7 +3,6 @@ package dev.ebullient.fc5.pojo;
 import java.util.Collections;
 import java.util.List;
 
-import dev.ebullient.fc5.fc5data.Fc5Trait;
 import io.quarkus.qute.TemplateData;
 
 @TemplateData
@@ -14,11 +13,11 @@ public class QuteRace implements QuteSource {
     protected final String ability;
     protected final SkillOrAbility spellAbility;
     protected final Proficiency proficiency;
-    protected final List<Fc5Trait> trait;
+    protected final List<QuteTrait> trait;
     protected final List<Modifier> modifiers;
 
     protected QuteRace(String name, SizeEnum size, int speed, String ability,
-            SkillOrAbility spellAbility, Proficiency proficiency, List<Fc5Trait> traits,
+            SkillOrAbility spellAbility, Proficiency proficiency, List<QuteTrait> traits,
             List<Modifier> modifiers) {
         this.name = name;
         this.size = size;
@@ -62,7 +61,7 @@ public class QuteRace implements QuteSource {
         return proficiency.getSkillNames();
     }
 
-    public List<Fc5Trait> getTrait() {
+    public List<QuteTrait> getTrait() {
         return trait;
     }
 
@@ -82,7 +81,7 @@ public class QuteRace implements QuteSource {
         String ability;
         SkillOrAbility spellAbility;
         Proficiency proficiency;
-        List<Fc5Trait> traits;
+        List<QuteTrait> traits;
         List<Modifier> modifiers;
 
         public Builder setName(String name) {
@@ -115,7 +114,7 @@ public class QuteRace implements QuteSource {
             return this;
         }
 
-        public Builder setTraits(List<Fc5Trait> traits) {
+        public Builder setTraits(List<QuteTrait> traits) {
             this.traits = traits;
             return this;
         }

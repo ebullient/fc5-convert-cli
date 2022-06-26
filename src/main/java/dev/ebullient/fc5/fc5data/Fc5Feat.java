@@ -35,19 +35,11 @@ import io.quarkus.qute.TemplateData;
 @TemplateData
 public class Fc5Feat extends QuteFeat implements QuteSource {
 
-    final String prerequisite;
     final Fc5Text text;
-    final Proficiency proficiency;
-    final List<Modifier> modifier;
 
-    public Fc5Feat(Fc5ParsingContext context) {
-        super(context.getOrFail(context.owner, "name", String.class));
-
-        prerequisite = context.getOrDefault("prerequisite", "");
-        text = context.getOrDefault("text", Fc5Text.NONE);
-
-        proficiency = context.getOrDefault("proficiency", Proficiency.NONE);
-        modifier = context.getOrDefault("modifier", Collections.emptyList());
+    public Fc5Feat(String name, Fc5Text text, Proficiency proficiency, List<Modifier> modifier, String prerequisite) {
+        super(name, List.of(), proficiency, modifier, prerequisite);
+        this.text = text;
     }
 
     @Override
@@ -55,4 +47,24 @@ public class Fc5Feat extends QuteFeat implements QuteSource {
         return String.join("\n", text.content);
     }
 
+    static class Fc5FeatBuilder extends Builder {
+        Fc5Text text;
+
+        public Fc5FeatBuilder(Fc5ParsingContext context) {
+            setName(context.getOrFail(context.owner, "name", String.class));
+            setPrerequisite(context.getOrDefault("prerequisite", ""));
+            setProficiency(context.getOrDefault("proficiency", Proficiency.NONE));
+            setModifiers(context.getOrDefault("modifier", Collections.emptyList()));
+            text = context.getOrDefault("text", Fc5Text.NONE);
+        }
+
+        public Fc5FeatBuilder setText(Fc5Text text) {
+            this.text = text;
+            return this;
+        }
+
+        public Fc5Feat build() {
+            return new Fc5Feat(name, text, proficiency, modifier, prerequisite);
+        }
+    }
 }
