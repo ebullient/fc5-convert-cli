@@ -102,7 +102,7 @@ public class Transform implements Callable<Integer> {
             Log.outPrintf("⏱ Transforming %40s ... \n", sourcePath.getFileName());
 
             Path outputPath = targetPath.apply(sourcePath);
-            if (sourcePath.equals(targetPath)) {
+            if (sourcePath.equals(outputPath)) {
                 Log.errorf("Source and target are the same file: %s", sourcePath);
                 return false;
             }

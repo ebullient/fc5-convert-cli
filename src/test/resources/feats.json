@@ -1,0 +1,24 @@
+{
+	"feat": [
+		{
+			"name": "Actor",
+			"source": "PHB",
+			"page": 165,
+			"ability": [
+				{
+					"cha": 1
+				}
+			],
+			"entries": [
+				"Skilled at mimicry and dramatics, you gain the following benefits:",
+				{
+					"type": "list",
+					"items": [
+						"You have advantage on Charisma ({@skill Deception}) and Charisma ({@skill Performance}) checks when trying to pass yourself off as a different person.",
+						"You can mimic the speech of another person or the sounds made by other creatures. You must have heard the person speaking, or heard the creature make the sound, for at least 1 minute. A successful Wisdom ({@skill Insight}) check contested by your Charisma ({@skill Deception}) check allows a listener to determine that the effect is faked."
+					]
+				}
+			]
+		}
+  ]
+}

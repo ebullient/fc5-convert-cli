@@ -29,7 +29,7 @@ public class XmlStreamUtils {
     static class DummyEntityResolver implements EntityResolver {
         public InputSource resolveEntity(String publicID, String systemID)
                 throws SAXException {
-            System.out.println("Resolve entity: " + publicID + ", " + systemID);
+            Log.debugf("Resolve entity: %s, %s", publicID, systemID);
             return new InputSource(new StringReader(""));
         }
     }

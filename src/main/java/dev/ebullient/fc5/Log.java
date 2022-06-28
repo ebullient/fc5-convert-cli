@@ -66,10 +66,11 @@ public final class Log {
         } else {
             Log.err.println(colors.ansi().text("⛔️@|fg(red) " + errorMsg + "|@"));
         }
-        Log.err.flush();
-        if (ex != null && isVerbose()) {
-            ex.printStackTrace(err);
+        if (ex != null) {
+            Log.err.println(" ⎿ " + ex.getMessage());
+            ex.printStackTrace(Log.err);
         }
+        Log.err.flush();
     }
 
     public static void outPrintf(String format, Object... args) {

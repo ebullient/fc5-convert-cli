@@ -1,0 +1,117 @@
+{
+  "baseitem" : [ {
+    "name" : "Arrow",
+    "source" : "PHB",
+    "page" : 150,
+    "srd" : true,
+    "basicRules" : true,
+    "type" : "A",
+    "rarity" : "none",
+    "weight" : 0.05,
+    "value" : 5
+  }, {
+    "name" : "Splint Armor",
+    "source" : "PHB",
+    "page" : 145,
+    "srd" : true,
+    "basicRules" : true,
+    "type" : "HA",
+    "rarity" : "none",
+    "weight" : 60,
+    "value" : 20000,
+    "ac" : 17,
+    "strength" : "15",
+    "armor" : true,
+    "stealth" : true,
+    "entries" : [ "This armor is made of narrow vertical strips of metal riveted to a backing of leather that is worn over cloth padding. Flexible chain mail protects the joints." ]
+  }, {
+    "name" : "Whip",
+    "source" : "PHB",
+    "page" : 149,
+    "srd" : true,
+    "basicRules" : true,
+    "type" : "M",
+    "rarity" : "none",
+    "weight" : 3,
+    "value" : 200,
+    "weaponCategory" : "martial",
+    "property" : [ "F", "R" ],
+    "dmg1" : "1d4",
+    "dmgType" : "S",
+    "weapon" : true
+  }, {
+    "name" : "Wooden Staff",
+    "source" : "PHB",
+    "page" : 151,
+    "srd" : true,
+    "basicRules" : true,
+    "type" : "SCF",
+    "scfType" : "druid",
+    "rarity" : "none",
+    "weight" : 4,
+    "value" : 500,
+    "weaponCategory" : "simple",
+    "property" : [ "V" ],
+    "dmg1" : "1d6",
+    "dmgType" : "B",
+    "dmg2" : "1d8"
+  } ],
+  "item" : [ {
+    "name" : "+1 Wand of the War Mage",
+    "source" : "DMG",
+    "page" : 212,
+    "srd" : true,
+    "type" : "WD",
+    "tier" : "major",
+    "rarity" : "uncommon",
+    "reqAttune" : "by a spellcaster",
+    "reqAttuneTags" : [ {
+      "spellcasting" : true
+    } ],
+    "weight" : 1,
+    "bonusSpellAttack" : "+1",
+    "entries" : [ "While you are holding this wand, you gain a +1 bonus to spell attack rolls. In addition, you ignore half cover when making a spell attack." ],
+    "lootTables" : [ "Magic Item Table F" ]
+  }, {
+    "name" : "Woodcarver's Tools",
+    "source" : "PHB",
+    "page" : 154,
+    "srd" : true,
+    "basicRules" : true,
+    "additionalSources" : [ {
+      "source" : "XGE",
+      "page" : 85
+    } ],
+    "type" : "AT",
+    "rarity" : "none",
+    "weight" : 5,
+    "value" : 100,
+    "additionalEntries" : [ "Woodcarver's tools allow you to craft intricate objects from wood, such as wooden tokens or arrows.", {
+      "type" : "entries",
+      "name" : "Components",
+      "entries" : [ "Woodcarver's tools consist of a knife, a gouge, and a small saw." ]
+    }, {
+      "type" : "entries",
+      "name" : "Arcana, History",
+      "entries" : [ "Your expertise lends you additional insight when you examine wooden objects, such as figurines or arrows." ]
+    }, {
+      "type" : "entries",
+      "name" : "Nature",
+      "entries" : [ "Your knowledge of wooden objects gives you some added insight when you examine trees." ]
+    }, {
+      "type" : "entries",
+      "name" : "Repair",
+      "entries" : [ "As part of a short rest, you can repair a single damaged wooden object." ]
+    }, {
+      "type" : "entries",
+      "name" : "Craft Arrows",
+      "entries" : [ "As part of a short rest, you can craft up to five arrows. As part of a long rest, you can craft up to twenty. You must have enough wood on hand to produce them." ]
+    }, {
+      "type" : "table",
+      "caption" : "Woodcarver's Tools",
+      "colLabels" : [ "Activity", "DC" ],
+      "colStyles" : [ "col-10", "col-2 text-center" ],
+      "rows" : [ [ "Craft a small wooden figurine", "10" ], [ "Carve an intricate pattern in wood", "15" ] ]
+    } ]
+  } ]
+}

@@ -140,6 +140,7 @@ public class Fc5ConvertTest {
         LaunchResult result = launcher.launch("obsidian", "-o", MIXED_OUTPUT_PATH.toString(),
                 "--monster", "src/test/resources/customTemplates/monster2-pieces.txt",
                 "src/test/resources/FC5-Compendium.xml");
+        Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
 
         String monster = Files.readString(MIXED_OUTPUT_PATH.resolve("monsters/aboleth.md"));
         Assertions.assertTrue(monster.contains("```ad-statblock"),
@@ -167,7 +168,7 @@ public class Fc5ConvertTest {
         Assertions.assertFalse(path.toFile().exists());
     }
 
-    String dump(LaunchResult result) {
+    public static String dump(LaunchResult result) {
         return "\n" + result.getOutput() + "\nSystem err:\n" + result.getErrorOutput();
     }
 }

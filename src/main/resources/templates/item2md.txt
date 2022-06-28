@@ -20,6 +20,9 @@ aliases: ["{resource.name}"]
 {#else}
 - **Damage**: {resource.damage}
 {/if}
+{#if resource.isRanged }
+- **Range**: {resource.range}
+{/if}
 {/if}
 {#for modifier in resource.modifiers}
 - **{modifier.category}**: {modifier.value}
