@@ -85,8 +85,7 @@ public class Json2XmlRace extends Json2XmlBase implements JsonRace {
     }
 
     private void addRaceAbilities(JsonNode value) {
-        JsonNode ability = value.withArray("ability");
-        String list = jsonArrayObjectToSkillBonusString(ability);
+        String list = jsonArrayObjectToSkillBonusString(value, "ability");
         if (!list.isEmpty()) {
             attributes.add(factory.createRaceTypeAbility(list));
         }

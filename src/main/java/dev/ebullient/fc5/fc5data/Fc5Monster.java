@@ -93,7 +93,7 @@ public class Fc5Monster extends QuteMonster implements QuteSource {
 
         public MonsterTypeBuilder(Fc5ParsingContext context) {
             setName(context.getOrFail(context.owner, "name", String.class));
-            setSize(context.getOrDefault("size", SizeEnum.UNKNOWN));
+            setSize(context.getOrDefault("size", SizeEnum.MEDIUM));
             setType(context.getOrDefault("type", ""));
             setAlignment(context.getOrDefault("alignment", ""));
             setAc(context.getOrDefault("ac", ""));

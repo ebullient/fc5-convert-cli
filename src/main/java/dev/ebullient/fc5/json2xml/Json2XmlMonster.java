@@ -1,9 +1,6 @@
 package dev.ebullient.fc5.json2xml;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
 
@@ -13,7 +10,6 @@ import dev.ebullient.fc5.Log;
 import dev.ebullient.fc5.json2xml.jaxb.XmlMonsterType;
 import dev.ebullient.fc5.json2xml.jaxb.XmlObjectFactory;
 import dev.ebullient.fc5.json2xml.jaxb.XmlSlotsType;
-import dev.ebullient.fc5.json2xml.jaxb.XmlTraitType;
 import dev.ebullient.fc5.json5e.CompendiumSources;
 import dev.ebullient.fc5.json5e.JsonIndex;
 import dev.ebullient.fc5.json5e.JsonIndex.IndexType;
@@ -92,59 +88,45 @@ public class Json2XmlMonster extends Json2XmlBase implements JsonMonster {
 
     private void addMonsterConditionsSensesLanguages(JsonNode jsonSource) {
         if (jsonSource.has("languages") && !jsonSource.get("languages").isNull()) {
-            attributes.add(factory.createMonsterTypeLanguages(joinAndReplace(jsonSource.withArray("languages"))));
+            attributes.add(factory.createMonsterTypeLanguages(joinAndReplace(jsonSource, "languages")));
         }
         if (jsonSource.has("senses") && !jsonSource.get("senses").isNull()) {
-            attributes.add(factory.createMonsterTypeSenses(joinAndReplace(jsonSource.withArray("senses"))));
+            attributes.add(factory.createMonsterTypeSenses(joinAndReplace(jsonSource, "senses")));
         }
         if (jsonSource.has("passive")) {
             attributes.add(factory.createMonsterTypePassive(bigIntegerOrDefault(jsonSource, "passive", 10)));
         }
         if (jsonSource.has("resist")) {
-            attributes.add(factory.createMonsterTypeResist(joinAndReplace(jsonSource.withArray("resist"))));
+            attributes.add(factory.createMonsterTypeResist(joinAndReplace(jsonSource, "resist")));
         }
         if (jsonSource.has("vulnerable") && !jsonSource.get("vulnerable").isNull()) {
-            attributes.add(factory.createMonsterTypeVulnerable(joinAndReplace(jsonSource.withArray("vulnerable"))));
+            attributes.add(factory.createMonsterTypeVulnerable(joinAndReplace(jsonSource, "vulnerable")));
         }
         String immunities = monsterImmunities(jsonSource);
         if (immunities != null) {
             attributes.add(factory.createMonsterTypeImmune(immunities));
         }
         if (jsonSource.has("conditionImmune")) {
-            attributes.add(factory.createMonsterTypeConditionImmune(joinAndReplace(jsonSource.withArray("conditionImmune"))));
+            attributes.add(factory.createMonsterTypeConditionImmune(joinAndReplace(jsonSource, "conditionImmune")));
         }
     }
 
     private void addMonsterSpellcasting(JsonNode jsonSource) {
-        JsonNode node = jsonSource.get("spellcasting");
-        if (node == null || node.isNull()) {
-            return;
-        } else if (node.isObject()) {
-            throw new IllegalArgumentException("Unknown spellcasting: " + getSources());
-        }
-        JsonNode spellcasting = node.get(0);
-        String traitName = getTextOrEmpty(spellcasting, "name");
-
-        List<String> text = new ArrayList<>();
-        Set<String> diceRolls = new HashSet<>();
-        Set<String> spells = monsterSpellcasting(jsonSource, text, diceRolls,
-                s -> {
-                    XmlSlotsType spellslots = factory.createSlotsType();
-                    spellslots.setValue(String.join(", ", List.of(s)));
-                    attributes.add(factory.createMonsterTypeSlots(spellslots));
-                });
-
-        XmlTraitType trait = createXmlTraitType(traitName, text, diceRolls);
-        if ("action".equals(getTextOrEmpty(spellcasting, "displayAs"))) {
-            attributes.add(factory.createMonsterTypeAction(trait));
-        } else {
-            attributes.add(factory.createMonsterTypeTrait(trait));
-        }
-        attributes.add(factory.createMonsterTypeSpells(String.join(", ", spells).replace("*", "")));
+        spellcastingTrait(jsonSource, spells -> {
+            attributes.add(factory.createMonsterTypeSpells(String.join(", ", spells).replace("*", "")));
+        }, slots -> {
+            XmlSlotsType spellslots = factory.createSlotsType();
+            spellslots.setValue(String.join(", ", List.of(slots)));
+            attributes.add(factory.createMonsterTypeSlots(spellslots));
+        }, action -> {
+            attributes.add(factory.createMonsterTypeAction(quteToXmlTraitType(action)));
+        }, trait -> {
+            attributes.add(factory.createMonsterTypeTrait(quteToXmlTraitType(trait)));
+        });
     }
 
     private void addMonsterEnvironment(JsonNode jsonSource) {
-        String value = joinAndReplace(jsonSource.withArray("environment"));
+        String value = joinAndReplace(jsonSource, "environment");
         if (!value.isEmpty()) {
             attributes.add(factory.createMonsterTypeEnvironment(value));
         }

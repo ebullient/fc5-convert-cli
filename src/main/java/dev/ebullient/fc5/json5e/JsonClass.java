@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import dev.ebullient.fc5.Log;
 import dev.ebullient.fc5.pojo.Modifier;
 import dev.ebullient.fc5.pojo.ModifierCategoryEnum;
+import dev.ebullient.fc5.pojo.Proficiency;
 import dev.ebullient.fc5.pojo.QuteClassAutoLevel;
 import dev.ebullient.fc5.pojo.QuteClassFeature;
 import dev.ebullient.fc5.pojo.SkillOrAbility;
@@ -22,41 +23,14 @@ import dev.ebullient.fc5.pojo.SkillOrAbility;
 public interface JsonClass extends JsonBase {
     String INFUSIONS_KNOWN_FEAT = "classfeature|infusions known|artificer|tce|2";
 
-    default JsonNode resolveClassNode(JsonNode classNode) {
-        JsonIndex index = getIndex();
-        CompendiumSources sources = getSources();
-        if (index.keyIsExcluded(sources.getKey())) {
-            Log.debugf("Excluded %s", sources);
-            return null; // skip this
+    default JsonNode copyAndMergeClass(JsonNode jsonSource) {
+        if (jsonSource.has("className") || jsonSource.has("_copy")) {
+            jsonSource = getIndex().cloneOrCopy(getSources().getKey(),
+                    jsonSource, JsonIndex.IndexType.classtype,
+                    getTextOrDefault(jsonSource, "className", null),
+                    getTextOrDefault(jsonSource, "classSource", null));
         }
-        if (classNode.has("className") || classNode.has("_copy")) {
-            return index.cloneOrCopy(sources.getKey(), classNode,
-                    JsonIndex.IndexType.classtype, classNode.get("className").asText(), classNode.get("classSource").asText());
-        }
-        if (isReprinted(classNode)) {
-            return null; // the reprint will be used instead of this one.
-        }
-        return classNode;
-    }
-
-    default JsonNode resolveClassFeatureNode(String finalKey) {
-        JsonIndex index = getIndex();
-        JsonNode featureNode = index.getNode(finalKey);
-        if (featureNode == null) {
-            Log.debugf("%s not found (referenced from %s)", finalKey, getSources());
-            return null; // skip this
-        }
-        return resolveClassFeatureNode(finalKey, featureNode);
-    }
-
-    default JsonNode resolveClassFeatureNode(String finalKey, JsonNode featureNode) {
-        JsonIndex index = getIndex();
-        if (index.keyIsExcluded(finalKey)) {
-            Log.debugf("Source of %s is excluded (referenced from %s)", finalKey, getSources());
-            return null; // skip this
-        }
-        // TODO: Handle copies or other fill-in / fluff?
-        return featureNode;
+        return jsonSource;
     }
 
     default boolean isSidekick() {
@@ -305,11 +279,13 @@ public interface JsonClass extends JsonBase {
             JsonNode subclassNode, String subclassTitle) {
         JsonIndex index = getIndex();
         String scKey = index.getKey(JsonIndex.IndexType.subclass, subclassNode);
-        subclassNode = resolveClassFeatureNode(scKey, subclassNode);
+        subclassNode = index.resolveClassFeatureNode(scKey, subclassNode);
         if (subclassNode == null) {
             return; // skipped or not found
         }
-        String grouping = subclassNode.get("shortName").asText();
+        String grouping = subclassTitle.isEmpty()
+                ? subclassNode.get("shortName").asText()
+                : String.format("%s: %s", subclassTitle, subclassNode.get("shortName").asText());
         CompendiumSources subclassSources = new CompendiumSources(JsonIndex.IndexType.subclass, scKey, subclassNode);
         // does the subclass have subclass features? add those to the map...
         subclassNode.withArray("subclassFeatures").forEach(f -> {
@@ -340,13 +316,12 @@ public interface JsonClass extends JsonBase {
                 : t;
 
         String finalKey = index.getRefKey(type, lookup);
-        JsonNode featureJson = resolveClassFeatureNode(finalKey);
+        JsonNode featureJson = index.resolveClassFeatureNode(finalKey);
         if (featureJson == null) {
             return null; // skipped or not found
         }
 
         CompendiumSources featureSources = new CompendiumSources(type, finalKey, featureJson);
-        QuteClassFeature feature = buildClassFeature(featureSources, featureJson, title, level, sortingGroup);
 
         StreamSupport.stream(featureJson.withArray("entries").spliterator(), false)
                 .filter(JsonNode::isObject)
@@ -373,7 +348,7 @@ public interface JsonClass extends JsonBase {
                     }
                 });
 
-        featureByLevel.add(level, feature);
+        featureByLevel.add(level, buildClassFeature(featureSources, featureJson, title, level, sortingGroup));
         return level;
     }
 
@@ -442,6 +417,7 @@ public interface JsonClass extends JsonBase {
         final String name;
         Map<String, List<String>> startingText = new HashMap<>();
         boolean additionalFromBackground;
+        Proficiency proficiency;
 
         boolean isMarkdown;
 
@@ -482,6 +458,7 @@ public interface JsonClass extends JsonBase {
         }
 
         public void sidekickProficiencies(JsonNode sidekickClassFeature) {
+            Proficiency.Builder pb = new Proficiency.Builder();
             sidekickClassFeature.withArray("entries").forEach(e -> {
                 String line = e.asText();
                 if (line.contains("saving throw")) {
@@ -491,6 +468,7 @@ public interface JsonClass extends JsonBase {
                     String text = line.replaceAll(".*in one saving throw of your choice: (.*)", "$1")
                             .replaceAll("or ", "").replace(".", "");
                     put("saves", List.of(text));
+                    pb.addSkills(List.of(text.split("\\s*,\\s*")));
                 }
                 if (line.contains("skills")) {
                     // "In addition, the sidekick gains proficiency in five skills of your choice, and it gains proficiency with light armor. If it is a humanoid or has a simple or martial weapon in its stat block, it also gains proficiency with all simple weapons and with two tools of your choice."
@@ -507,9 +485,10 @@ public interface JsonClass extends JsonBase {
                                 .replace(".", "")
                                 .replace("and ", "");
                         put("skills", List.of(text));
-
+                        pb.addSkills(List.of(text.split("\\s*,\\s*")));
                     } else {
                         put("skills", SkillOrAbility.allSkills);
+                        pb.addSkills(SkillOrAbility.allSkills);
                     }
                 }
                 if (line.contains("armor")) {
@@ -528,6 +507,7 @@ public interface JsonClass extends JsonBase {
                     put("tools", List.of("two tools of your choice"));
                 }
             });
+            this.proficiency = pb.build();
         }
 
         public int classHitDice(JsonNode classNode) {
@@ -539,17 +519,16 @@ public interface JsonClass extends JsonBase {
             return 0;
         }
 
-        public List<String> classProficiencies(JsonNode classNode) {
-            List<String> abilitySkills = new ArrayList<>();
+        public void findClassProficiencies(JsonNode classNode) {
+            Proficiency.Builder pb = new Proficiency.Builder();
             if (classNode.has("proficiency")) {
-                classNode.withArray("proficiency").forEach(n -> abilitySkills.add(asAbilityEnum(n)));
+                classNode.withArray("proficiency").forEach(n -> pb.addSkill(asAbilityEnum(n)));
             }
 
             JsonNode startingProf = classNode.get("startingProficiencies");
             if (startingProf == null) {
                 Log.errorf("%s has no starting proficiencies", sources);
             } else {
-
                 if (startingProf.has("armor")) {
                     put("armor", List.of(findArmor(startingProf)));
                 }
@@ -569,11 +548,14 @@ public interface JsonClass extends JsonBase {
                         put("skills",
                                 List.of(String.format("Choose %s from %s", count, String.join(", ", list))));
                     }
-                    abilitySkills.addAll(list);
+                    pb.addSkills(list);
                 }
             }
+            this.proficiency = pb.build();
+        }
 
-            return abilitySkills;
+        public Proficiency getProficiency() {
+            return proficiency;
         }
 
         public String getArmor() {
@@ -593,30 +575,30 @@ public interface JsonClass extends JsonBase {
         }
 
         public String getSkills() {
-            String saves = textOrDefault("saves", null);
-            String skills = textOrDefault("skills", "none");
-            if (saves != null) {
-                return String.join(", ", saves, skills);
-            }
-            return skills;
+            return proficiency.toText();
+        }
+
+        public String getHitDice() {
+            return textOrDefault("hd", "0");
         }
 
         public void put(String key, List<String> value) {
             startingText.put(key, value);
         }
 
-        public List<QuteClassFeature> getStartingFeatures(JsonNode classNode) {
+        public List<QuteClassFeature> buildStartingClassFeatures(JsonNode classNode) {
             List<String> text = new ArrayList<>();
             text.add(String.format("You are proficient with the following items%s.",
-                    additionalFromBackground ? ", in addition to any proficiencies provided by your race or background"
+                    additionalFromBackground
+                            ? ", in addition to any proficiencies provided by your race or background"
                             : ""));
             if (startingText.containsKey("saves")) {
-                text.add(String.format("%sSaving Throws: %s", LI, textOrDefault("saves", "none")));
+                text.add(String.format("%sSaving Throws: %s", li(), textOrDefault("saves", "none")));
             }
-            text.add(String.format("%sArmor: %s", LI, textOrDefault("armor", "none")));
-            text.add(String.format("%sWeapons: %s", LI, textOrDefault("weapons", "none")));
-            text.add(String.format("%sTools: %s", LI, textOrDefault("tools", "none")));
-            text.add(String.format("%sSkills: %s", LI, textOrDefault("skills", "none")));
+            text.add(String.format("%sArmor: %s", li(), textOrDefault("armor", "none")));
+            text.add(String.format("%sWeapons: %s", li(), textOrDefault("weapons", "none")));
+            text.add(String.format("%sTools: %s", li(), textOrDefault("tools", "none")));
+            text.add(String.format("%sSkills: %s", li(), textOrDefault("skills", "none")));
 
             if (!isSidekick()) {
                 maybeAddBlankLine(text);
@@ -624,7 +606,7 @@ public interface JsonClass extends JsonBase {
                         additionalFromBackground ? ", in addition to any equipment provided by your background" : ""));
                 List<String> equipment = startingText.get("equipment");
                 if (equipment == null) {
-                    text.add(LI + "None");
+                    text.add(li() + "None");
                 } else {
                     text.addAll(equipment);
                 }
@@ -654,7 +636,7 @@ public interface JsonClass extends JsonBase {
 
             text.add(String.format("To multiclass as a %s, you must meet the following prerequisites:", name));
             multiclassing.with("requirements").fields().forEachRemaining(
-                    ability -> text.add(String.format("%s%s %s", LI,
+                    ability -> text.add(String.format("%s%s %s", li(),
                             asAbilityEnum(ability.getKey()), ability.getValue().asText())));
 
             JsonNode gained = multiclassing.get("proficienciesGained");
@@ -662,19 +644,19 @@ public interface JsonClass extends JsonBase {
                 text.add("");
                 text.add("You gain the following proficiencies:");
                 if (gained.has("armor")) {
-                    text.add(LI + "Armor: " + findArmor(gained));
+                    text.add(li() + "Armor: " + findArmor(gained));
                 }
                 if (gained.has("weapons")) {
-                    text.add(LI + "Weapons: " + findWeapons(gained));
+                    text.add(li() + "Weapons: " + findWeapons(gained));
                 }
                 if (gained.has("tools")) {
-                    text.add(LI + "Tools: " + findTools(gained));
+                    text.add(li() + "Tools: " + findTools(gained));
                 }
                 if (gained.has("skills")) {
                     List<String> list = new ArrayList<>();
                     int count = classSkills(gained, list, sources);
                     text.add(String.format("%sSkills: Choose %s from %s",
-                            LI, count, String.join(", ", list)));
+                            li(), count, String.join(", ", list)));
                 }
             }
             maybeAddBlankLine(text);
@@ -692,16 +674,16 @@ public interface JsonClass extends JsonBase {
         }
 
         String findArmor(JsonNode source) {
-            return joinAndReplace(source.withArray("armor"))
+            return joinAndReplace(source, "armor")
                     .replace("shield", "shields");
         }
 
         String findWeapons(JsonNode source) {
-            return joinAndReplace(source.withArray("weapons"));
+            return joinAndReplace(source, "weapons");
         }
 
         String findTools(JsonNode source) {
-            return joinAndReplace(source.withArray("tools"));
+            return joinAndReplace(source, "tools");
         }
 
         private String textToInt(String text) {

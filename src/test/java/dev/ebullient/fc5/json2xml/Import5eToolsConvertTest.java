@@ -61,7 +61,7 @@ public class Import5eToolsConvertTest {
         if (TOOLS_PATH.toFile().exists()) {
             launcher.launch("5etools", "--index", "--md",
                     "-o", OUTPUT_PATH.toString(),
-                    "-s", "PHB,DMG,SCAG",
+                    "-s", "PHB,DMG,SCAG,WbtW",
                     TOOLS_PATH.toString(),
                     PROJECT_PATH.resolve("src/test/resources/sources.json").toString());
         }

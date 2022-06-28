@@ -25,9 +25,11 @@ public class MarkdownWriter {
     public static Slugify slugifier() {
         Slugify s = slugify;
         if (s == null) {
-            s = new Slugify();
-            s.withLowerCase(true);
-            slugify = s;
+            slugify = s = Slugify.builder()
+                    .customReplacement("\"", "")
+                    .customReplacement("'", "")
+                    .lowerCase(true)
+                    .build();
         }
         return s;
     }

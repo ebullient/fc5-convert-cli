@@ -20,6 +20,7 @@ import dev.ebullient.fc5.pojo.Proficiency;
 import dev.ebullient.fc5.pojo.PropertyEnum;
 import dev.ebullient.fc5.pojo.QuteBackground;
 import dev.ebullient.fc5.pojo.QuteClass;
+import dev.ebullient.fc5.pojo.QuteClassAutoLevel;
 import dev.ebullient.fc5.pojo.QuteFeat;
 import dev.ebullient.fc5.pojo.QuteItem;
 import dev.ebullient.fc5.pojo.QuteMonster;
@@ -49,7 +50,10 @@ public class Json2MarkdownConverter {
 
         List<QuteSource> nodes = new ArrayList<>();
         for (JsonNode e : variants.values()) {
-            nodes.add(json2qute(type, e));
+            QuteSource converted = json2qute(type, e);
+            if (converted != null) {
+                nodes.add(converted);
+            }
         }
 
         try {
@@ -80,7 +84,6 @@ public class Json2MarkdownConverter {
                 jsonNode = index.handleCopy(JsonIndex.IndexType.background, jsonNode);
                 return new Json2QuteBackground(jsonNode).build();
             case classtype:
-                jsonNode = index.handleCopy(JsonIndex.IndexType.classtype, jsonNode);
                 return new Json2QuteClass(jsonNode).build();
             case feat:
                 // no use of _copy
@@ -89,7 +92,7 @@ public class Json2MarkdownConverter {
                 jsonNode = index.handleCopy(JsonIndex.IndexType.classtype, jsonNode);
                 return new Json2QuteItem(jsonNode).build();
             case monster:
-                jsonNode = index.handleCopy(JsonIndex.IndexType.classtype, jsonNode);
+                jsonNode = index.handleCopy(JsonIndex.IndexType.monster, jsonNode);
                 return new Json2QuteMonster(jsonNode).build();
             case race:
                 // unique race copy/merge
@@ -108,7 +111,6 @@ public class Json2MarkdownConverter {
 
         public Json2QuteBackground(JsonNode jsonSource) {
             super(JsonIndex.IndexType.background, jsonSource);
-
             String backgroundName = decoratedTypeName(sources);
             this.builder = new QuteBackground.Builder()
                     .setName(backgroundName)
@@ -128,17 +130,65 @@ public class Json2MarkdownConverter {
         QuteBackground build() {
             return builder.build();
         }
-
     }
 
     class Json2QuteClass extends Json2QuteCommon implements JsonClass {
 
-        public Json2QuteClass(JsonNode jsonNode) {
-            super(JsonIndex.IndexType.classtype, jsonNode);
+        final QuteClass.Builder builder;
+        final StartingClass scf;
+
+        public Json2QuteClass(JsonNode jsonSource) {
+            super(JsonIndex.IndexType.classtype, jsonSource);
+            jsonSource = copyAndMergeClass(jsonSource);
+
+            scf = new StartingClass(getIndex(), getSources(), getName(), isMarkdown());
+            builder = new QuteClass.Builder()
+                    .setName(decoratedTypeName(getName(), getSources()));
+
+            if (!isSidekick()) {
+                scf.classHitDice(jsonSource);
+                scf.findClassProficiencies(jsonSource);
+                scf.getStartingEquipment(jsonSource);
+            }
+
+            List<QuteClassAutoLevel> levels = classAutolevels(jsonSource);
+            transferClassProficiencies(); // after autolevel for sidekick profs
+
+            // Create autolevel w/ creation options & profs.
+            builder.addAutoLevel(new QuteClassAutoLevel.Builder()
+                    .setLevel(1)
+                    .addFeatures(scf.buildStartingClassFeatures(jsonSource).stream())
+                    .build());
+
+            // Add other levels
+            for (QuteClassAutoLevel level : levels) {
+                if (!level.hasContent()) {
+                    continue;
+                }
+                builder.addAutoLevel(new QuteClassAutoLevel.Builder()
+                        .setLevel(level.getLevel())
+                        .setScoreImprovement(level.isScoreImprovement())
+                        .addFeatures(level.getFeatures())
+                        .build());
+            }
+        }
+
+        void transferClassProficiencies() {
+            builder.setArmor(scf.getArmor())
+                    .setWeapons(scf.getWeapons())
+                    .setTools(scf.getTools())
+                    .setNumSkills(Integer.parseInt(scf.getNumSkills()))
+                    .setProficiency(scf.getProficiency())
+                    .setHitDice(Integer.parseInt(scf.getHitDice()));
+        }
+
+        @Override
+        public StartingClass getStartingClassAttributes() {
+            return scf;
         }
 
         QuteClass build() {
-            return new QuteClass.Builder().build();
+            return builder.build();
         }
     }
 
@@ -211,13 +261,46 @@ public class Json2MarkdownConverter {
     }
 
     class Json2QuteMonster extends Json2QuteCommon implements JsonMonster {
+        final QuteMonster.Builder builder;
 
-        public Json2QuteMonster(JsonNode jsonNode) {
-            super(JsonIndex.IndexType.monster, jsonNode);
+        public Json2QuteMonster(JsonNode jsonSource) {
+            super(JsonIndex.IndexType.monster, jsonSource);
+            builder = new QuteMonster.Builder()
+                    .setName(decorateMonsterName(jsonSource))
+                    .setSize(getSize(jsonSource))
+                    .setType(monsterType(jsonSource))
+                    .setAlignment(monsterAlignment(jsonSource))
+                    .setAc(monsterAc(jsonSource))
+                    .setHpDice(monsterHp(jsonSource))
+                    .setSpeed(monsterSpeed(jsonSource))
+                    .setScores(intOrDefault(jsonSource, "str", 10),
+                            intOrDefault(jsonSource, "dex", 10),
+                            intOrDefault(jsonSource, "con", 10),
+                            intOrDefault(jsonSource, "int", 10),
+                            intOrDefault(jsonSource, "wis", 10),
+                            intOrDefault(jsonSource, "cha", 10))
+                    .setCr(getTextOrEmpty(jsonSource, "cr"))
+                    .setDescription(monsterDescriptionList(jsonSource))
+                    .setSave(jsonObjectToSkillBonusList(jsonSource.get("save")))
+                    .setSkill(jsonObjectToSkillBonusList(jsonSource.get("skill")))
+                    .setLanguages(joinAndReplace(jsonSource, "languages"))
+                    .setSenses(joinAndReplace(jsonSource, "senses"),
+                            intOrDefault(jsonSource, "passive", 10))
+                    .setResist(joinAndReplace(jsonSource, "resist"))
+                    .setVulnerable(joinAndReplace(jsonSource, "vulnerable"))
+                    .setImmune(monsterImmunities(jsonSource))
+                    .setConditionImmune(joinAndReplace(jsonSource, "conditionImmune"))
+                    .setEnvironment(joinAndReplace(jsonSource, "environment"));
+
+            builder.setTrait(collectTraits(jsonSource.get("trait")));
+            builder.setAction(collectTraits(jsonSource.get("action")));
+            builder.setReaction(collectTraits(jsonSource.get("reaction")));
+            builder.setLegendary(collectTraits(jsonSource.get("legendary")));
+            spellcastingTrait(jsonSource, this::noOp, this::noOp, builder::addAction, builder::addTrait);
         }
 
         QuteMonster build() {
-            return new QuteMonster.Builder().build();
+            return builder.build();
         }
     }
 
@@ -235,7 +318,7 @@ public class Json2MarkdownConverter {
                     .setSize(getSize(jsonSource))
                     .setSpeed(getSpeed(jsonSource))
                     .setSpellAbility(SkillOrAbility.fromTextValue(getRacialSpellAbility(jsonSource)))
-                    .setAbility(jsonArrayObjectToSkillBonusString(jsonSource.withArray("ability")))
+                    .setAbility(jsonArrayObjectToSkillBonusString(jsonSource, "ability"))
                     .setProficiency(new Proficiency.Builder()
                             .addSkills(jsonToSkillsList(jsonSource.withArray("skillProficiencies")))
                             .build())
@@ -300,6 +383,9 @@ public class Json2MarkdownConverter {
         @Override
         public boolean isMarkdown() {
             return true;
+        }
+
+        public void noOp(Object o) {
         }
     }
 }

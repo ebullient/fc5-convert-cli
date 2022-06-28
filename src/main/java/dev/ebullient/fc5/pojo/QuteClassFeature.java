@@ -32,7 +32,7 @@ public class QuteClassFeature implements QuteSource {
     }
 
     public String getText() {
-        return String.join(", ", featureText);
+        return String.join("  \n", featureText);
     }
 
     public List<String> getRawText() {
@@ -57,7 +57,7 @@ public class QuteClassFeature implements QuteSource {
 
     @Override
     public String toString() {
-        return "feature[name=" + name + ", level=" + autolevel + "]";
+        return "feature[name=" + name + ", level=" + autolevel + ", sortingGroup=" + sortingGroup + "]";
     }
 
     public static class Builder {
@@ -71,6 +71,7 @@ public class QuteClassFeature implements QuteSource {
         protected int level;
         protected String subclassTitle;
         protected String sortingGroup = "";
+        protected boolean subclassfeature = false;
 
         public Builder setName(String name) {
             this.name = name;
@@ -130,13 +131,19 @@ public class QuteClassFeature implements QuteSource {
         public QuteClassFeature build() {
             return new QuteClassFeature(name, level, optional, featureText, modifiers, special, proficiency, sortingGroup);
         }
-
     }
 
-    public static Comparator<QuteClassFeature> alphabeticalFeatureSort = new Comparator<>() {
-        @Override
-        public int compare(QuteClassFeature o1, QuteClassFeature o2) {
+    public static Comparator<QuteClassFeature> alphabeticalFeatureSort = (o1, o2) -> {
+        if (o1.sortingGroup.equals(o2.sortingGroup)) {
+            if (o1.name.equals(o1.sortingGroup)) {
+                return -1;
+            }
+            if (o2.name.equals(o2.sortingGroup)) {
+                return 1;
+            }
             return o1.name.compareTo(o2.name);
+        } else {
+            return o1.sortingGroup.compareTo(o2.sortingGroup);
         }
     };
 }

@@ -50,7 +50,7 @@ public class ClassTypeTest extends ParsingTestBase {
         String content = templates.renderClass(barbarian);
         Assertions.assertAll(
                 () -> assertContains(content, "# Barbarian"),
-                () -> assertContains(content, "- **Hit Points at Higher Levels:** 7(1d12) + CON"),
+                () -> assertContains(content, "- **Hit Points at Higher Levels:** add 7 OR 1d12 + CON  (minimum of 1)"),
                 () -> assertContains(content, "- **Saving Throws**: Strength Saving Throws, Constitution Saving Throws"),
                 () -> assertContains(content, "#### Tiger (Level 14)"));
     }

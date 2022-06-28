@@ -105,6 +105,10 @@ public class Import5eTools implements Callable<Integer> {
             throw new CommandLine.MissingParameterException(spec.commandLine(), spec.args(),
                     "Must specify an input file");
         }
+        if (!output.toFile().exists() && !output.toFile().mkdirs()) {
+            Log.errorf("Unable to create output directory: %s", output);
+            return ExitCode.USAGE;
+        }
 
         if (source.size() == 1 && source.get(0).contains(",")) {
             String tmp = source.remove(0);
@@ -113,8 +117,6 @@ public class Import5eTools implements Callable<Integer> {
 
         Log.outPrintf("Importing/Converting items from 5e tools %s to %s.\n",
                 parent.input, output);
-
-        output.toFile().mkdirs();
 
         boolean allOk = true;
         JsonIndex index = new JsonIndex(source);
@@ -172,14 +174,13 @@ public class Import5eTools implements Callable<Integer> {
             Log.outPrintln("💡 Writing files to " + output);
             new Json2MarkdownConverter(index, writer)
                     .writeFiles(IndexType.background, "Backgrounds")
-                    //                    .writeFiles(IndexType.classtype, "Classes")
+                    .writeFiles(IndexType.classtype, "Classes")
                     .writeFiles(IndexType.feat, "Feats")
                     .writeFiles(IndexType.item, "Items")
-                    //                    .writeFiles(IndexType.monster, "Monsters")
+                    .writeFiles(IndexType.monster, "Monsters")
                     .writeFiles(IndexType.race, "Races")
                     .writeFiles(IndexType.spell, "Spells");
         }
-
         return allOk ? ExitCode.OK : ExitCode.SOFTWARE;
     }
 

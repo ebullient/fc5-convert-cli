@@ -1,6 +1,8 @@
 package dev.ebullient.fc5.json5e;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -10,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import dev.ebullient.fc5.Log;
+import dev.ebullient.fc5.pojo.QuteTrait;
 
 public interface JsonMonster extends JsonBase {
     default String decorateMonsterName(JsonNode jsonSource) {
@@ -21,6 +24,11 @@ public interface JsonMonster extends JsonBase {
     }
 
     default String monsterDescription(JsonNode jsonSource) {
+        List<String> text = monsterDescriptionList(jsonSource);
+        return String.join("\n", text);
+    }
+
+    default List<String> monsterDescriptionList(JsonNode jsonSource) {
         List<String> text = new ArrayList<>();
         try {
             getFluffDescription(jsonSource, JsonIndex.IndexType.monsterfluff, text);
@@ -29,11 +37,14 @@ public interface JsonMonster extends JsonBase {
         }
         maybeAddBlankLine(text);
         text.add("Source: " + getSources().getSourceText());
-        return String.join("\n", text);
+        return text;
     }
 
     default String monsterType(JsonNode jsonSource) {
         JsonNode type = jsonSource.get("type");
+        if (type == null) {
+            System.out.println("Empty type for " + getSources());
+        }
         if (type.isTextual()) {
             return type.asText();
         }
@@ -218,7 +229,7 @@ public interface JsonMonster extends JsonBase {
                     immunities.add(immunity.asText());
                 } else {
                     StringBuilder str = new StringBuilder();
-                    str.append(joinAndReplace(immunity.withArray("immune")));
+                    str.append(joinAndReplace(immunity, "immune"));
                     if (immunity.has("note")) {
                         str.append(" ")
                                 .append(immunity.get("note").asText());
@@ -238,15 +249,25 @@ public interface JsonMonster extends JsonBase {
         return null;
     }
 
-    default Set<String> monsterSpellcasting(JsonNode jsonSource,
-            List<String> text, Set<String> diceRolls, Consumer<String[]> spellSlotHandler) {
-        JsonNode spellcasting = jsonSource.get("spellcasting").get(0);
+    default void spellcastingTrait(JsonNode jsonSource,
+            Consumer<Collection<String>> spellHandler, Consumer<String[]> spellSlotHandler,
+            Consumer<QuteTrait> actionHandler, Consumer<QuteTrait> traitHandler) {
+        JsonNode node = jsonSource.get("spellcasting");
+        if (node == null || node.isNull()) {
+            return;
+        } else if (node.isObject()) {
+            throw new IllegalArgumentException("Unknown spellcasting: " + getSources());
+        }
+        JsonNode spellcasting = node.get(0);
+        List<String> text = new ArrayList<>();
+        Set<String> diceRolls = new HashSet<>();
         Set<String> spells = new TreeSet<>();
 
+        String traitName = getTextOrEmpty(spellcasting, "name");
         appendEntryToText(text, spellcasting.get("headerEntries"), diceRolls);
         if (spellcasting.has("will")) {
             List<String> atWill = getSpells(spellcasting, "will");
-            text.add(LI + "At will: " + String.join(", ", atWill));
+            text.add(li() + "At will: " + String.join(", ", atWill));
             spells.addAll(atWill);
         }
         JsonNode daily = spellcasting.get("daily");
@@ -258,14 +279,14 @@ public interface JsonMonster extends JsonBase {
                     case "1":
                     case "2":
                     case "3":
-                        text.add(String.format("%s%s/day: %s", LI,
+                        text.add(String.format("%s%s/day: %s", li(),
                                 field.charAt(0),
                                 String.join(", ", things)));
                         break;
                     case "1e":
                     case "2e":
                     case "3e":
-                        text.add(String.format("%s%s/day each: %s", LI,
+                        text.add(String.format("%s%s/day each: %s", li(),
                                 field.charAt(0),
                                 String.join(", ", things)));
                         break;
@@ -285,23 +306,23 @@ public interface JsonMonster extends JsonBase {
 
                 switch (level) {
                     case 0:
-                        text.add(String.format("%sCantrips: %s", LI,
+                        text.add(String.format("%sCantrips: %s", li(),
                                 String.join(", ", things)));
                         slots[0] = "" + things.size();
                         break;
                     case 1:
-                        text.add(String.format("%s1st-level spells: %s", LI,
+                        text.add(String.format("%s1st-level spells: %s", li(),
                                 String.join(", ", things)));
 
                         slots[1] = getTextOrDefault(spellLevel, "slots", "0");
                         break;
                     case 2:
-                        text.add(String.format("%s2nd-level spells: %s", LI,
+                        text.add(String.format("%s2nd-level spells: %s", li(),
                                 String.join(", ", things)));
                         slots[2] = getTextOrDefault(spellLevel, "slots", "0");
                         break;
                     case 3:
-                        text.add(String.format("%s3rd-level spells: %s", LI,
+                        text.add(String.format("%s3rd-level spells: %s", li(),
                                 String.join(", ", things)));
                         slots[3] = getTextOrDefault(spellLevel, "slots", "0");
                         break;
@@ -311,7 +332,7 @@ public interface JsonMonster extends JsonBase {
                     case 7:
                     case 8:
                     case 9:
-                        text.add(String.format("%s%sth-level spells: %s", LI,
+                        text.add(String.format("%s%sth-level spells: %s", li(),
                                 spellLevelEntry.getKey(),
                                 String.join(", ", things)));
                         slots[level] = getTextOrDefault(spellLevel, "slots", "0");
@@ -322,10 +343,17 @@ public interface JsonMonster extends JsonBase {
             });
             spellSlotHandler.accept(slots);
         }
-
         appendEntryToText(text, spellcasting.get("footerEntries"), diceRolls);
+        if (!spells.isEmpty()) {
+            spellHandler.accept(spells);
+        }
 
-        return spells;
+        QuteTrait trait = createTrait(traitName, text, diceRolls);
+        if ("action".equals(getTextOrEmpty(spellcasting, "displayAs"))) {
+            actionHandler.accept(trait);
+        } else {
+            traitHandler.accept(trait);
+        }
     }
 
     default List<String> getSpells(JsonNode source, String fieldName) {

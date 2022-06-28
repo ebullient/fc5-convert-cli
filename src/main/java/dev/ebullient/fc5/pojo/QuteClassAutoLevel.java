@@ -86,6 +86,11 @@ public class QuteClassAutoLevel implements QuteSource {
             return this;
         }
 
+        public Builder addFeatures(Stream<? extends QuteClassFeature> f) {
+            f.forEach(x -> addFeature(x));
+            return this;
+        }
+
         public Builder addCounters(List<Counter> c) {
             this.counters.addAll(c);
             return this;

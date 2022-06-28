@@ -379,10 +379,10 @@ public class QuteMonster implements QuteSource {
         protected String languages;
         protected String cr;
 
-        protected List<QuteTrait> trait;
-        protected List<QuteTrait> action;
-        protected List<QuteTrait> reaction;
-        protected List<QuteTrait> legendary;
+        protected List<QuteTrait> trait = new ArrayList<>();
+        protected List<QuteTrait> action = new ArrayList<>();
+        protected List<QuteTrait> reaction = new ArrayList<>();
+        protected List<QuteTrait> legendary = new ArrayList<>();
         protected String environment;
 
         public Builder setName(String name) {
@@ -505,12 +505,22 @@ public class QuteMonster implements QuteSource {
         }
 
         public Builder setTrait(List<QuteTrait> trait) {
-            this.trait = trait;
+            this.trait.addAll(trait);
+            return this;
+        }
+
+        public Builder addTrait(QuteTrait trait) {
+            this.trait.add(trait);
             return this;
         }
 
         public Builder setAction(List<QuteTrait> action) {
-            this.action = action;
+            this.action.addAll(action);
+            return this;
+        }
+
+        public Builder addAction(QuteTrait action) {
+            this.action.add(action);
             return this;
         }
 

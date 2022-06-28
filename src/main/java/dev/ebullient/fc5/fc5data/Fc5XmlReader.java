@@ -174,7 +174,9 @@ public class Fc5XmlReader {
             Fc5ParsingContext parentContext = contextStack.peek();
 
             myElements.put("level", parentContext.elements.get("level"));
-            parentContext.put(name, new Fc5ClassFeature.FeatureBuilder(myElements).build());
+            parentContext.put(name, new Fc5ClassFeature.FeatureBuilder(myElements)
+                    // TODO: SORTING GROUP?
+                    .build());
         }
     }
 
@@ -290,7 +292,7 @@ public class Fc5XmlReader {
             case "race":
                 QuteRace race = new QuteRace.Builder()
                         .setName(context.getOrFail(context.owner, "name", String.class))
-                        .setSize(context.getOrDefault("size", SizeEnum.UNKNOWN))
+                        .setSize(context.getOrDefault("size", SizeEnum.MEDIUM))
                         .setSpeed(context.getOrDefault("speed", 0))
                         .setAbility(context.getOrDefault("ability", ""))
                         .setSpellAbility(context.getOrDefault("spellAbility", SkillOrAbility.None))

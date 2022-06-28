@@ -7,6 +7,7 @@ import javax.xml.bind.JAXBElement;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import dev.ebullient.fc5.Log;
 import dev.ebullient.fc5.json2xml.jaxb.XmlAutolevelType;
 import dev.ebullient.fc5.json2xml.jaxb.XmlClassType;
 import dev.ebullient.fc5.json2xml.jaxb.XmlCounterType;
@@ -22,7 +23,7 @@ public class Json2XmlClass extends Json2XmlBase implements JsonClass {
 
     XmlClassType fc5Class;
     List<JAXBElement<?>> attributes;
-    StartingClass startingClassFeature;
+    StartingClass scf;
 
     public Json2XmlClass(CompendiumSources sources, JsonIndex index, XmlObjectFactory factory) {
         super(sources, index, factory);
@@ -34,36 +35,45 @@ public class Json2XmlClass extends Json2XmlBase implements JsonClass {
 
     @Override
     public List<Json2XmlBase> convert(JsonNode classNode) {
-        classNode = resolveClassNode(classNode);
-        if (classNode == null) {
-            return List.of();
+        if (index.keyIsExcluded(sources.getKey())) {
+            Log.debugf("Excluded %s", sources);
+            return List.of(); // skip this
+        }
+        classNode = copyAndMergeClass(classNode);
+        if (isReprinted(classNode)) {
+            return List.of(); // the reprint will be used instead of this one.
         }
 
         this.fc5Class = factory.createClassType();
         this.attributes = fc5Class.getNameOrHdOrProficiency();
-        this.startingClassFeature = new StartingClass(index, sources, getName(), isMarkdown());
+
+        this.scf = new StartingClass(index, sources, getName(), isMarkdown());
         attributes.add(factory.createClassTypeName(decoratedTypeName(getName(), sources)));
-        if (getName().toLowerCase().contains("sidekick")) {
+
+        if (isSidekick()) {
             addClassSpellAbility(classNode);
         } else {
+            scf.findClassProficiencies(classNode);
             addClassHitDice(classNode);
-            addClassProficiencies(classNode);
             addClassSpellAbility(classNode);
             addClassWealth(classNode);
         }
-        addClassAutoLevels(classNode);
+        // Find all autolevels (includes resolving subclass features & sidekick profs)
+        List<QuteClassAutoLevel> levels = classAutolevels(classNode);
+        transferClassProficiencies(classNode); // after autolevels for sidekicks
+        addClassAutoLevels(classNode, levels);
         return List.of(this);
     }
 
     private void addClassWealth(JsonNode classNode) {
-        String wealth = startingClassFeature.getStartingEquipment(classNode);
+        String wealth = scf.getStartingEquipment(classNode);
         if (wealth != null) {
             attributes.add(factory.createClassTypeWealth(wealth.replaceAll(" ", "")));
         }
     }
 
     private void addClassHitDice(JsonNode classNode) {
-        int hd = startingClassFeature.classHitDice(classNode);
+        int hd = scf.classHitDice(classNode);
         if (hd > 0) {
             attributes.add(factory.createClassTypeHd(BigInteger.valueOf(hd)));
         }
@@ -81,22 +91,20 @@ public class Json2XmlClass extends Json2XmlBase implements JsonClass {
         }
     }
 
-    private void addClassProficiencies(JsonNode value) {
-        List<String> abilitySkills = startingClassFeature.classProficiencies(value);
-        attributes.add(factory.createClassTypeArmor(startingClassFeature.getArmor()));
-        attributes.add(factory.createClassTypeTools(startingClassFeature.getTools()));
-        attributes.add(factory.createClassTypeWeapons(startingClassFeature.getWeapons()));
-        attributes.add(factory.createClassTypeNumSkills(startingClassFeature.getNumSkills()));
-        if (!abilitySkills.isEmpty()) {
-            attributes.add(factory.createClassTypeProficiency(String.join(", ", abilitySkills)));
+    private void transferClassProficiencies(JsonNode value) {
+        attributes.add(factory.createClassTypeArmor(scf.getArmor()));
+        attributes.add(factory.createClassTypeTools(scf.getTools()));
+        attributes.add(factory.createClassTypeWeapons(scf.getWeapons()));
+        attributes.add(factory.createClassTypeNumSkills(scf.getNumSkills()));
+        String profs = scf.getSkills();
+        if (!profs.isEmpty()) {
+            attributes.add(factory.createClassTypeProficiency(profs));
         }
     }
 
-    void addClassAutoLevels(JsonNode classNode) {
-        // Find all autolevels (includes resolving subclass features & sidekick profs)
-        List<QuteClassAutoLevel> levels = classAutolevels(classNode);
-        // add the starting level first
-        addStartingLevel(classNode);
+    void addClassAutoLevels(JsonNode classNode, List<QuteClassAutoLevel> levels) {
+        // Create autolevel w/ creation options & profs.
+        attributes.add(factory.createClassTypeAutolevel(getStartingLevel(classNode)));
         // Now add the other levels
         for (QuteClassAutoLevel level : levels) {
             if (!level.hasContent()) {
@@ -118,30 +126,23 @@ public class Json2XmlClass extends Json2XmlBase implements JsonClass {
         }
     }
 
-    void addStartingLevel(JsonNode classNode) {
+    XmlAutolevelType getStartingLevel(JsonNode classNode) {
         XmlAutolevelType autoLevel = factory.createAutolevelType();
         autoLevel.setLevel(BigInteger.ONE);
         List<JAXBElement<?>> content = autoLevel.getContent();
 
-        if (isSidekick()) { // this has to be done late -- read from class feature
-            attributes.add(factory.createClassTypeArmor(startingClassFeature.getArmor()));
-            attributes.add(factory.createClassTypeWeapons(startingClassFeature.getWeapons()));
-            attributes.add(factory.createClassTypeTools(startingClassFeature.getTools()));
-            attributes.add(factory.createClassTypeNumSkills(startingClassFeature.getNumSkills()));
-            attributes.add(factory.createClassTypeProficiency(startingClassFeature.getSkills()));
+        if (scf.hasSubclassSpellcasting()) {
+            attributes.add(factory.createClassTypeSpellAbility(asAbilityEnum(scf.spellAbility())));
         }
 
-        if (startingClassFeature.hasSubclassSpellcasting()) {
-            attributes.add(factory.createClassTypeSpellAbility(asAbilityEnum(startingClassFeature.spellAbility())));
-        }
-
-        startingClassFeature.getStartingFeatures(classNode)
+        scf.buildStartingClassFeatures(classNode)
                 .forEach(f -> content.add(factory.createAutolevelTypeFeature(quteToXmlFeatureType(f))));
+        return autoLevel;
     }
 
     @Override
     public StartingClass getStartingClassAttributes() {
-        return startingClassFeature;
+        return scf;
     }
 
     public XmlCounterType quteToXmlCounterType(QuteClassAutoLevel.Counter c) {

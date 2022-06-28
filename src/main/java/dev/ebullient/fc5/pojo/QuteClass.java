@@ -126,36 +126,44 @@ public class QuteClass implements QuteSource {
         protected String tools;
         protected List<QuteClassAutoLevel> levels = new ArrayList<>();
 
-        public void setName(String name) {
+        public Builder setName(String name) {
             this.name = name;
+            return this;
         }
 
-        public void setHitDice(int hitDice) {
+        public Builder setHitDice(int hitDice) {
             this.hitDice = hitDice;
+            return this;
         }
 
-        public void setProficiency(Proficiency proficiency) {
+        public Builder setProficiency(Proficiency proficiency) {
             this.proficiency = proficiency;
+            return this;
         }
 
-        public void setNumSkills(int numSkills) {
+        public Builder setNumSkills(int numSkills) {
             this.numSkills = numSkills;
+            return this;
         }
 
-        public void setArmor(String armor) {
+        public Builder setArmor(String armor) {
             this.armor = armor;
+            return this;
         }
 
-        public void setWeapons(String weapons) {
+        public Builder setWeapons(String weapons) {
             this.weapons = weapons;
+            return this;
         }
 
-        public void setTools(String tools) {
+        public Builder setTools(String tools) {
             this.tools = tools;
+            return this;
         }
 
-        public void setAutoLevel(QuteClassAutoLevel autoLevel) {
+        public Builder addAutoLevel(QuteClassAutoLevel autoLevel) {
             levels.add(autoLevel);
+            return this;
         }
 
         public QuteClass build() {

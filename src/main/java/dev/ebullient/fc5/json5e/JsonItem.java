@@ -112,7 +112,7 @@ public interface JsonItem extends JsonBase {
                 }
                 if (source.has("resist")) {
                     entriesTemplate = entriesTemplate.replaceAll("\\{\\{item.resist}}",
-                            joinAndReplace(source.withArray("resist")));
+                            joinAndReplace(source, "resist"));
                 }
                 appendEntryToText(text, Import5eTools.MAPPER.readTree(entriesTemplate), diceRolls);
             } catch (JsonProcessingException e) {

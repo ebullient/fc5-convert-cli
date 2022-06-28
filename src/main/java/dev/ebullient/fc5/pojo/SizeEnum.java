@@ -31,8 +31,7 @@ public enum SizeEnum {
     HUGE("Huge", "H"),
     GARGANTUAN("Gargantuan", "G"),
     VARIES("Varies", "V"),
-    S_OR_M("Small or Medium", "SM"),
-    UNKNOWN("Unknown", "");
+    S_OR_M("Small or Medium", "SM");
 
     private final String longName;
     private final String encodedValue;

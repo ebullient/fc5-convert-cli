@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import dev.ebullient.fc5.json5e.JsonIndex;
 import io.quarkus.qute.TemplateData;
 
 /**
@@ -91,8 +92,8 @@ public enum PropertyEnum {
 
     public String getMarkdownLink() {
         return weapon
-                ? String.format("[%s](%s)", longName, "/rules/weapon-properties.md#" + longName)
-                : String.format("[%s](%s)", longName, "/rules/gear-properties.md#" + longName);
+                ? String.format("[%s](%s)", longName, JsonIndex.rulesRoot() + "weapon-properties.md#" + longName)
+                : String.format("[%s](%s)", longName, JsonIndex.rulesRoot() + "gear-properties.md#" + longName);
     }
 
     public static PropertyEnum fromValue(String v) {

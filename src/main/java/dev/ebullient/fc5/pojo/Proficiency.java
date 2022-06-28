@@ -49,6 +49,11 @@ public class Proficiency {
             return this;
         }
 
+        public Builder addSkill(String s) {
+            skills.add(SkillOrAbility.fromTextValue(s));
+            return this;
+        }
+
         public Builder fromString(String s) {
             if (s == null || s.trim().isEmpty()) {
                 return this;

@@ -94,8 +94,19 @@ public class JsonIndex implements JsonBase {
     private final Set<String> familiarKeys = new HashSet<>();
     private final Set<String> includeGroups = new HashSet<>();
 
+    private static String rulesPath = "/rules/";
+    private static String compendiumPath = "/compendium/";
+
     Pattern classFeaturePattern;
     Pattern subclassFeaturePattern;
+
+    public static String rulesRoot() {
+        return rulesPath;
+    }
+
+    public static String compendiumRoot() {
+        return compendiumPath;
+    }
 
     public JsonIndex(List<String> sources) {
         this.allowedSources.addAll(sources.stream().map(String::toLowerCase).collect(Collectors.toList()));
@@ -131,6 +142,19 @@ public class JsonIndex implements JsonBase {
         node.withArray("includeGroups").forEach(x -> includeGroups.add(x.asText()));
         node.withArray("exclude").forEach(x -> excludedKeys.add(x.asText().toLowerCase()));
         node.withArray("excludePattern").forEach(x -> addExcludePattern(x.asText().toLowerCase()));
+
+        if (node.has("paths")) {
+            node.get("paths").fields().forEachRemaining(e -> {
+                switch (e.getKey()) {
+                    case "rules":
+                        this.rulesPath = e.getValue().asText();
+                        break;
+                    case "compendium":
+                        this.compendiumPath = e.getValue().asText();
+                        break;
+                }
+            });
+        }
         return this;
     }
 
@@ -449,6 +473,26 @@ public class JsonIndex implements JsonBase {
         Import5eTools.MAPPER.writer()
                 .with(pp)
                 .writeValue(outputFile.toFile(), Map.of("keys", keys));
+    }
+
+    public JsonNode resolveClassFeatureNode(String finalKey) {
+        JsonIndex index = getIndex();
+        JsonNode featureNode = index.getNode(finalKey);
+        if (featureNode == null) {
+            Log.debugf("%s not found (referenced from %s)", finalKey, getSources());
+            return null; // skip this
+        }
+        return resolveClassFeatureNode(finalKey, featureNode);
+    }
+
+    public JsonNode resolveClassFeatureNode(String finalKey, JsonNode featureNode) {
+        JsonIndex index = getIndex();
+        if (index.keyIsExcluded(finalKey)) {
+            Log.debugf("Source of %s is excluded (referenced from %s)", finalKey, getSources());
+            return null; // skip this
+        }
+        // TODO: Handle copies or other fill-in / fluff?
+        return featureNode;
     }
 
     public JsonNode handleCopy(IndexType type, JsonNode jsonSource) {

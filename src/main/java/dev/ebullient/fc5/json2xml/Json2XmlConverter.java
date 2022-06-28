@@ -68,7 +68,9 @@ public class Json2XmlConverter {
 
                     // parse/convert, and filter to allowed sources
                     try {
-                        base.convert(e.getValue()).forEach(x -> convertedElements.put(x.sources.getKey(), x));
+                        base.convert(e.getValue()).stream()
+                                .filter(Objects::nonNull)
+                                .forEach(x -> convertedElements.put(x.sources.getKey(), x));
                     } catch (Exception ex) {
                         Log.errorf(ex, "Error converting %s: %s", e.getKey(), ex.toString());
                     }

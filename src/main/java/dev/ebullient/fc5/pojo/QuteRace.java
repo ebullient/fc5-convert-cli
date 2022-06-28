@@ -34,11 +34,15 @@ public class QuteRace implements QuteSource {
     }
 
     public List<String> getTags() {
-        return Collections.singletonList("race/" + MarkdownWriter.slugifier().slugify(name));
+        String[] split = name.split("\\(");
+        for (int i = 0; i < split.length; i++) {
+            split[i] = MarkdownWriter.slugifier().slugify(split[i].trim());
+        }
+        return Collections.singletonList("race/" + String.join("/", split));
     }
 
-    public SizeEnum getSize() {
-        return size;
+    public String getSize() {
+        return size.value();
     }
 
     public int getSpeed() {
