@@ -123,7 +123,7 @@ public class Fc5ConvertTest {
         Assertions.assertTrue(Files.readString(CUSTOM_OUTPUT_PATH.resolve("items/abacus.md")).contains("CUSTOM"),
                 "File should contain CUSTOM");
 
-        String monster = Files.readString(CUSTOM_OUTPUT_PATH.resolve("monsters/aboleth.md"));
+        String monster = Files.readString(CUSTOM_OUTPUT_PATH.resolve("bestiary/aberration/aboleth.md"));
         Assertions.assertTrue(monster.contains("```statblock"),
                 "File should contain ```statblock");
         Assertions.assertFalse(monster.contains("{resource."),
@@ -142,7 +142,7 @@ public class Fc5ConvertTest {
                 "src/test/resources/FC5-Compendium.xml");
         Assertions.assertEquals(0, result.exitCode(), "An error occurred. " + dump(result));
 
-        String monster = Files.readString(MIXED_OUTPUT_PATH.resolve("monsters/aboleth.md"));
+        String monster = Files.readString(MIXED_OUTPUT_PATH.resolve("bestiary/aberration/aboleth.md"));
         Assertions.assertTrue(monster.contains("```ad-statblock"),
                 "File should contain ```ad-statblock");
         Assertions.assertFalse(monster.contains("{resource."),
@@ -164,7 +164,6 @@ public class Fc5ConvertTest {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-
         Assertions.assertFalse(path.toFile().exists());
     }
 

@@ -66,7 +66,7 @@ public class Json2XmlClass extends Json2XmlBase implements JsonClass {
     }
 
     private void addClassWealth(JsonNode classNode) {
-        String wealth = scf.getStartingEquipment(classNode);
+        String wealth = scf.findStartingEquipment(classNode);
         if (wealth != null) {
             attributes.add(factory.createClassTypeWealth(wealth.replaceAll(" ", "")));
         }

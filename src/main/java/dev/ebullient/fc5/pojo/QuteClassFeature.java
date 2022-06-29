@@ -3,7 +3,6 @@ package dev.ebullient.fc5.pojo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 import io.quarkus.qute.TemplateData;
 
@@ -24,7 +23,7 @@ public class QuteClassFeature implements QuteSource {
         this.name = name;
         this.autolevel = autolevel;
         this.optional = optional;
-        this.featureText = Objects.requireNonNull(featureText);
+        this.featureText = breathe(featureText);
         this.modifiers = modifiers;
         this.special = special;
         this.proficiency = proficiency;
@@ -32,7 +31,7 @@ public class QuteClassFeature implements QuteSource {
     }
 
     public String getText() {
-        return String.join("  \n", featureText);
+        return String.join("\n", featureText);
     }
 
     public List<String> getRawText() {

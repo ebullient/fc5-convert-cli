@@ -111,18 +111,12 @@ public class Json2MarkdownConverter {
 
         public Json2QuteBackground(JsonNode jsonSource) {
             super(JsonIndex.IndexType.background, jsonSource);
-            String backgroundName = decoratedTypeName(sources);
+            String backgroundName = decoratedTypeName(decoratedBackgroundName(getName()), sources);
             this.builder = new QuteBackground.Builder()
-                    .setName(backgroundName)
-                    .setProficiency(new Proficiency.Builder()
-                            .addSkills(jsonToSkillsList(jsonSource.withArray("skillProficiencies")))
-                            .build());
+                    .setName(backgroundName);
 
-            List<QuteTrait> traits = collectTraitsFromEntries(backgroundName, jsonSource);
-            traits.add(0, new QuteTrait.Builder()
-                    .setName("Description")
-                    .addText(getDescription(jsonSource))
-                    .build());
+            List<QuteTrait> traits = collectTraitsFromEntries("Description", jsonSource,
+                    () -> getDescription(jsonSource));
 
             builder.setTraits(traits);
         }
@@ -148,7 +142,7 @@ public class Json2MarkdownConverter {
             if (!isSidekick()) {
                 scf.classHitDice(jsonSource);
                 scf.findClassProficiencies(jsonSource);
-                scf.getStartingEquipment(jsonSource);
+                scf.findStartingEquipment(jsonSource);
             }
 
             List<QuteClassAutoLevel> levels = classAutolevels(jsonSource);

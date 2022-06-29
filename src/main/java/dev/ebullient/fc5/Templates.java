@@ -3,8 +3,8 @@ package dev.ebullient.fc5;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -42,7 +42,7 @@ public class Templates {
     @Inject
     public Template index;
 
-    public String renderIndex(String name, List<FileMap> resources) {
+    public String renderIndex(String name, Collection<FileMap> resources) {
         return index
                 .data("name", name)
                 .data("resources", resources)

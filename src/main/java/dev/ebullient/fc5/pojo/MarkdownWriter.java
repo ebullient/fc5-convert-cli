@@ -5,8 +5,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.ScalarStyle;
@@ -59,7 +60,7 @@ public class MarkdownWriter {
         if (elements.isEmpty()) {
             return;
         }
-        List<FileMap> fileMappings = new ArrayList<>();
+        Set<FileMap> fileMappings = new TreeSet<>((a, b) -> a.fileName.compareTo(b.fileName));
         String dirName = typeName.toLowerCase();
 
         Log.outPrintln("⏱ Writing " + typeName);
@@ -80,7 +81,9 @@ public class MarkdownWriter {
                         writeFile(fileMap, dirName, templates.renderItem((QuteItem) x));
                         break;
                     case "monsters":
-                        writeFile(fileMap, dirName, templates.renderMonster((QuteMonster) x));
+                        QuteMonster m = (QuteMonster) x;
+                        String d = "bestiary/" + ((QuteMonster) x).type;
+                        writeFile(fileMap, d, templates.renderMonster(m));
                         break;
                     case "races":
                         writeFile(fileMap, dirName, templates.renderRace((QuteRace) x));

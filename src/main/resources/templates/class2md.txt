@@ -27,7 +27,7 @@ aliases: ["{resource.name}"]
 - **Weapons**: {resource.weapons}
 - **Tools**: {resource.tools}
 - **Saving Throws**: {resource.savingThrows}
-- **Skills**: {resource.numSkills} of {resource.skills}
+- **Skills**: Choose {resource.numSkills} of {resource.skills}
 {#for section in resource.sections}
 
 {section.depth} {section.title}{#if section.level} (Level {section.level}){/if}

@@ -9,6 +9,13 @@ import dev.ebullient.fc5.Log;
 
 public interface JsonBackground extends JsonBase {
 
+    default String decoratedBackgroundName(String name) {
+        if (name.startsWith("Variant")) {
+            name = name.replace("Variant ", "") + " (Variant)";
+        }
+        return name;
+    }
+
     default List<String> getDescription(JsonNode jsonSource) {
         List<String> text = new ArrayList<>();
         try {

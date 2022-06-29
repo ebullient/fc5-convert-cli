@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import io.quarkus.qute.TemplateData;
 
@@ -27,7 +26,7 @@ public class QuteFeat implements QuteSource {
 
     protected QuteFeat(String name, List<String> text, Proficiency proficiency, List<Modifier> modifier, String prerequisite) {
         this.name = name;
-        this.text = Objects.requireNonNull(text);
+        this.text = breathe(text);
         this.proficiency = proficiency;
         this.modifier = modifier;
         this.prerequisite = prerequisite;

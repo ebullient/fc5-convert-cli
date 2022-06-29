@@ -58,7 +58,7 @@ public class QuteMonster implements QuteSource {
             List<QuteTrait> trait, List<QuteTrait> action, List<QuteTrait> reaction, List<QuteTrait> legendary,
             String environment) {
         this.name = name;
-        this.description = description;
+        this.description = breathe(description);
         this.size = size;
         this.type = type;
         this.subtype = subtype;
