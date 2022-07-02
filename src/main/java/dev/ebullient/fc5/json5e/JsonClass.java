@@ -647,9 +647,18 @@ public interface JsonClass extends JsonBase {
 
             text.add(String.format("To multiclass as a %s, you must meet the following prerequisites:", name));
             maybeAddBlankLine(text);
-            multiclassing.with("requirements").fields().forEachRemaining(
-                    ability -> text.add(String.format("%s%s %s", li(),
-                            asAbilityEnum(ability.getKey()), ability.getValue().asText())));
+            JsonNode requirements = multiclassing.with("requirements");
+            if (requirements.has("or")) {
+                List<String> options = new ArrayList<>();
+                requirements.get("or").get(0).fields().forEachRemaining(
+                        ability -> options.add(String.format("%s %s", li(),
+                                asAbilityEnum(ability.getKey()), ability.getValue().asText())));
+                text.add(String.format("%s%s", li(), String.join(", or ", options)));
+            } else {
+                requirements.fields().forEachRemaining(
+                        ability -> text.add(String.format("%s%s %s", li(),
+                                asAbilityEnum(ability.getKey()), ability.getValue().asText())));
+            }
 
             JsonNode gained = multiclassing.get("proficienciesGained");
             if (gained != null) {

@@ -294,7 +294,7 @@ public class QuteItem implements QuteSource {
             if (type.isWeapon()) {
                 replacement.append(properties.contains(PropertyEnum.MARTIAL) ? "martial " : "simple ");
             }
-            replacement.append(type.getSpecializedType());
+            replacement.append(type.getSpecializedLower());
         }
         PropertyEnum.tierProperties.forEach(p -> {
             if (properties.contains(p)) {

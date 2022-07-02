@@ -9,6 +9,7 @@ aliases: ["{resource.name}"]
 ---
 # {resource.name}
 {#if resource.detail }*{resource.detail}*{/if}
+
 {#if resource.isArmor }
 - **Base Armor Class**: {resource.armorClass}
 {#else if resource.isWeapon }{#if resource.isVersatile }
@@ -19,8 +20,7 @@ aliases: ["{resource.name}"]
 - **Damage**: {resource.damage}
 {/if}{#if resource.isRanged }
 - **Range**: {resource.range}
-{/if}{/if}
-{#for modifier in resource.modifiers}
+{/if}{/if}{#for modifier in resource.modifiers}
 - **{modifier.category}**: {modifier.value}
 {/for}{#if resource.properties }
 - **Properties**: {resource.propertiesString}

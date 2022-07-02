@@ -16,7 +16,6 @@ import dev.ebullient.fc5.pojo.Modifier;
 import dev.ebullient.fc5.pojo.ModifierCategoryEnum;
 import dev.ebullient.fc5.pojo.PropertyEnum;
 import dev.ebullient.fc5.pojo.QuteItem;
-import dev.ebullient.fc5.pojo.SkillOrAbility;
 
 public interface JsonItem extends JsonBase {
 
@@ -148,12 +147,6 @@ public interface JsonItem extends JsonBase {
                 continue;
             }
             switch (key) {
-                case "bonusAbilityCheck":
-                    SkillOrAbility.allSkills
-                            .stream()
-                            .forEach(s -> bonuses.add(new Modifier(s + " " + bonusElement.asText(),
-                                    ModifierCategoryEnum.SKILLS)));
-                    break;
                 case "bonusAC":
                     bonuses.add(new Modifier("ac " + bonusElement.asText(), ModifierCategoryEnum.BONUS));
                     break;

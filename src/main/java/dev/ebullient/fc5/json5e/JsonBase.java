@@ -355,21 +355,26 @@ public interface JsonBase {
     default void appendTable(List<String> text, JsonNode entry, final Collection<String> diceRolls) {
         StringBuilder table = new StringBuilder();
         if (entry.has("caption")) {
-            if (isMarkdown())
+            if (isMarkdown()) {
                 table.append("**");
+            }
             table.append(entry.get("caption").asText());
-            if (isMarkdown())
+            if (isMarkdown()) {
                 table.append("**");
+            }
             table.append(":\n\n");
         }
         String header = StreamSupport.stream(entry.withArray("colLabels").spliterator(), false)
                 .map(x -> replaceText(x.asText(), diceRolls))
-                .map(x -> x.replaceAll("^(d[0-9]+.*)", "dice: $1"))
                 .collect(Collectors.joining(" | "));
-        header = isMarkdown() ? "| " + header + " |" : header;
-        table.append(header).append("\n");
+
         if (isMarkdown()) {
+            header = ("| " + header + " |")
+                    .replaceAll("^(d[0-9]+.*)", "dice: $1");
+            table.append(header).append("\n");
             table.append(header.replaceAll("[^|]", "-")).append("\n");
+        } else {
+            table.append(header).append("\n");
         }
 
         entry.withArray("rows").forEach(r -> table
@@ -377,7 +382,7 @@ public interface JsonBase {
                 .append(StreamSupport.stream(r.spliterator(), false)
                         .map(x -> replaceText(x.asText(), diceRolls))
                         .collect(Collectors.joining(" | ")))
-                .append(isMarkdown() ? " |\n" : ""));
+                .append(isMarkdown() ? " |\n" : "\n"));
 
         if (isMarkdown()) {
             String heading = entry.get("colLabels").toString().toLowerCase();
@@ -1003,27 +1008,27 @@ public interface JsonBase {
                     .replaceAll("\\{@sense ([^}]+)}", "[$1](" + JsonIndex.rulesRoot() + "senses.md#$1))");
 
             m = Pattern.compile("\\{@background ([^|}]+)\\|?[^}]*}").matcher(result);
-            result = m.replaceAll((match) -> String.format("[%s](%sbackground/%s.md)",
+            result = m.replaceAll((match) -> String.format("[%s](%sbackgrounds/%s.md)",
                     match.group(1), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(1))));
 
             m = Pattern.compile("\\{@class ([^|}]+)\\|[^|]*\\|?([^|}]*)\\|?[^}]*}").matcher(result);
-            result = m.replaceAll((match) -> String.format("[%s](%sclass/%s.md)",
-                    match.group(2), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(2))));
+            result = m.replaceAll((match) -> String.format("[%s](%sclasses/%s.md)",
+                    match.group(2), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(1))));
 
             m = Pattern.compile("\\{@class ([^|}]+)}").matcher(result);
-            result = m.replaceAll((match) -> String.format("[%s](%sclass/%s.md)",
+            result = m.replaceAll((match) -> String.format("[%s](%sclasses/%s.md)",
                     match.group(1), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(1))));
 
             m = Pattern.compile("\\{@feat ([^|}]+)\\|?[^}]*}").matcher(result);
-            result = m.replaceAll((match) -> String.format("[%s](%sfeat/%s.md)",
+            result = m.replaceAll((match) -> String.format("[%s](%sfeats/%s.md)",
                     match.group(1), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(1))));
 
             m = Pattern.compile("\\{@item ([^|}]+)\\|?[^}]*}").matcher(result);
-            result = m.replaceAll((match) -> String.format("[%s](%sitem/%s.md)",
+            result = m.replaceAll((match) -> String.format("[%s](%sitems/%s.md)",
                     match.group(1), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(1))));
 
             m = Pattern.compile("\\{@race ([^|}]+)\\|?[^}]*}").matcher(result);
-            result = m.replaceAll((match) -> String.format("[%s](%srace/%s.md)",
+            result = m.replaceAll((match) -> String.format("[%s](%sraces/%s.md)",
                     match.group(1), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(1))));
         } else {
             result = result

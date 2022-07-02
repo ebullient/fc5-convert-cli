@@ -64,6 +64,7 @@ public class QuteSection {
                 .filter(x -> x != this && !x.grouped)
                 .filter(x -> !x.title.toLowerCase().contains(" feature"))
                 .filter(x -> !x.title.toLowerCase().contains(" improvement"))
+                .filter(x -> !x.title.toLowerCase().matches(".* \\((\\d+|.* uses)\\)"))
                 .filter(x -> x.belongsTo(this.title))
                 .peek(x -> x.grouped = true) // indicate matching section is part of a group
                 .collect(Collectors.toList());

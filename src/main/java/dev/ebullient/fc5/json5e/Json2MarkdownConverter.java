@@ -214,7 +214,6 @@ public class Json2MarkdownConverter {
             ItemEnum type = getType(jsonSource);
             List<PropertyEnum> propertyEnums = new ArrayList<>();
             findProperties(jsonSource, propertyEnums);
-
             builder = new QuteItem.Builder()
                     .setName(name)
                     .setType(type)
@@ -224,7 +223,7 @@ public class Json2MarkdownConverter {
                     .setStealthPenalty(itemStealthPenalty(jsonSource))
                     .addText(itemTextAndRolls(jsonSource))
                     .addProperties(propertyEnums)
-                    .setDetail(itemDetail(jsonSource, propertyEnums));
+                    .setDetail(type.getSpecializedType() + ", " + itemDetail(jsonSource, propertyEnums));
 
             if (jsonSource.has("value")) {
                 builder.setCost(jsonSource.get("value").asDouble());
