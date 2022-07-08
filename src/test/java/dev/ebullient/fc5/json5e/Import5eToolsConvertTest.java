@@ -1,4 +1,4 @@
-package dev.ebullient.fc5.json2xml;
+package dev.ebullient.fc5.json5e;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

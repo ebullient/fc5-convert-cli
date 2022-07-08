@@ -45,7 +45,7 @@ public interface JsonBase {
             "Fighting Style: Defense",
             "Fighting Style: Dueling",
             "Fighting Style: Two-Weapon Fighting",
-            "Jack of all Trades",
+            "Jack of All Trades",
             "Powerful Build",
             "Unarmored Defense: Charisma",
             "Unarmored Defense: Constitution",

@@ -690,9 +690,10 @@ public interface JsonClass extends JsonBase {
 
         String skillChoices(Collection<String> skills, int numSkills) {
             return String.format(isMarkdown() ? "**Skills:** Choose %s from %s" : "Skills: Choose %s from %s",
-                    numSkills, skills.stream().map(SkillOrAbility::fromTextValue)
+                    numSkills,
+                    skills.stream().map(SkillOrAbility::fromTextValue)
                             .sorted(Comparator.comparingInt(Enum::ordinal))
-                            .map(x -> "*" + x.value() + "*")
+                            .map(x -> isMarkdown() ? "*" + x.value() + "*" : x.value())
                             .collect(Collectors.joining(", ")));
         }
 
