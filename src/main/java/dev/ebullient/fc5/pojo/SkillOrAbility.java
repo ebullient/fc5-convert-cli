@@ -30,6 +30,7 @@ public enum SkillOrAbility {
     Stealth("Stealth", true),
     Survival("Survival", true),
     Any("Any", false),
+    Varies("Varies", false),
     None("None", false);
 
     private final String longValue;
@@ -41,7 +42,7 @@ public enum SkillOrAbility {
         this.longValue = longValue;
         this.lowerValue = longValue.toLowerCase();
         this.isSkill = isSkill;
-        this.isAbility = !isSkill && !longValue.equals("None") && !longValue.equals("Any");
+        this.isAbility = !isSkill && !longValue.equals("None") && !longValue.equals("Any") && !longValue.equals("Varies");
     }
 
     public boolean isAbility() {
@@ -56,13 +57,17 @@ public enum SkillOrAbility {
         return longValue;
     }
 
+    public static String properValue(String v) {
+        return fromTextValue(v).value();
+    }
+
     public static SkillOrAbility fromTextValue(String v) {
         if (v == null || v.isBlank()) {
             return None;
         }
         String lower = v.toLowerCase().replace(" saving throws", "");
         for (SkillOrAbility s : SkillOrAbility.values()) {
-            if (s.lowerValue.equals(lower)) {
+            if (s.lowerValue.equals(lower) || s.name().toLowerCase().equals(lower)) {
                 return s;
             }
         }

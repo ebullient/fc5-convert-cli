@@ -34,7 +34,7 @@ public class QuteBackground implements QuteSource {
     }
 
     public String getProficiency() {
-        return proficiency.toText();
+        return proficiency == null ? "" : proficiency.toText();
     }
 
     @Override

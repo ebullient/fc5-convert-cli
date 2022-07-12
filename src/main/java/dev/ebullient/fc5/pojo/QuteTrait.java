@@ -3,7 +3,6 @@ package dev.ebullient.fc5.pojo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 import io.quarkus.qute.TemplateData;
 
@@ -20,7 +19,7 @@ public class QuteTrait implements QuteSource {
     protected QuteTrait(String name, List<String> text, List<String> diceRolls, List<String> attacks,
             String recharge, Proficiency proficiency) {
         this.name = name;
-        this.text = Objects.requireNonNull(text);
+        this.text = breathe(text);
         this.diceRolls = diceRolls;
         this.attacks = attacks;
         this.recharge = recharge;

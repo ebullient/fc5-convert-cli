@@ -3,7 +3,6 @@ package dev.ebullient.fc5.pojo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,7 +36,7 @@ public class QuteSpell implements QuteSource {
         this.classes = classes;
         this.classSlugs = Stream.of(classes.split("\\s*,\\s*"))
                 .map(x -> MarkdownWriter.slugifier().slugify(x)).collect(Collectors.toList());
-        this.text = Objects.requireNonNull(text);
+        this.text = breathe(text);
     }
 
     public String getName() {

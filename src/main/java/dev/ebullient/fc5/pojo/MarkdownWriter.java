@@ -5,8 +5,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.ScalarStyle;
@@ -59,12 +61,17 @@ public class MarkdownWriter {
         if (elements.isEmpty()) {
             return;
         }
-        List<FileMap> fileMappings = new ArrayList<>();
-        String dirName = typeName.toLowerCase();
+        Set<FileMap> fileMappings = new TreeSet<>((a, b) -> {
+            if (a.dirName.equals(b.dirName)) {
+                return a.fileName.compareTo(b.fileName);
+            }
+            return a.dirName.compareTo(b.dirName);
+        });
 
         Log.outPrintln("⏱ Writing " + typeName);
         elements.forEach(x -> {
-            FileMap fileMap = new FileMap(x.getName(), slugifier().slugify(x.getName()));
+            String dirName = typeName.toLowerCase();
+            FileMap fileMap = new FileMap(x.getName(), slugifier().slugify(x.getName()), dirName);
             try {
                 switch (dirName) {
                     case "backgrounds":
@@ -80,7 +87,10 @@ public class MarkdownWriter {
                         writeFile(fileMap, dirName, templates.renderItem((QuteItem) x));
                         break;
                     case "monsters":
-                        writeFile(fileMap, dirName, templates.renderMonster((QuteMonster) x));
+                        QuteMonster m = (QuteMonster) x;
+                        dirName = "bestiary/" + ((QuteMonster) x).type;
+                        fileMap = new FileMap(x.getName(), slugifier().slugify(x.getName()), dirName);
+                        writeFile(fileMap, dirName, templates.renderMonster(m));
                         break;
                     case "races":
                         writeFile(fileMap, dirName, templates.renderRace((QuteRace) x));
@@ -94,7 +104,18 @@ public class MarkdownWriter {
             }
             fileMappings.add(fileMap);
         });
-        writeFile(new FileMap(typeName, dirName), dirName, templates.renderIndex(typeName, fileMappings));
+        fileMappings.stream()
+                .collect(Collectors.groupingBy(fm -> fm.dirName))
+                .forEach((dirName, value) -> {
+                    int lastIndex = dirName.lastIndexOf("/");
+                    String fileName = lastIndex > 0 ? dirName.substring(lastIndex + 1) : dirName;
+                    String title = lastIndex > 0 ? fileName.substring(0, 1).toUpperCase() + fileName.substring(1) : typeName;
+                    try {
+                        writeFile(new FileMap(title, fileName, dirName), dirName, templates.renderIndex(title, value));
+                    } catch (IOException ex) {
+                        throw new WrappedIOException(ex);
+                    }
+                });
         Log.outPrintln("  ✅ " + (fileMappings.size() + 1) + " files.");
     }
 
@@ -112,10 +133,12 @@ public class MarkdownWriter {
     public static class FileMap {
         final String title;
         final String fileName;
+        final String dirName;
 
-        FileMap(String title, String fileName) {
+        FileMap(String title, String fileName, String dirName) {
             this.title = title;
             this.fileName = fileName + ".md";
+            this.dirName = dirName;
         }
 
         public String getTitle() {
@@ -124,6 +147,10 @@ public class MarkdownWriter {
 
         public String getFileName() {
             return fileName;
+        }
+
+        public String getDirName() {
+            return dirName;
         }
     }
 

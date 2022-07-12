@@ -3,7 +3,6 @@ package dev.ebullient.fc5.pojo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.quarkus.qute.TemplateData;
@@ -48,7 +47,7 @@ public class QuteItem implements QuteSource {
         this.modifiers = modifiers;
         this.properties = properties;
         this.tags = tags;
-        this.text = Objects.requireNonNull(text);
+        this.text = breathe(text);
     }
 
     public String getName() {
@@ -295,7 +294,7 @@ public class QuteItem implements QuteSource {
             if (type.isWeapon()) {
                 replacement.append(properties.contains(PropertyEnum.MARTIAL) ? "martial " : "simple ");
             }
-            replacement.append(type.getSpecializedType());
+            replacement.append(type.getSpecializedLower());
         }
         PropertyEnum.tierProperties.forEach(p -> {
             if (properties.contains(p)) {

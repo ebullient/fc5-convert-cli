@@ -1,12 +1,17 @@
 package dev.ebullient.fc5.json5e;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -48,7 +53,7 @@ public interface JsonClass extends JsonBase {
         return text;
     }
 
-    default int classSkills(JsonNode source, List<String> list, CompendiumSources sources) {
+    default int classSkills(JsonNode source, Collection<String> list, CompendiumSources sources) {
         ArrayNode skillNode = source.withArray("skills");
         if (skillNode.size() > 1) {
             Log.errorf("Multivalue skill array in %s: %s", sources, source.toPrettyString());
@@ -320,9 +325,7 @@ public interface JsonClass extends JsonBase {
         if (featureJson == null) {
             return null; // skipped or not found
         }
-
         CompendiumSources featureSources = new CompendiumSources(type, finalKey, featureJson);
-
         StreamSupport.stream(featureJson.withArray("entries").spliterator(), false)
                 .filter(JsonNode::isObject)
                 .filter(x -> x.has("type"))
@@ -445,7 +448,7 @@ public interface JsonClass extends JsonBase {
             return isMarkdown;
         }
 
-        public String getStartingEquipment(JsonNode classNode) {
+        public String findStartingEquipment(JsonNode classNode) {
             String wealth = null;
             JsonNode equipment = classNode.get("startingEquipment");
             if (equipment != null) {
@@ -475,8 +478,10 @@ public interface JsonClass extends JsonBase {
                     // "In addition, the sidekick gains proficiency in two skills of your choice from the following list: {@skill Arcana}, {@skill History}, {@skill Insight}, {@skill Investigation}, {@skill Medicine}, {@skill Performance}, {@skill Persuasion}, and {@skill Religion}.",
                     // "In addition, the sidekick gains proficiency in two skills of your choice from the following list: {@skill Acrobatics}, {@skill Animal Handling}, {@skill Athletics}, {@skill Intimidation}, {@skill Nature}, {@skill Perception}, and {@skill Survival}.",
                     String numSkills = line.replaceAll(".* proficiency in (.*) skills .*", "$1");
-                    put("numSkills", List.of(textToInt(numSkills)));
+                    int count = Integer.parseInt(textToInt(numSkills));
+                    put("numSkills", List.of(count + ""));
 
+                    Collection<String> skills;
                     int start = line.indexOf("list:");
                     if (start >= 0) {
                         int end = line.indexOf('.');
@@ -484,12 +489,12 @@ public interface JsonClass extends JsonBase {
                                 .replaceAll("\\{@skill ([^}]+)}", "$1")
                                 .replace(".", "")
                                 .replace("and ", "");
-                        put("skills", List.of(text));
-                        pb.addSkills(List.of(text.split("\\s*,\\s*")));
+                        skills = Set.of(text.split("\\s*,\\s*"));
                     } else {
-                        put("skills", SkillOrAbility.allSkills);
-                        pb.addSkills(SkillOrAbility.allSkills);
+                        skills = SkillOrAbility.allSkills;
                     }
+                    put("skills", List.of(skillChoices(skills, count)));
+                    pb.addSkills(skills);
                 }
                 if (line.contains("armor")) {
                     // "In addition, the sidekick gains proficiency in five skills of your choice, and it gains proficiency with light armor. If it is a humanoid or has a simple or martial weapon in its stat block, it also gains proficiency with all simple weapons and with two tools of your choice."
@@ -530,25 +535,25 @@ public interface JsonClass extends JsonBase {
                 Log.errorf("%s has no starting proficiencies", sources);
             } else {
                 if (startingProf.has("armor")) {
-                    put("armor", List.of(findArmor(startingProf)));
+                    put("armor", findAndReplace(startingProf, "armor", s -> s.replace("shield", "shields")));
                 }
                 if (startingProf.has("weapons")) {
-                    put("weapons", List.of(findWeapons(startingProf)));
+                    put("weapons", findAndReplace(startingProf, "weapons"));
                 }
                 if (startingProf.has("tools")) {
-                    put("tools", List.of(findTools(startingProf)));
+                    put("tools", findAndReplace(startingProf, "tools"));
                 }
                 if (startingProf.has("skills")) {
-                    List<String> list = new ArrayList<>();
-                    int count = classSkills(startingProf, list, sources);
+                    Set<String> set = new HashSet<>();
+                    int count = classSkills(startingProf, set, sources);
                     put("numSkills", List.of(count + ""));
+
                     if (count == SkillOrAbility.allSkills.size()) { // any
-                        put("skills", List.of("Choose any " + count));
-                    } else {
-                        put("skills",
-                                List.of(String.format("Choose %s from %s", count, String.join(", ", list))));
+                        pb.addSkills(SkillOrAbility.allSkills);
+                        set.addAll(SkillOrAbility.allSkills);
                     }
-                    pb.addSkills(list);
+                    pb.addSkills(set);
+                    put("skills", List.of(skillChoices(set, count)));
                 }
             }
             this.proficiency = pb.build();
@@ -559,19 +564,19 @@ public interface JsonClass extends JsonBase {
         }
 
         public String getArmor() {
-            return textOrDefault("armor", "none");
+            return joinOrDefault("armor", "none");
         }
 
         public String getWeapons() {
-            return textOrDefault("weapons", "none");
+            return joinOrDefault("weapons", "none");
         }
 
         public String getTools() {
-            return textOrDefault("tools", "none");
+            return joinOrDefault("tools", "none");
         }
 
         public String getNumSkills() {
-            return textOrDefault("numSkills", "0");
+            return joinOrDefault("numSkills", "0");
         }
 
         public String getSkills() {
@@ -579,7 +584,7 @@ public interface JsonClass extends JsonBase {
         }
 
         public String getHitDice() {
-            return textOrDefault("hd", "0");
+            return joinOrDefault("hd", "0");
         }
 
         public void put(String key, List<String> value) {
@@ -592,18 +597,24 @@ public interface JsonClass extends JsonBase {
                     additionalFromBackground
                             ? ", in addition to any proficiencies provided by your race or background"
                             : ""));
+            maybeAddBlankLine(text);
             if (startingText.containsKey("saves")) {
-                text.add(String.format("%sSaving Throws: %s", li(), textOrDefault("saves", "none")));
+                text.add(String.format(isMarkdown() ? "%s**Saving Throws:** %s" : "%sSaving Throws: %s",
+                        li(), joinOrDefault("saves", "none")));
             }
-            text.add(String.format("%sArmor: %s", li(), textOrDefault("armor", "none")));
-            text.add(String.format("%sWeapons: %s", li(), textOrDefault("weapons", "none")));
-            text.add(String.format("%sTools: %s", li(), textOrDefault("tools", "none")));
-            text.add(String.format("%sSkills: %s", li(), textOrDefault("skills", "none")));
+            text.add(String.format(isMarkdown() ? "%s**Armor:** %s" : "%sArmor: %s",
+                    li(), joinOrDefault("armor", "none")));
+            text.add(String.format(isMarkdown() ? "%s**Weapons:** %s" : "%sWeapons: %s",
+                    li(), joinOrDefault("weapons", "none")));
+            text.add(String.format(isMarkdown() ? "%s**Tools:** %s" : "%sTools: %s",
+                    li(), joinOrDefault("tools", "none")));
+            text.add(li() + joinOrDefault("skills", String.format(isMarkdown() ? "**Skills:** %s" : "Skills: %s", "none")));
 
             if (!isSidekick()) {
                 maybeAddBlankLine(text);
                 text.add(String.format("You begin play with the following equipment%s.",
                         additionalFromBackground ? ", in addition to any equipment provided by your background" : ""));
+                maybeAddBlankLine(text);
                 List<String> equipment = startingText.get("equipment");
                 if (equipment == null) {
                     text.add(li() + "None");
@@ -612,7 +623,7 @@ public interface JsonClass extends JsonBase {
                 }
                 maybeAddBlankLine(text);
                 text.add(String.format("Alternatively, you may start with %s gp and choose your own equipment.",
-                        textOrDefault("wealth", "3d4 x 10"))); // middle/sorcerer
+                        joinOrDefault("wealth", "3d4 x 10"))); // middle/sorcerer
             }
 
             maybeAddBlankLine(text);
@@ -635,28 +646,37 @@ public interface JsonClass extends JsonBase {
             final List<String> text = new ArrayList<>();
 
             text.add(String.format("To multiclass as a %s, you must meet the following prerequisites:", name));
-            multiclassing.with("requirements").fields().forEachRemaining(
-                    ability -> text.add(String.format("%s%s %s", li(),
-                            asAbilityEnum(ability.getKey()), ability.getValue().asText())));
+            maybeAddBlankLine(text);
+            JsonNode requirements = multiclassing.with("requirements");
+            if (requirements.has("or")) {
+                List<String> options = new ArrayList<>();
+                requirements.get("or").get(0).fields().forEachRemaining(
+                        ability -> options.add(String.format("%s %s", li(),
+                                asAbilityEnum(ability.getKey()), ability.getValue().asText())));
+                text.add(String.format("%s%s", li(), String.join(", or ", options)));
+            } else {
+                requirements.fields().forEachRemaining(
+                        ability -> text.add(String.format("%s%s %s", li(),
+                                asAbilityEnum(ability.getKey()), ability.getValue().asText())));
+            }
 
             JsonNode gained = multiclassing.get("proficienciesGained");
             if (gained != null) {
-                text.add("");
+                maybeAddBlankLine(text);
                 text.add("You gain the following proficiencies:");
-                if (gained.has("armor")) {
-                    text.add(li() + "Armor: " + findArmor(gained));
-                }
-                if (gained.has("weapons")) {
-                    text.add(li() + "Weapons: " + findWeapons(gained));
-                }
-                if (gained.has("tools")) {
-                    text.add(li() + "Tools: " + findTools(gained));
-                }
+                maybeAddBlankLine(text);
+
+                text.add(String.format(isMarkdown() ? "%s**Armor:** %s" : "%sArmor: %s",
+                        li(), joinOrDefault(gained, "armor", "none", s -> s.replace("shield", "shields"))));
+                text.add(String.format(isMarkdown() ? "%s**Weapons:** %s" : "%sWeapons: %s",
+                        li(), joinOrDefault(gained, "weapons", "none")));
+                text.add(String.format(isMarkdown() ? "%s**Tools:** %s" : "%sTools: %s",
+                        li(), joinOrDefault(gained, "tools", "none")));
+
                 if (gained.has("skills")) {
                     List<String> list = new ArrayList<>();
                     int count = classSkills(gained, list, sources);
-                    text.add(String.format("%sSkills: Choose %s from %s",
-                            li(), count, String.join(", ", list)));
+                    text.add(li() + skillChoices(list, count));
                 }
             }
             maybeAddBlankLine(text);
@@ -668,22 +688,27 @@ public interface JsonClass extends JsonBase {
                     .build();
         }
 
-        String textOrDefault(String field, String value) {
+        String skillChoices(Collection<String> skills, int numSkills) {
+            return String.format(isMarkdown() ? "**Skills:** Choose %s from %s" : "Skills: Choose %s from %s",
+                    numSkills,
+                    skills.stream().map(SkillOrAbility::fromTextValue)
+                            .sorted(Comparator.comparingInt(Enum::ordinal))
+                            .map(x -> isMarkdown() ? "*" + x.value() + "*" : x.value())
+                            .collect(Collectors.joining(", ")));
+        }
+
+        String joinOrDefault(String field, String value) {
             List<String> text = startingText.get(field);
-            return text == null ? value : String.join("\n", text);
+            return text == null ? value : String.join(", ", text);
         }
 
-        String findArmor(JsonNode source) {
-            return joinAndReplace(source, "armor")
-                    .replace("shield", "shields");
+        String joinOrDefault(JsonNode source, String field, String value) {
+            return joinOrDefault(source, field, value, s -> s);
         }
 
-        String findWeapons(JsonNode source) {
-            return joinAndReplace(source, "weapons");
-        }
-
-        String findTools(JsonNode source) {
-            return joinAndReplace(source, "tools");
+        String joinOrDefault(JsonNode source, String field, String value, Function<String, String> replacements) {
+            List<String> text = findAndReplace(source, field, replacements);
+            return text == null || text.isEmpty() ? value : String.join(", ", text);
         }
 
         private String textToInt(String text) {

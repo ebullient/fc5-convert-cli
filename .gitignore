@@ -2,6 +2,7 @@ FightClub5eXML
 5etools-mirror-1.github.io
 excludes.json
 publish
+/compendium
 
 #Maven
 target/

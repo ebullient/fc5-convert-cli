@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -22,6 +24,7 @@ import dev.ebullient.fc5.pojo.Modifier;
 import dev.ebullient.fc5.pojo.ModifierCategoryEnum;
 import dev.ebullient.fc5.pojo.QuteTrait;
 import dev.ebullient.fc5.pojo.SizeEnum;
+import dev.ebullient.fc5.pojo.SkillOrAbility;
 
 public interface JsonBase {
     Pattern featPattern = Pattern.compile("([^|]+)\\|?.*");
@@ -42,7 +45,7 @@ public interface JsonBase {
             "Fighting Style: Defense",
             "Fighting Style: Dueling",
             "Fighting Style: Two-Weapon Fighting",
-            "Jack of all Trades",
+            "Jack of All Trades",
             "Powerful Build",
             "Unarmored Defense: Charisma",
             "Unarmored Defense: Constitution",
@@ -88,6 +91,27 @@ public interface JsonBase {
 
     default String replaceText(String input, final Collection<String> diceRolls) {
         return replaceAttributes(replaceDiceTxt(input, diceRolls));
+    }
+
+    default List<String> findAndReplace(JsonNode jsonSource, String field) {
+        return findAndReplace(jsonSource, field, s -> s);
+    }
+
+    default List<String> findAndReplace(JsonNode jsonSource, String field, Function<String, String> replacement) {
+        JsonNode node = jsonSource.get(field);
+        if (node == null || node.isNull()) {
+            return List.of();
+        } else if (node.isTextual()) {
+            return List.of(replaceText(node.asText()));
+        } else if (node.isObject()) {
+            throw new IllegalArgumentException(
+                    String.format("Unexpected object node (expected array): %s (referenced from %s)", node, getSources()));
+        }
+        return streamOf(jsonSource.withArray(field))
+                .map(x -> replaceText(x.asText()).trim())
+                .map(x -> replacement.apply(x))
+                .filter(x -> !x.isBlank())
+                .collect(Collectors.toList());
     }
 
     default String joinAndReplace(JsonNode jsonSource, String field) {
@@ -197,7 +221,10 @@ public interface JsonBase {
         if (entry.isTextual()) {
             text.add(replaceText(entry.asText(), diceRolls));
         } else if (entry.isArray()) {
-            entry.elements().forEachRemaining(f -> appendEntryToText(text, f, diceRolls));
+            entry.elements().forEachRemaining(f -> {
+                appendEntryToText(text, f, diceRolls);
+                maybeAddBlankLine(text);
+            });
         } else if (entry.isObject()) {
             String objectType = entry.get("type").asText();
             switch (objectType) {
@@ -208,7 +235,9 @@ public interface JsonBase {
                     List<String> inner = new ArrayList<>();
                     appendEntryToText(inner, entry.get("entry"), diceRolls);
                     appendEntryToText(inner, entry.get("entries"), diceRolls);
-                    prependField(entry, "name", inner);
+                    if (prependField(entry, "name", inner)) {
+                        maybeAddBlankLine(text);
+                    }
                     text.addAll(inner);
                     break;
                 }
@@ -216,10 +245,12 @@ public interface JsonBase {
                     text.add(entry.get("text").asText());
                 }
                 case "list": {
+                    maybeAddBlankLine(text);
                     appendList(text, entry, diceRolls);
                     break;
                 }
                 case "table": {
+                    maybeAddBlankLine(text);
                     appendTable(text, entry, diceRolls);
                     break;
                 }
@@ -245,7 +276,6 @@ public interface JsonBase {
                     appendOptionalFeature(text, entry);
                     break;
                 case "options": {
-                    maybeAddBlankLine(text);
                     appendOptions(text, entry);
                     break;
                 }
@@ -268,16 +298,23 @@ public interface JsonBase {
         }
     }
 
-    default void prependField(JsonNode entry, String fieldName, List<String> inner) {
+    default boolean prependField(JsonNode entry, String fieldName, List<String> inner) {
         if (entry.has(fieldName)) {
             String n = entry.get(fieldName).asText();
             if (inner.isEmpty()) {
                 inner.add(n);
             } else {
-                inner.set(0, n + ": " + inner.get(0));
-                inner.add(0, "");
+                n = n.trim().replace(":", "");
+                if (isMarkdown()) {
+                    n = "**" + n + ".** ";
+                } else {
+                    n += ": ";
+                }
+                inner.set(0, n + inner.get(0));
+                return true;
             }
         }
+        return false;
     }
 
     default void prependText(String prefix, List<String> inner) {
@@ -298,7 +335,6 @@ public interface JsonBase {
 
     default void appendList(List<String> text, JsonNode entry, final Collection<String> diceRolls) {
         appendList("items", text, entry, diceRolls);
-        maybeAddBlankLine(text);
     }
 
     default void appendList(String fieldName, List<String> text, JsonNode entry) {
@@ -319,18 +355,55 @@ public interface JsonBase {
     default void appendTable(List<String> text, JsonNode entry, final Collection<String> diceRolls) {
         StringBuilder table = new StringBuilder();
         if (entry.has("caption")) {
-            table.append(entry.get("caption").asText()).append(":\n");
+            if (isMarkdown()) {
+                table.append("**");
+            }
+            table.append(entry.get("caption").asText());
+            if (isMarkdown()) {
+                table.append("**");
+            }
+            table.append(":\n\n");
         }
-        table.append(StreamSupport.stream(entry.withArray("colLabels").spliterator(), false)
+        String header = StreamSupport.stream(entry.withArray("colLabels").spliterator(), false)
                 .map(x -> replaceText(x.asText(), diceRolls))
-                .collect(Collectors.joining(" | ")))
-                .append("\n");
+                .collect(Collectors.joining(" | "));
 
-        entry.withArray("rows").forEach(r -> table.append(StreamSupport.stream(r.spliterator(), false)
-                .map(x -> replaceText(x.asText(), diceRolls))
-                .collect(Collectors.joining(" | ")))
-                .append("\n"));
+        if (isMarkdown()) {
+            header = ("| " + header + " |")
+                    .replaceAll("^(d[0-9]+.*)", "dice: $1");
+            table.append(header).append("\n");
+            table.append(header.replaceAll("[^|]", "-")).append("\n");
+        } else {
+            table.append(header).append("\n");
+        }
 
+        entry.withArray("rows").forEach(r -> table
+                .append(isMarkdown() ? "| " : "")
+                .append(StreamSupport.stream(r.spliterator(), false)
+                        .map(x -> replaceText(x.asText(), diceRolls))
+                        .collect(Collectors.joining(" | ")))
+                .append(isMarkdown() ? " |\n" : "\n"));
+
+        if (isMarkdown()) {
+            String heading = entry.get("colLabels").toString().toLowerCase();
+            if (heading.contains("scam")) {
+                table.append("^scam").append("\n");
+            } else if (heading.contains("defining event")) {
+                table.append("^defining-event").append("\n");
+            } else if (heading.contains("guild business")) {
+                table.append("^guild-business").append("\n");
+            } else if (heading.contains("personality trait")) {
+                table.append("^personality-trait").append("\n");
+            } else if (heading.contains("ideal")) {
+                table.append("^ideal").append("\n");
+            } else if (heading.contains("bond")) {
+                table.append("^bond").append("\n");
+            } else if (heading.contains("flaw")) {
+                table.append("^flaw").append("\n");
+            } else if (entry.has("caption")) {
+                table.append("^").append(MarkdownWriter.slugifier().slugify(entry.get("caption").asText())).append("\n");
+            }
+        }
         maybeAddBlankLine(text);
         text.add(table.toString());
     }
@@ -340,8 +413,10 @@ public interface JsonBase {
         entry.withArray("entries").forEach(e -> {
             List<String> item = new ArrayList<>();
             appendEntryToText(item, e);
-            prependText(li(), item);
-            list.addAll(item);
+            if (item.size() > 0) {
+                prependText(li(), item);
+                list.addAll(item);
+            }
         });
         if (list.size() > 0) {
             maybeAddBlankLine(text);
@@ -353,6 +428,15 @@ public interface JsonBase {
 
     default void maybeAddBlankLine(List<String> text) {
         if (text.size() > 0 && !text.get(text.size() - 1).isBlank()) {
+            text.add("");
+        }
+    }
+
+    default void blankBeforeList(List<String> text) {
+        if (text.size() <= 1) {
+            return;
+        }
+        if (!text.get(text.size() - 1).startsWith(li()) && !text.get(text.size() - 1).isBlank()) {
             text.add("");
         }
     }
@@ -388,6 +472,7 @@ public interface JsonBase {
             return;
         }
         String subclassShortName = getTextOrEmpty(ref, "subclassShortName");
+        blankBeforeList(text);
         text.add(li() + decoratedFeatureTypeName(featureSources, subclassShortName, ref));
     }
 
@@ -416,7 +501,7 @@ public interface JsonBase {
         });
     }
 
-    default int chooseSkillListFrom(JsonNode choose, List<String> skillList) {
+    default int chooseSkillListFrom(JsonNode choose, Collection<String> skillList) {
         int count = choose.has("count")
                 ? choose.get("count").asInt()
                 : 1;
@@ -435,7 +520,7 @@ public interface JsonBase {
         }
         List<String> list = new ArrayList<>();
         if (listNode.isObject() && !listNode.toString().contains("choose")) {
-            listNode.fieldNames().forEachRemaining(list::add);
+            listNode.fieldNames().forEachRemaining(x -> SkillOrAbility.fromTextValue(x).value());
         } else if (listNode.isArray()) {
             listNode.elements().forEachRemaining(f -> {
                 List<String> inner = jsonToSkillsList(f);
@@ -518,12 +603,28 @@ public interface JsonBase {
     default List<String> jsonObjectToSkillBonusList(JsonNode listNode) {
         List<String> list = new ArrayList<>();
         if (listNode != null) {
-            listNode.fields().forEachRemaining(f -> list.add(String.format("%s %s", f.getKey(), f.getValue().asText())));
+            listNode.fields().forEachRemaining(f -> {
+                if (f.getValue().isTextual()) {
+                    list.add(String.format("%s %s",
+                            SkillOrAbility.properValue(f.getKey()),
+                            f.getValue().asText()));
+                } else if (f.getKey().equals("other")) {
+                    List<String> items = jsonObjectToSkillBonusList(f.getValue().get(0).get("oneOf"));
+                    list.add("One of " + String.join(", ", items));
+                } else {
+                    throw new IllegalArgumentException(
+                            "Unknown skill or ability field " + f + " referenced from " + getSources());
+                }
+            });
         }
         return list;
     }
 
     default List<QuteTrait> collectTraitsFromEntries(String properName, JsonNode value) {
+        return collectTraitsFromEntries(properName, value, () -> List.of());
+    }
+
+    default List<QuteTrait> collectTraitsFromEntries(String properName, JsonNode value, Supplier<List<String>> fluff) {
         List<QuteTrait> traits = new ArrayList<>();
         List<String> text = new ArrayList<>();
         Set<String> diceRolls = new HashSet<>();
@@ -533,13 +634,16 @@ public interface JsonBase {
                 text.add(replaceText(entry.asText(), diceRolls));
             } else if (entry.isObject()) {
                 if (entry.has("type") && "list".equals(entry.get("type").asText())) {
-                    traits.addAll(collectTraits(entry.withArray("items")));
+                    appendList(text, entry, diceRolls);
+                    maybeAddBlankLine(text);
                 } else {
                     QuteTrait trait = createTrait(entry);
                     traits.add(trait);
                 }
             }
         });
+
+        text.addAll(fluff.get());
 
         if (text.size() > 0) {
             QuteTrait baseTrait = createTrait(properName, text, diceRolls);
@@ -883,13 +987,15 @@ public interface JsonBase {
                 .replaceAll("\\{@book ([^}|]+)\\|?[^}]*}", "\"$1\"")
                 .replaceAll("\\{@hit ([^}]+)}", "+$1")
                 .replaceAll("\\{@h}", "Hit: ")
-                .replaceAll("\\{@atk m}", "Melee Attack:")
-                .replaceAll("\\{@atk mw}", "Melee Weapon Attack:")
-                .replaceAll("\\{@atk rw}", "Ranged Weapon Attack:")
-                .replaceAll("\\{@atk mw,rw}", "Melee or Ranged Weapon Attack:")
-                .replaceAll("\\{@atk ms}", "Melee Spell Attack:")
-                .replaceAll("\\{@atk rs}", "Ranged Spell Attack:")
-                .replaceAll("\\{@atk ms,rs}", "Melee or Ranged Spell Attack:")
+                .replaceAll("\\{@atk m}", isMarkdown() ? "*Melee Attack:*" : "Melee Attack:")
+                .replaceAll("\\{@atk mw}", isMarkdown() ? "*Melee Weapon Attack:*" : "Melee Weapon Attack:")
+                .replaceAll("\\{@atk rw}", isMarkdown() ? "*Ranged Weapon Attack:*" : "Ranged Weapon Attack:")
+                .replaceAll("\\{@atk mw,rw}",
+                        isMarkdown() ? "*Melee or Ranged Weapon Attack:*" : "Melee or Ranged Weapon Attack:")
+                .replaceAll("\\{@atk ms}", isMarkdown() ? "*Melee Spell Attack:*" : "Melee Spell Attack:")
+                .replaceAll("\\{@atk rs}", isMarkdown() ? "*Ranged Spell Attack:*" : "Ranged Spell Attack:")
+                .replaceAll("\\{@atk ms,rs}",
+                        isMarkdown() ? "*Melee or Ranged Spell Attack:*" : "Melee or Ranged Spell Attack:")
                 .replaceAll("\\{@skill ([^}]+)}", "$1")
                 .replaceAll("\\{@note (\\*|Note:)?\\s?([^}]+)}", "✧ $2");
 
@@ -902,27 +1008,27 @@ public interface JsonBase {
                     .replaceAll("\\{@sense ([^}]+)}", "[$1](" + JsonIndex.rulesRoot() + "senses.md#$1))");
 
             m = Pattern.compile("\\{@background ([^|}]+)\\|?[^}]*}").matcher(result);
-            result = m.replaceAll((match) -> String.format("[%s](%sbackground/%s.md)",
+            result = m.replaceAll((match) -> String.format("[%s](%sbackgrounds/%s.md)",
                     match.group(1), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(1))));
 
             m = Pattern.compile("\\{@class ([^|}]+)\\|[^|]*\\|?([^|}]*)\\|?[^}]*}").matcher(result);
-            result = m.replaceAll((match) -> String.format("[%s](%sclass/%s.md)",
-                    match.group(2), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(2))));
+            result = m.replaceAll((match) -> String.format("[%s](%sclasses/%s.md)",
+                    match.group(2), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(1))));
 
             m = Pattern.compile("\\{@class ([^|}]+)}").matcher(result);
-            result = m.replaceAll((match) -> String.format("[%s](%sclass/%s.md)",
+            result = m.replaceAll((match) -> String.format("[%s](%sclasses/%s.md)",
                     match.group(1), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(1))));
 
             m = Pattern.compile("\\{@feat ([^|}]+)\\|?[^}]*}").matcher(result);
-            result = m.replaceAll((match) -> String.format("[%s](%sfeat/%s.md)",
+            result = m.replaceAll((match) -> String.format("[%s](%sfeats/%s.md)",
                     match.group(1), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(1))));
 
             m = Pattern.compile("\\{@item ([^|}]+)\\|?[^}]*}").matcher(result);
-            result = m.replaceAll((match) -> String.format("[%s](%sitem/%s.md)",
+            result = m.replaceAll((match) -> String.format("[%s](%sitems/%s.md)",
                     match.group(1), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(1))));
 
             m = Pattern.compile("\\{@race ([^|}]+)\\|?[^}]*}").matcher(result);
-            result = m.replaceAll((match) -> String.format("[%s](%srace/%s.md)",
+            result = m.replaceAll((match) -> String.format("[%s](%sraces/%s.md)",
                     match.group(1), JsonIndex.compendiumRoot(), MarkdownWriter.slugifier().slugify(match.group(1))));
         } else {
             result = result

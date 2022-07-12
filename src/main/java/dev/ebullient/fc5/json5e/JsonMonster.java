@@ -266,12 +266,14 @@ public interface JsonMonster extends JsonBase {
         String traitName = getTextOrEmpty(spellcasting, "name");
         appendEntryToText(text, spellcasting.get("headerEntries"), diceRolls);
         if (spellcasting.has("will")) {
+            blankBeforeList(text);
             List<String> atWill = getSpells(spellcasting, "will");
             text.add(li() + "At will: " + String.join(", ", atWill));
             spells.addAll(atWill);
         }
         JsonNode daily = spellcasting.get("daily");
         if (daily != null) {
+            blankBeforeList(text);
             daily.fieldNames().forEachRemaining(field -> {
                 List<String> things = getSpells(daily, field);
                 spells.addAll(things);

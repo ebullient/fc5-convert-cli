@@ -423,7 +423,7 @@ public class JsonIndex implements JsonBase {
                 && includeGroups.contains("familiars") && familiarKeys.contains(key)) {
             return true;
         }
-        if (key.startsWith("subrace|") || key.startsWith("subclass")) {
+        if (key.startsWith("subrace|") || key.startsWith("subclass") || key.startsWith("optionalfeature|")) {
             // The key isn't enough on its own.. it doesn't contain the subrace/subclass source.
             JsonNode node = getSubresourceNode(key);
             if (node == null) {
@@ -431,7 +431,7 @@ public class JsonIndex implements JsonBase {
                 return false;
             }
             String rs = node.get("source").asText().toLowerCase();
-            return allowedSources.contains(rs) && allowedSources.stream().anyMatch(source -> key.contains("|" + source));
+            return allowedSources.contains(rs) || allowedSources.stream().anyMatch(source -> key.contains("|" + source));
         }
 
         return allowedSources.stream().anyMatch(source -> key.contains("|" + source));

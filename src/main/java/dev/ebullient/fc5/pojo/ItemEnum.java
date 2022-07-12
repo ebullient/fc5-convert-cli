@@ -101,7 +101,11 @@ public enum ItemEnum {
     }
 
     public String getSpecializedType() {
-        return additionalType.isBlank() ? lower : additionalType.toLowerCase();
+        return additionalType.isBlank() ? longName : additionalType;
+    }
+
+    public String getSpecializedLower() {
+        return getSpecializedType().toLowerCase();
     }
 
     public String value() {

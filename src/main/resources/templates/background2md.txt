@@ -9,10 +9,14 @@ aliases: ["{resource.name}"]
 ---
 # {resource.name}
 
+{#if resource.proficiency}
 * **Skill Proficiencies**: {resource.proficiency}
+{/if}
 {#for trait in resource.trait}
+{#if trait.name != 'Description'}
 
 ## {trait.name}
+{/if}
 
 {trait.text}
 {/for}

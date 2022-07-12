@@ -93,7 +93,8 @@ public enum PropertyEnum {
     public String getMarkdownLink() {
         return weapon
                 ? String.format("[%s](%s)", longName, JsonIndex.rulesRoot() + "weapon-properties.md#" + longName)
-                : String.format("[%s](%s)", longName, JsonIndex.rulesRoot() + "gear-properties.md#" + longName);
+                : String.format("[%s](%s)", longName,
+                        JsonIndex.rulesRoot() + "gear-properties.md#" + longName.replaceAll(" ", "%20"));
     }
 
     public static PropertyEnum fromValue(String v) {

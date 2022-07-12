@@ -12,28 +12,21 @@ aliases: ["{resource.name}"]
 
 {#if resource.isArmor }
 - **Base Armor Class**: {resource.armorClass}
-{#else if resource.isWeapon }
-{#if resource.isVersatile }
+{#else if resource.isWeapon }{#if resource.isVersatile }
 - **Damage**:
   - One-handed: {resource.damage}
   - Two-handed: {resource.damage2H}
 {#else}
 - **Damage**: {resource.damage}
-{/if}
-{#if resource.isRanged }
+{/if}{#if resource.isRanged }
 - **Range**: {resource.range}
-{/if}
-{/if}
-{#for modifier in resource.modifiers}
+{/if}{/if}{#for modifier in resource.modifiers}
 - **{modifier.category}**: {modifier.value}
-{/for}
-{#if resource.properties }
+{/for}{#if resource.properties }
 - **Properties**: {resource.propertiesString}
-{/if}
-{#if resource.strengthRequirement }
+{/if}{#if resource.strengthRequirement }
 - **Stealth**: Requires {resource.strengthRequirement} STR.
-{/if}
-{#if resource.stealthPenalty }
+{/if}{#if resource.stealthPenalty }
 - **Stealth**: The wearer has disadvantage on Stealth (DEX) checks.
 {/if}
 - **Cost**: {#if resource.cost }{resource.cost} gp{#else}—{/if}

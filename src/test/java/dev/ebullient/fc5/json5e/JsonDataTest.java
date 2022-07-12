@@ -1,4 +1,4 @@
-package dev.ebullient.fc5.json2xml;
+package dev.ebullient.fc5.json5e;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import dev.ebullient.fc5.json2xml.Json2XmlConverter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

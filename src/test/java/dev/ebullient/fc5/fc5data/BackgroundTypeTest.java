@@ -61,7 +61,7 @@ public class BackgroundTypeTest extends ParsingTestBase {
         Assertions.assertAll(
                 () -> assertContains(content, "# Acolyte"),
                 () -> assertContains(content, "**Skill Proficiencies**"),
-                () -> assertContains(content, "## Description"),
+                () -> assertContains(content, "You have spent your life"),
                 () -> assertContains(content, "|----------|------------------|"),
                 () -> assertContains(content, "\n\n| dice: d8 | Personality Trait|"),
                 () -> assertContains(content, "\n\n| dice: d6 | Ideal|"),
