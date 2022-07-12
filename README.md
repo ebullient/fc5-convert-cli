@@ -4,8 +4,6 @@ This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/.
 
-This hacky project goes alongside https://github.com/kinkofer/FightClub5eXML
-
 I like using both Fight Club 5 and Game Master 5 (more the former than the latter these days, because Roll20..), and for the game I run, I like being able to control/rebuild what is visible and in the compendium for my players (e.g. to constrain sources).
 
 I also use [Obsidian](https://obsidian.md) to keep track of my notes. The goal is to use the same filtered resources as a reference both in my local notes (Obsidian) and in Fight Club 5 (Players).
@@ -28,7 +26,175 @@ jbang app install --name fc5-convert --force --fresh https://jitpack.io/dev/ebul
 fc5-convert --help
 ```
 
-## Next steps:
+## Starting with 5eTools JSON data
+
+```
+fc5-convert 5etools --help
+```
+
+An example invocation (based on sources I own): 
+
+```
+fc5-convert 5etools --xml --md --index -o dm dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data wbtw-items.json
+```
+
+- `--xml` Create FightClub 5 Compendium XML files (compendium.xml and files per type)
+- `--md` Create Obsidian Markdown from [Templates](#templates)
+- `--index` Create `all-index.json` containing all of the touched artifact ids, and `src-index.json` that shows the filtered/allowed artifact ids. These are useful when tweaking exclude rules (as shown below).
+- `-o dm` The target output directory. All of the above files will be created in this directory.
+
+The rest of the command-line specifies input files: 
+
+- `dm-sources.json` Parsing parameters (shown in detail below)
+- `~/git/dnd/5etools-mirror-1.github.io/data` Path to the data directory of the 5eTools mirror
+- `wbtw-items.json` Custom items
+
+### Additional parameters
+
+Additional instructions for dealing with 5etools data can be supplied in a json file like this (based on sources I own): 
+
+```json
+{
+  "from": [
+    "AI",
+    "PHB",
+    "DMG",
+    "TCE",
+    "XGE",
+
+    "SCAG",
+    "EGW",
+    "FS",
+    "MaBJoV",
+
+    "AWM",
+    "CM",
+    "LMoP",
+    "ESK",
+    "DIP",
+    "SLW",
+    "SDW",
+    "DC",
+    "IDRotF",
+    "PotA",
+    "EEPC",
+    "GoS",
+    "OoW",
+    "TftYP",
+    "TftYP-AtG",
+    "TftYP-DiT",
+    "TftYP-TFoF",
+    "TftYP-THSoT",
+    "TftYP-TSC",
+    "TftYP-ToH",
+    "TftYP-WPM",
+    "WBtW",
+    "WDH",
+    "WDMM",
+
+    "FTD",
+    "MM",
+    "MTF",
+    "VGM"
+  ],
+  "paths": {
+    "rules": "/compendium/rules/"
+  },
+  "excludePattern": [
+    "race|.*|dmg"
+  ],
+  "exclude": [
+    "monster|expert|dc",
+    "monster|expert|sdw",
+    "monster|expert|slw"
+  ]
+}
+```
+
+- `from` defines the array of all sources. If you omit from (and don't specify any other sources on the command line), only SRD items are included. Only include items from sources you own.
+- `paths` allows you to specify that path that should be used in cross-document links, and to find conditions, and weapon/item properties. Used only when generating Markdown. By default, items, spells, monsters, backgrounds, races, and classes are in `/compendium/`, while files defining conditions and properties are in `/rules/`.
+- `exclude` and `excludePattern` work against identifiers that can be found in the generated index files. They allow you to further tweak/constrain what is emitted. In the above example, I'm excluding all of the race variants from the DMG, and the monster-form of the expert sidekick from the Essentials Kit.
+
+To generate player-focused compendiums for The Wild Beyond the Witchlight, I've constrained things. 
+I am pulling from a much smaller set of sources overall. I included Elemental Evil Player's Companion (Genasi) and Volo's Guide to Monsters (Tabaxi), but then added exclude patterns to remove elements from these sourcebooks that I don't want my players to see (yet): 
+
+```json
+{
+  "from": [
+    "PHB",
+    "DMG",
+    "XGE",
+    "TCE",
+    "EEPC",
+    "WBtW",
+    "VGM"
+  ],
+  "includeGroups": [
+    "familiars"
+  ],
+  "excludePattern": [
+    ".*sidekick.*",
+    "race|.*|dmg",
+    "race|(?!tabaxi).*|vgm",
+    "subrace|.*|aasimar|vgm",
+    "item|.*|vgm",
+    "monster|.*|tce",
+    "monster|.*|dmg",
+    "monster|.*|vgm",
+    "monster|.*|wbtw",
+    "monster|animated object.*|phb"
+  ],
+  "exclude": [
+    "race|aarakocra|eepc",
+    "feat|actor|phb",
+    "feat|artificer initiate|tce",
+    "feat|athlete|phb",
+    "feat|bountiful luck|xge",
+    "feat|chef|tce",
+    "feat|dragon fear|xge",
+    "feat|dragon hide|xge",
+    "feat|drow high magic|xge",
+    "feat|durable|phb",
+    "feat|dwarven fortitude|xge",
+    "feat|elven accuracy|xge",
+    "feat|fade away|xge",
+    "feat|fey teleportation|xge",
+    "feat|fey touched|tce",
+    "feat|flames of phlegethos|xge",
+    "feat|gunner|tce",
+    "feat|heavily armored|phb",
+    "feat|heavy armor master|phb",
+    "feat|infernal constitution|xge",
+    "feat|keen mind|phb",
+    "feat|lightly armored|phb",
+    "feat|linguist|phb",
+    "feat|lucky|phb",
+    "feat|medium armor master|phb",
+    "feat|moderately armored|phb",
+    "feat|mounted combatant|phb",
+    "feat|observant|phb",
+    "feat|orcish fury|xge",
+    "feat|piercer|tce",
+    "feat|poisoner|tce",
+    "feat|polearm master|phb",
+    "feat|prodigy|xge",
+    "feat|resilient|phb",
+    "feat|second chance|xge",
+    "feat|shadow touched|tce",
+    "feat|skill expert|tce",
+    "feat|slasher|tce",
+    "feat|squat nimbleness|xge",
+    "feat|tavern brawler|phb",
+    "feat|telekinetic|tce",
+    "feat|telepathic|tce",
+    "feat|weapon master|phb",
+    "feat|wood elf magic|xge",
+    "item|iggwilv's cauldron|wbtw"
+  ]
+}
+```
+
+## Starting with FightClub 5 XML data
 
 1. Grab a copy of the FC5 XML repo: Clone https://github.com/kinkofer/FightClub5eXML
 
