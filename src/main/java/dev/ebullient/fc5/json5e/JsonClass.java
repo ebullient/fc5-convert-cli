@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -328,6 +329,10 @@ public interface JsonClass extends JsonBase {
         CompendiumSources featureSources = new CompendiumSources(type, finalKey, featureJson);
         StreamSupport.stream(featureJson.withArray("entries").spliterator(), false)
                 .filter(JsonNode::isObject)
+                .filter(x -> x.has("type"))
+                .flatMap(x -> x.get("type").asText().equals("entries")
+                        ? StreamSupport.stream(x.withArray("entries").spliterator(), false)
+                        : Stream.of(x))
                 .filter(x -> x.has("type"))
                 .forEach(node -> {
                     switch (node.get("type").asText()) {
