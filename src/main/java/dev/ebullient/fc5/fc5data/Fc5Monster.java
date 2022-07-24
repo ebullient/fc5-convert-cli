@@ -6,7 +6,6 @@ import java.util.regex.Pattern;
 
 import dev.ebullient.fc5.pojo.AbilityScores;
 import dev.ebullient.fc5.pojo.QuteMonster;
-import dev.ebullient.fc5.pojo.QuteSource;
 import dev.ebullient.fc5.pojo.QuteTrait;
 import dev.ebullient.fc5.pojo.SizeEnum;
 import io.quarkus.qute.TemplateData;
@@ -63,7 +62,7 @@ import io.quarkus.qute.TemplateData;
  *
  */
 @TemplateData
-public class Fc5Monster extends QuteMonster implements QuteSource {
+public class Fc5Monster extends QuteMonster {
     static final Pattern TYPE_DETAIL = Pattern.compile("(.+?) \\((.+?)\\)");
 
     final Fc5Text descriptionText;

@@ -6,7 +6,6 @@ import java.util.List;
 import dev.ebullient.fc5.pojo.Modifier;
 import dev.ebullient.fc5.pojo.Proficiency;
 import dev.ebullient.fc5.pojo.QuteFeat;
-import dev.ebullient.fc5.pojo.QuteSource;
 import io.quarkus.qute.TemplateData;
 
 /**
@@ -33,7 +32,7 @@ import io.quarkus.qute.TemplateData;
  * </pre>
  */
 @TemplateData
-public class Fc5Feat extends QuteFeat implements QuteSource {
+public class Fc5Feat extends QuteFeat {
 
     final Fc5Text text;
 

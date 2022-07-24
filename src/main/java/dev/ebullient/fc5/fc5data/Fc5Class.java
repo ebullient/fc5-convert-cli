@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import dev.ebullient.fc5.pojo.Proficiency;
 import dev.ebullient.fc5.pojo.QuteClass;
 import dev.ebullient.fc5.pojo.QuteClassFeature;
-import dev.ebullient.fc5.pojo.QuteSource;
 import dev.ebullient.fc5.pojo.SkillOrAbility;
 import io.quarkus.qute.TemplateData;
 
@@ -46,7 +45,7 @@ import io.quarkus.qute.TemplateData;
  * </pre>
  */
 @TemplateData
-public class Fc5Class extends QuteClass implements QuteSource {
+public class Fc5Class extends QuteClass {
     final String wealth;
     final SkillOrAbility spellAbility;
     final List<Fc5Autolevel> autolevel;

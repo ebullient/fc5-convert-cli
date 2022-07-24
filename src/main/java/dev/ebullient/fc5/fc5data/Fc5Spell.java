@@ -3,7 +3,6 @@ package dev.ebullient.fc5.fc5data;
 import java.util.Collections;
 import java.util.List;
 
-import dev.ebullient.fc5.pojo.QuteSource;
 import dev.ebullient.fc5.pojo.QuteSpell;
 import dev.ebullient.fc5.pojo.SchoolEnum;
 import io.quarkus.qute.TemplateData;
@@ -41,7 +40,7 @@ import io.quarkus.qute.TemplateData;
  *
  */
 @TemplateData
-public class Fc5Spell extends QuteSpell implements QuteSource {
+public class Fc5Spell extends QuteSpell {
 
     final Fc5Text textData;
     final List<Fc5Roll> roll;

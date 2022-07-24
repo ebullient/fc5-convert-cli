@@ -7,7 +7,6 @@ import dev.ebullient.fc5.pojo.ItemEnum;
 import dev.ebullient.fc5.pojo.Modifier;
 import dev.ebullient.fc5.pojo.PropertyEnum;
 import dev.ebullient.fc5.pojo.QuteItem;
-import dev.ebullient.fc5.pojo.QuteSource;
 import io.quarkus.qute.TemplateData;
 
 /**
@@ -47,7 +46,7 @@ import io.quarkus.qute.TemplateData;
  * </pre>
  */
 @TemplateData
-public class Fc5Item extends QuteItem implements QuteSource {
+public class Fc5Item extends QuteItem {
     final Fc5Text text;
     final List<Fc5Roll> roll;
 
