@@ -77,6 +77,10 @@ public class CompendiumSources {
         return bookSources.iterator().next().contains("UA");
     }
 
+    public String primarySource() {
+        return bookSources.iterator().next();
+    }
+
     public String alternateSource() {
         Iterator<String> i = bookSources.iterator();
         if (bookSources.size() > 1) {

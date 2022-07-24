@@ -20,6 +20,9 @@ import dev.ebullient.fc5.pojo.QuteItem;
 public interface JsonItem extends JsonBase {
 
     default String getItemName(JsonNode itemNode) {
+        if (getIndex().sourceIncluded(getSources().primarySource())) {
+            return getSources().getName();
+        }
         JsonNode srd = itemNode.get("srd");
         if (srd != null) {
             if (srd.isTextual()) {
