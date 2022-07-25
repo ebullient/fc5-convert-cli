@@ -369,8 +369,7 @@ public interface JsonBase {
                 .collect(Collectors.joining(" | "));
 
         if (isMarkdown()) {
-            header = ("| " + header + " |")
-                    .replaceAll("^(d[0-9]+.*)", "dice: $1");
+            header = "| " + header.replaceAll("^(d[0-9]+.*)", "dice: $1") + " |";
             table.append(header).append("\n");
             table.append(header.replaceAll("[^|]", "-")).append("\n");
         } else {
