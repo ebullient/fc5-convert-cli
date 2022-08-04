@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import dev.ebullient.fc5.json2xml.Json2XmlConverter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -24,12 +23,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import dev.ebullient.fc5.Import5eTools;
 import dev.ebullient.fc5.Log;
-import dev.ebullient.fc5.json5e.JsonIndex;
+import dev.ebullient.fc5.json2xml.Json2XmlConverter;
 import dev.ebullient.fc5.json5e.JsonIndex.IndexType;
 
 public class JsonDataTest {
     final static Path PROJECT_PATH = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
     final static Path OUTPUT_PATH = PROJECT_PATH.resolve("target/5etools-import/jsondata");
+    final static Path SOME_OUTPUT_PATH = PROJECT_PATH.resolve("target/5etools-import/somedata");
 
     // for compile/test purposes. Must clone/sync separately.
     final static Path TOOLS_PATH = PROJECT_PATH.resolve("5etools-mirror-1.github.io/data");
@@ -74,6 +74,7 @@ public class JsonDataTest {
     public static void setupDir() {
         Log.setVerbose(true);
         OUTPUT_PATH.toFile().mkdirs();
+        SOME_OUTPUT_PATH.toFile().mkdirs();
     }
 
     @Test
@@ -294,6 +295,25 @@ public class JsonDataTest {
 
             Path p1 = OUTPUT_PATH.resolve("5etools_all_races.xml");
             Path p2 = OUTPUT_PATH.resolve("5etools_races.xml");
+            converter.writeToXml(p1)
+                    .writeTypeToXml(IndexType.race, p2);
+            assertFileContent(p1);
+            assertSameContents(p1, p2);
+        }
+    }
+
+    @Test
+    public void testSomeRaces() throws Exception {
+        if (TOOLS_PATH.toFile().exists()) {
+            List<String> source = List.of("PHB", "DMG", "XGE");
+            JsonIndex index = new JsonIndex(source)
+                    .importTree(doParse(TOOLS_PATH.resolve("races.json")))
+                    .importTree(doParse(TOOLS_PATH.resolve("fluff-races.json")));
+
+            Json2XmlConverter converter = new Json2XmlConverter(index).parseElements();
+
+            Path p1 = SOME_OUTPUT_PATH.resolve("5etools_all_races.xml");
+            Path p2 = SOME_OUTPUT_PATH.resolve("5etools_races.xml");
             converter.writeToXml(p1)
                     .writeTypeToXml(IndexType.race, p2);
             assertFileContent(p1);

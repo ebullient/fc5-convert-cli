@@ -67,11 +67,19 @@ public class Json2MarkdownConverter {
     Stream<Map.Entry<String, JsonNode>> findVariants(JsonIndex.IndexType type, String key, JsonNode jsonSource) {
         if (type == JsonIndex.IndexType.race) {
             Map<String, JsonNode> variants = new HashMap<>();
-            variants.put(key, jsonSource);
             CompendiumSources sources = index.constructSources(type, jsonSource);
+            if (index.keyIsIncluded(sources.getKey())) {
+                variants.put(key, jsonSource);
+            } else {
+                Log.debugf("Excluded %s", sources);
+            }
             index.subraces(sources).forEach(sr -> {
                 CompendiumSources srSources = index.constructSources(JsonIndex.IndexType.subrace, sr);
-                variants.put(srSources.getKey(), sr);
+                if (index.sourceIncluded(srSources)) {
+                    variants.put(srSources.getKey(), sr);
+                } else {
+                    Log.debugf("Excluded %s", sources);
+                }
             });
             return variants.entrySet().stream();
         }
@@ -100,8 +108,9 @@ public class Json2MarkdownConverter {
             case spell:
                 // no use of _copy
                 return new Json2QuteSpell(jsonNode).build();
+            default:
+                throw new IllegalArgumentException("Unsupported type " + type);
         }
-        throw new IllegalArgumentException("Unsupported type " + type);
     }
 
     // NOT STATIC CLASSES -- they share/reuse the index

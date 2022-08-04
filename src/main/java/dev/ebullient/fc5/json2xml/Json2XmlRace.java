@@ -34,8 +34,10 @@ public class Json2XmlRace extends Json2XmlBase implements JsonRace {
         List<Json2XmlBase> variants = new ArrayList<>();
         index.subraces(sources).forEach(r -> {
             CompendiumSources subraceSources = index.constructSources(IndexType.subrace, r);
-            Json2XmlRace subrace = new Json2XmlRace(subraceSources, index, factory);
-            variants.addAll(subrace.convert(r));
+            if (index.sourceIncluded(subraceSources)) {
+                Json2XmlRace subrace = new Json2XmlRace(subraceSources, index, factory);
+                variants.addAll(subrace.convert(r));
+            }
         });
         return variants;
     }

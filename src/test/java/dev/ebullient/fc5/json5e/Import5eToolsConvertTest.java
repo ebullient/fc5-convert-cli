@@ -18,7 +18,7 @@ import io.quarkus.test.junit.main.QuarkusMainTest;
 @QuarkusMainTest
 public class Import5eToolsConvertTest {
     final static Path PROJECT_PATH = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
-    final static Path OUTPUT_PATH = PROJECT_PATH.resolve("target/5etools-import");
+    final static Path OUTPUT_PATH = PROJECT_PATH.resolve("target/5etools-import/import");
     final static Path TOOLS_PATH = PROJECT_PATH.resolve("5etools-mirror-1.github.io/data");
 
     @Test

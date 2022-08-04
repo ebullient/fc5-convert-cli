@@ -42,6 +42,7 @@ public class JsonIndex implements JsonBase {
         item,
         itementry,
         itemfluff,
+        itemvariant,
         monster,
         monsterfluff,
         race,
@@ -130,6 +131,7 @@ public class JsonIndex implements JsonBase {
         node.withArray("item").forEach(x -> addToIndex(IndexType.item, x));
         node.withArray("itemEntry").forEach(x -> addToIndex(IndexType.itementry, x));
         node.withArray("itemFluff").forEach(x -> addToIndex(IndexType.itemfluff, x));
+        //node.withArray("variant").forEach(x -> addToIndex(IndexType.itemvariant, x));
         node.withArray("monster").forEach(x -> addToIndex(IndexType.monster, x));
         node.withArray("monsterFluff").forEach(x -> addToIndex(IndexType.monsterfluff, x));
         node.withArray("race").forEach(x -> addToIndex(IndexType.race, x));
@@ -147,10 +149,10 @@ public class JsonIndex implements JsonBase {
             node.get("paths").fields().forEachRemaining(e -> {
                 switch (e.getKey()) {
                     case "rules":
-                        this.rulesPath = e.getValue().asText();
+                        JsonIndex.rulesPath = e.getValue().asText();
                         break;
                     case "compendium":
-                        this.compendiumPath = e.getValue().asText();
+                        JsonIndex.compendiumPath = e.getValue().asText();
                         break;
                 }
             });
@@ -386,8 +388,15 @@ public class JsonIndex implements JsonBase {
         return allSources || allowedSources.contains(source.toLowerCase());
     }
 
+    public boolean sourceIncluded(CompendiumSources subraceSources) {
+        if (allSources) {
+            return true;
+        }
+        return subraceSources.bookSources.stream().anyMatch(x -> allowedSources.contains(x.toLowerCase()));
+    }
+
     public boolean excludeElement(JsonNode element, CompendiumSources sources) {
-        return keyIsExcluded(sources.key);
+        return keyIsExcluded(sources.key) || sources.bookSources.stream().noneMatch(x -> allowedSources.contains(x));
     }
 
     public boolean excludeItem(JsonNode itemSource, boolean isSRD) {
