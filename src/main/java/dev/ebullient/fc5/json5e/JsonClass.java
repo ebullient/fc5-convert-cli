@@ -2,6 +2,7 @@ package dev.ebullient.fc5.json5e;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -140,6 +141,7 @@ public interface JsonClass extends JsonBase {
 
     default void addCounters(int r, ArrayNode rows, int numCols, String[] labels,
             QuteClassAutoLevel.Builder builder) {
+        List<String> knownThings = new ArrayList<>();
         ArrayNode row = (ArrayNode) rows.get(r);
         for (int c = 0; c < numCols; c++) {
             switch (labels[c]) {
@@ -158,7 +160,7 @@ public interface JsonClass extends JsonBase {
                     // No reset, just a number
                     int count = row.get(c).asInt();
                     if (count > 0) {
-                        builder.addCounter(new QuteClassAutoLevel.Counter(labels[c], count, null));
+                        knownThings.add(String.format("%s: %s", labels[c], count));
                     }
                     break;
                 }
@@ -169,6 +171,7 @@ public interface JsonClass extends JsonBase {
                     // Reset on Long Rest
                     int count = row.get(c).asInt();
                     if (count > 0) {
+                        knownThings.add(String.format("%s: %s, resets on long rest", labels[c], count));
                         builder.addCounter(
                                 new QuteClassAutoLevel.Counter(labels[c], count, QuteClassAutoLevel.Reset.L));
                     }
@@ -178,6 +181,7 @@ public interface JsonClass extends JsonBase {
                     // Reset on Short Rest
                     int count = row.get(c).asInt();
                     if (count > 0) {
+                        knownThings.add(String.format("%s: %s, resets on short rest", labels[c], count));
                         builder.addCounter(
                                 new QuteClassAutoLevel.Counter(labels[c], count, QuteClassAutoLevel.Reset.S));
                     }
@@ -189,7 +193,7 @@ public interface JsonClass extends JsonBase {
                     if (toRoll != null) {
                         int value = toRoll.get(0).get("faces").asInt();
                         if (value > 0) {
-                            builder.addCounter(new QuteClassAutoLevel.Counter("Monk Damage Die", value, null));
+                            knownThings.add(String.format("Martial Arts Damage die: %s", value));
                         }
                     }
                     break;
@@ -198,14 +202,14 @@ public interface JsonClass extends JsonBase {
                     // attack damage bonus die
                     int value = row.get(c).get("value").asInt();
                     if (value > 0) {
-                        builder.addCounter(new QuteClassAutoLevel.Counter("Rage Damage Bonus", value, null));
+                        knownThings.add(String.format("Rage Damage Bonus die: %s", value));
                     }
                     break;
                 }
                 case "Unarmored Movement": {
                     // speed bonus
                     int value = row.get(c).get("value").asInt();
-                    if (value > 0) {
+                    if (value > 0 && !isMarkdown()) {
                         int prev = rows.get(r - 1).get(c).get("value").asInt();
                         if (value != prev) {
                             int delta = (value - prev);
@@ -232,14 +236,28 @@ public interface JsonClass extends JsonBase {
 
         if (getSources().getSourceText().equals("Bard")) {
             if (r < 5) {
-                builder.addCounter(new QuteClassAutoLevel.Counter("Bardic die (BI)", 6, null));
+                knownThings.add(String.format("Bardic Inspiration die: %s", 6));
+                // builder.addCounter(new QuteClassAutoLevel.Counter("Bardic die (BI)", 6, null));
             } else if (r < 10) {
-                builder.addCounter(new QuteClassAutoLevel.Counter("Bardic die (BI)", 8, null));
+                knownThings.add(String.format("Bardic Inspiration die: %s", 8));
+                // builder.addCounter(new QuteClassAutoLevel.Counter("Bardic die (BI)", 8, null));
             } else if (r < 15) {
-                builder.addCounter(new QuteClassAutoLevel.Counter("Bardic die (BI)", 10, null));
+                knownThings.add(String.format("Bardic Inspiration die: %s", 10));
+                // builder.addCounter(new QuteClassAutoLevel.Counter("Bardic die (BI)", 10, null));
             } else {
-                builder.addCounter(new QuteClassAutoLevel.Counter("Bardic die (BI)", 12, null));
+                knownThings.add(String.format("Bardic Inspiration die: %s", 12));
+                // builder.addCounter(new QuteClassAutoLevel.Counter("Bardic die (BI)", 12, null));
             }
+        }
+
+        if (knownThings.size() > 0 && !isMarkdown()) {
+            Collections.sort(knownThings);
+            builder.addFeature(new QuteClassFeature.Builder()
+                    .setName("Class Features")
+                    .setLevel(0)
+                    .setOptional(false)
+                    .addText(String.join("\n", knownThings))
+                    .build());
         }
     }
 
