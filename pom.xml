@@ -33,7 +33,7 @@
     <properties>
         <assertj.version>3.23.1</assertj.version>
         <compiler-plugin.version>3.10.1</compiler-plugin.version>
-        <formatter-plugin.version>2.19.0</formatter-plugin.version>
+        <formatter-plugin.version>2.20.0</formatter-plugin.version>
         <github-slugify.version>3.0.2</github-slugify.version>
         <impsort-plugin.version>1.7.0</impsort-plugin.version>
         <maven.compiler.parameters>true</maven.compiler.parameters>
