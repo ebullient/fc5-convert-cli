@@ -44,7 +44,7 @@
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.version>2.11.2.Final</quarkus.platform.version>
-        <saxon-he.version>11.3</saxon-he.version>
+        <saxon-he.version>11.4</saxon-he.version>
         <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
     </properties>
     <dependencyManagement>
