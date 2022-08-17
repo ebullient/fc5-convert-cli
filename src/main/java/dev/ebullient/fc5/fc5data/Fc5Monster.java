@@ -1,12 +1,9 @@
 package dev.ebullient.fc5.fc5data;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.regex.Pattern;
 
-import dev.ebullient.fc5.pojo.AbilityScores;
 import dev.ebullient.fc5.pojo.QuteMonster;
-import dev.ebullient.fc5.pojo.QuteTrait;
 import dev.ebullient.fc5.pojo.SizeEnum;
 import io.quarkus.qute.TemplateData;
 
@@ -67,19 +64,9 @@ public class Fc5Monster extends QuteMonster {
 
     final Fc5Text descriptionText;
 
-    public Fc5Monster(String name, Fc5Text descriptionText, SizeEnum size,
-            String type, String subtype, String alignment, String ac, String acText,
-            String hp, String hitDice, String speed, AbilityScores scores,
-            List<String> save, List<String> skill, String senses, int passive,
-            String vulnerable, String resist, String immune, String conditionImmune,
-            String languages, String cr,
-            List<QuteTrait> trait, List<QuteTrait> action, List<QuteTrait> reaction, List<QuteTrait> legendary,
-            String environment) {
-        super(name, List.of(), size, type, subtype,
-                alignment, ac, acText, hp, hitDice, speed, scores,
-                save, skill, senses, passive, vulnerable, resist, immune, conditionImmune,
-                languages, cr, trait, action, reaction, legendary, environment);
-        this.descriptionText = descriptionText;
+    public Fc5Monster(MonsterTypeBuilder builder) {
+        super(builder);
+        this.descriptionText = builder.descriptionText;
     }
 
     @Override
@@ -130,10 +117,7 @@ public class Fc5Monster extends QuteMonster {
 
         @Override
         public Fc5Monster build() {
-            return new Fc5Monster(name, descriptionText, size, type, subtype,
-                    alignment, ac, acText, hp, hitDice, speed, scores,
-                    save, skill, senses, passive, vulnerable, resist, immune, conditionImmune,
-                    languages, cr, trait, action, reaction, legendary, environment);
+            return new Fc5Monster(this);
         }
     }
 }

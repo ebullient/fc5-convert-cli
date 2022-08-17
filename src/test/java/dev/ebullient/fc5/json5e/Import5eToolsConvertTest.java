@@ -60,10 +60,21 @@ public class Import5eToolsConvertTest {
     void testMarkdownData(TestInfo info, QuarkusMainLauncher launcher) throws Exception {
         if (TOOLS_PATH.toFile().exists()) {
             launcher.launch("5etools", "--index", "--md",
+                    "--monster", "src/test/resources/customTemplates/monster2-pieces.txt",
                     "-o", OUTPUT_PATH.toString(),
                     "-s", "PHB,DMG,SCAG,WbtW",
                     TOOLS_PATH.toString(),
                     PROJECT_PATH.resolve("src/test/resources/sources.json").toString());
+        }
+    }
+
+    @Test
+    void testMarkdownBook(TestInfo info, QuarkusMainLauncher launcher) throws Exception {
+        if (TOOLS_PATH.toFile().exists()) {
+            launcher.launch("5etools",
+                    "-o", OUTPUT_PATH.toString(),
+                    "-s", "PHB,DMG,SCAG,WbtW",
+                    TOOLS_PATH.resolve("book/book-dod.json").toString());
         }
     }
 }

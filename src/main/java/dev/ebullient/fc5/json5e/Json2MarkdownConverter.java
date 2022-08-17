@@ -66,8 +66,8 @@ public class Json2MarkdownConverter {
 
     Stream<Map.Entry<String, JsonNode>> findVariants(JsonIndex.IndexType type, String key, JsonNode jsonSource) {
         if (type == JsonIndex.IndexType.race) {
-            Map<String, JsonNode> variants = new HashMap<>();
             CompendiumSources sources = index.constructSources(type, jsonSource);
+            Map<String, JsonNode> variants = new HashMap<>();
             if (index.keyIsIncluded(sources.getKey())) {
                 variants.put(key, jsonSource);
             } else {
@@ -82,6 +82,8 @@ public class Json2MarkdownConverter {
                 }
             });
             return variants.entrySet().stream();
+        } else if (type == JsonIndex.IndexType.monster && jsonSource.has("summonedBySpellLevel")) {
+            return JsonMonster.findConjuredMonsterVariants(index, type, key, jsonSource);
         }
         return Map.of(key, jsonSource).entrySet().stream();
     }
@@ -276,7 +278,7 @@ public class Json2MarkdownConverter {
                     .setType(monsterType(jsonSource))
                     .setAlignment(monsterAlignment(jsonSource))
                     .setAc(monsterAc(jsonSource))
-                    .setHpDice(monsterHp(jsonSource))
+                    .setHpDice(monsterHp(jsonSource), monsterHpOriginal(jsonSource))
                     .setSpeed(monsterSpeed(jsonSource))
                     .setScores(intOrDefault(jsonSource, "str", 10),
                             intOrDefault(jsonSource, "dex", 10),

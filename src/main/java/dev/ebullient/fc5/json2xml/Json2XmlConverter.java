@@ -50,6 +50,7 @@ public class Json2XmlConverter {
                             base = new Json2XmlFeat(sources, index, factory);
                             break;
                         case item:
+                        case itemvariant:
                             base = new Json2XmlItem(sources, index, factory);
                             break;
                         case monster:

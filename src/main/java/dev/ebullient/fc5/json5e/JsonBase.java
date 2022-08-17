@@ -304,7 +304,7 @@ public interface JsonBase {
             if (inner.isEmpty()) {
                 inner.add(n);
             } else {
-                n = n.trim().replace(":", "");
+                n = replaceAttributes(n.trim().replace(":", ""));
                 if (isMarkdown()) {
                     n = "**" + n + ".** ";
                 } else {
@@ -898,11 +898,16 @@ public interface JsonBase {
         String result = input;
         Matcher m;
 
+        // "{@atk mw} {@hit 1} to hit, reach 5 ft., one target. {@h}1 ({@damage 1d4 ‒1}) piercing damage."
+        // "{@atk mw} {@hit 4} to hit, reach 5 ft., one target. {@h}1 ({@damage 1d4+2}) slashing damage."
+        // "{@atk mw} {@hit 14} to hit, one target. {@h}22 ({@damage 3d8}) piercing damage. Target must make a {@dc 19} Dexterity save, or be swallowed by the worm!"
         if (result.contains("{@atk")) {
             String attack = result
                     .replaceAll("\\(\\{@(damage|dice) ([^}]+)\\}\\)", "($2)")
-                    .replaceAll("\\{@(damage|dice) ([^}]+)\\}", "($2)");
+                    .replaceAll("\\{@(damage|dice) ([^}]+)\\}", "($2)")
+                    .replace("‒", "-"); // replace sneaky unicode character
             String toHit = attack.replaceAll(".*\\{@hit ([^}]+)\\}.*", "$1");
+
             if (toHit.matches("\\d+") && result.contains("{@damage")) {
                 m = alternate.matcher(attack);
                 if (m.find()) {

@@ -2,19 +2,29 @@ package dev.ebullient.fc5.json5e;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
+import dev.ebullient.fc5.Import5eTools;
 import dev.ebullient.fc5.Log;
 import dev.ebullient.fc5.pojo.QuteTrait;
 
 public interface JsonMonster extends JsonBase {
+
     default String decorateMonsterName(JsonNode jsonSource) {
         String revised = getSources().getName().replace("\"", "");
         if (booleanOrDefault(jsonSource, "isNpc", false)) {
@@ -164,7 +174,9 @@ public interface JsonMonster extends JsonBase {
                     result.append(ac.get("special").asText());
                 } else {
                     result.append(ac.get("ac").asText());
-                    ac.withArray("from").forEach(f -> details.add(f.asText()));
+                    if (ac.has("from") && ac.get("from").isArray()) {
+                        ac.withArray("from").forEach(f -> details.add(f.asText()));
+                    }
                 }
             } else {
                 if (ac.isNumber()) {
@@ -218,6 +230,14 @@ public interface JsonMonster extends JsonBase {
         }
         Log.errorf("Unknown hp from %s: %s", getSources(), health.toPrettyString());
         throw new IllegalArgumentException("Unknown hp from " + getSources());
+    }
+
+    default String monsterHpOriginal(JsonNode jsonSource) {
+        JsonNode health = jsonSource.get("hp");
+        if (health.has("original")) {
+            return health.get("original").asText();
+        }
+        return null;
     }
 
     default String monsterImmunities(JsonNode jsonSource) {
@@ -378,5 +398,199 @@ public interface JsonMonster extends JsonBase {
             Log.debugf("Asked for spells w/ not exist field: %s", fieldName);
         }
         return spells;
+    }
+
+    public static Stream<Map.Entry<String, JsonNode>> findConjuredMonsterVariants(JsonIndex index, JsonIndex.IndexType type,
+            String key, JsonNode jsonSource) {
+        final Pattern variantPattern = Pattern.compile("(\\d+) \\((.*?)\\)");
+        int startLevel = jsonSource.get("summonedBySpellLevel").asInt();
+
+        String name = jsonSource.get("name").asText();
+        String hpString = jsonSource.get("hp").get("special").asText();
+        String acString = jsonSource.get("ac").get(0).get("special").asText();
+
+        Map<String, JsonNode> variants = new HashMap<>();
+        for (int i = startLevel; i < 10; i++) {
+            if (hpString.contains(" or ")) {
+                // "50 (Demon only) or 40 (Devil only) or 60 (Yugoloth only) + 15 for each spell level above 6th"
+                // "30 (Ghostly and Putrid only) or 20 (Skeletal only) + 10 for each spell level above 3rd"
+                String[] parts = hpString.split(" \\+ ");
+                String[] variantGroups = parts[0].split(" or ");
+                for (String group : variantGroups) {
+                    Matcher m = variantPattern.matcher(group);
+                    if (m.find()) {
+                        String amount = m.group(1);
+                        String variant = m.group(2);
+
+                        if (variant.contains(" and ")) {
+                            for (String v : variant.split(" and ")) {
+                                String variantName = String.format("%s (%s, %s-Level Spell)",
+                                        name, v.replace(" only", ""), levelToString(i));
+                                createVariant(index, variants, jsonSource, type, variantName, i,
+                                        amount + " + " + parts[1], acString);
+                            }
+                        } else {
+                            String variantName = String.format("%s (%s, %s-Level Spell)",
+                                    name, variant.replace(" only", ""), levelToString(i));
+                            createVariant(index, variants, jsonSource, type, variantName, i,
+                                    amount + " + " + parts[1], acString);
+                        }
+                    } else {
+                        throw new IllegalArgumentException("Unknown HP variant: " + hpString);
+                    }
+                }
+            } else {
+                String variantName = String.format("%s (%s-Level Spell)", name, levelToString(i));
+                createVariant(index, variants, jsonSource, type, variantName, i, hpString, acString);
+            }
+        }
+        return variants.entrySet().stream();
+    }
+
+    static void createVariant(JsonIndex index,
+            Map<String, JsonNode> variants,
+            JsonNode jsonSource, JsonIndex.IndexType type,
+            String variantName, int level, String hpString, String acString) {
+
+        JsonMonster.ConjuredMonster fixed = new JsonMonster.ConjuredMonster(level, variantName, hpString, acString, jsonSource);
+
+        ObjectNode adjustedSource = (ObjectNode) index.copyNode(jsonSource);
+        adjustedSource.set("name", fixed.getName());
+        adjustedSource.set("ac", fixed.getAc());
+        adjustedSource.set("hp", fixed.getHp());
+
+        String newKey = index.getKey(type, adjustedSource);
+        variants.put(newKey, adjustedSource);
+    }
+
+    static String levelToString(int level) {
+        switch (level) {
+            case 1:
+                return "1st";
+            case 2:
+                return "2nd";
+            case 3:
+                return "3rd";
+            default:
+                return level + "th";
+        }
+    }
+
+    public static class ConjuredMonster {
+
+        final String name;
+        final MonsterAC monsterAc;
+        final MonsterHp monsterHp;
+
+        public ConjuredMonster(int level, String name, String hpString, String acString, JsonNode jsonSource) {
+            this.name = name;
+            this.monsterAc = new MonsterAC(level, acString);
+            this.monsterHp = new MonsterHp(level, hpString, jsonSource);
+        }
+
+        public JsonNode getName() {
+            return new TextNode(name);
+        }
+
+        public JsonNode getAc() {
+            MonsterAC[] result = new MonsterAC[] { monsterAc };
+            return Import5eTools.MAPPER.valueToTree(result);
+        }
+
+        public JsonNode getHp() {
+            return Import5eTools.MAPPER.valueToTree(monsterHp);
+        }
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public static class MonsterAC {
+        public final int ac;
+        public final String[] from;
+        public final String original;
+
+        // "ac": [
+        //     {
+        //         "ac": 19,
+        //         "from": [
+        //             "natural armor"
+        //         ]
+        //     }
+        // ],
+        public MonsterAC(int level, String acString) {
+            this.original = acString;
+            if (acString.contains(" + ")) {
+                String[] parts = acString.split(" \\+ ");
+                int value = Integer.parseInt(parts[0]);
+                String armor = null;
+                // "11 + the level of the spell (natural armor)"
+                // "13 + PB (natural armor)"
+                if (parts[1].contains("the level of the spell")) {
+                    value += level;
+                    armor = parts[1]
+                            .replace("the level of the spell", "")
+                            .replace("(", "")
+                            .replace(")", "")
+                            .trim();
+                } else if (parts[1].contains("PB")) {
+                    armor = parts[1]
+                            .replace("PB", "")
+                            .replace("(", "")
+                            .replace(")", "")
+                            .trim()
+                            + " + caster proficiency bonus";
+                }
+                this.ac = value;
+                this.from = armor == null ? null : new String[] { armor };
+            } else {
+                throw new IllegalArgumentException("Unknown AC pattern: " + acString);
+            }
+        }
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class MonsterHp {
+        static final Pattern hpPattern = Pattern
+                .compile("(\\d+) \\+ (\\d+) for each spell level above (\\d)(nd|rd|th|st) ?\\(?(.*?)?\\)?");
+
+        public final String special;
+        public final String original;
+
+        // Want to go from:
+        // "40 + 10 for each spell level above 4th"
+        // "50 + 10 for each spell level above 5th (the dragon has a number of Hit Dice [d10s] equal to the level of the spell)"
+        // TO:
+        // "hp": {
+        //     "average": 195,
+        //     "formula": "17d12 + 85"
+        // },
+        // OR
+        // "hp": {
+        //     "special": "195",
+        // },
+        public MonsterHp(int level, String hpString, JsonNode jsonSource) {
+            this.original = hpString;
+
+            Integer value = null;
+            if (hpString.contains("Constitution modifier")) {
+                // "equal the undead's Constitution modifier + your spellcasting ability modifier + ten times the spell's level"
+                int con = jsonSource.get("con").asInt();
+                value = con + (10 * level);
+            } else if (hpString.contains("half the hit point maximum of its summoner")) {
+                // nothing we can do
+            } else if (hpString.contains(" + ")) {
+                Matcher m = hpPattern.matcher(hpString);
+                if (m.find()) {
+                    value = Integer.parseInt(m.group(1));
+                    int scale = level - Integer.parseInt(m.group(3));
+                    value += Integer.parseInt(m.group(2)) * scale;
+                } else {
+                    throw new IllegalArgumentException("Unknown HP pattern: " + hpString);
+                }
+            } else {
+                throw new IllegalArgumentException("Unknown HP pattern: " + hpString);
+            }
+
+            this.special = value == null ? "" : value + "";
+        }
     }
 }

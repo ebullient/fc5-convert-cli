@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 
 import dev.ebullient.fc5.json2xml.Json2XmlConverter;
 import dev.ebullient.fc5.json5e.Json2MarkdownConverter;
+import dev.ebullient.fc5.json5e.JsonBook;
 import dev.ebullient.fc5.json5e.JsonIndex;
 import dev.ebullient.fc5.json5e.JsonIndex.IndexType;
 import dev.ebullient.fc5.pojo.MarkdownWriter;
@@ -127,8 +128,7 @@ public class Import5eTools implements Callable<Integer> {
                 if (inputPath.toFile().isDirectory()) {
                     List<String> inputs = List.of("backgrounds.json", "fluff-backgrounds.json", "bestiary", "class",
                             "feats.json", "items.json", "items-base.json", "fluff-items.json", "optionalfeatures.json",
-                            "races.json", "fluff-races.json",
-                            "spells", "variantrules.json");
+                            "races.json", "fluff-races.json", "spells", "variantrules.json", "magicvariants.json");
                     for (String input : inputs) {
                         Path p = inputPath.resolve(input);
                         if (p.toFile().isFile()) {
@@ -217,6 +217,12 @@ public class Import5eTools implements Callable<Integer> {
         if (node.has("name")) {
             processNameList(node.get("name"), index);
             Log.outPrintln("✅ Finished processing names from " + inputPath);
+        } else if (node.has("data")) {
+            String filename = inputPath.getFileName().toString();
+            Path target = output.resolve(filename.replace(".json", ".md"));
+            JsonBook book = new JsonBook();
+            book.processSections(inputPath, target, node.get("data"), index);
+            Log.outPrintln("✅ Finished processing text from " + inputPath);
         } else {
             index.importTree(node);
             Log.debugf("🔖 Finished reading %s\n", inputPath);

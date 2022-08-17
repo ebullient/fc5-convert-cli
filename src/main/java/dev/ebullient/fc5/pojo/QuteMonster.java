@@ -27,6 +27,7 @@ public class QuteMonster implements QuteSource {
     protected final String ac;
     protected final String acText;
     protected final String hp;
+    protected final String hpSpecial;
     protected final String hitDice;
     protected final String speed;
 
@@ -49,41 +50,35 @@ public class QuteMonster implements QuteSource {
     protected final List<QuteTrait> legendary;
     protected final String environment;
 
-    public QuteMonster(String name, List<String> description, SizeEnum size,
-            String type, String subtype, String alignment, String ac, String acText,
-            String hp, String hitDice, String speed, AbilityScores scores,
-            List<String> save, List<String> skill, String senses, int passive,
-            String vulnerable, String resist, String immune, String conditionImmune,
-            String languages, String cr,
-            List<QuteTrait> trait, List<QuteTrait> action, List<QuteTrait> reaction, List<QuteTrait> legendary,
-            String environment) {
-        this.name = name;
-        this.description = breathe(description);
-        this.size = size;
-        this.type = type;
-        this.subtype = subtype;
-        this.alignment = alignment;
-        this.ac = ac;
-        this.acText = acText;
-        this.hp = hp;
-        this.hitDice = hitDice;
-        this.speed = speed;
-        this.scores = scores;
-        this.save = save;
-        this.skill = skill;
-        this.senses = senses;
-        this.passive = passive;
-        this.vulnerable = vulnerable;
-        this.resist = resist;
-        this.immune = immune;
-        this.conditionImmune = conditionImmune;
-        this.languages = languages;
-        this.cr = cr;
-        this.trait = trait;
-        this.action = action;
-        this.reaction = reaction;
-        this.legendary = legendary;
-        this.environment = environment;
+    public QuteMonster(QuteMonster.Builder builder) {
+        this.name = builder.name;
+        this.description = breathe(builder.description);
+        this.size = builder.size;
+        this.type = builder.type;
+        this.subtype = builder.subtype;
+        this.alignment = builder.alignment;
+        this.ac = builder.ac;
+        this.acText = builder.acText;
+        this.hp = builder.hp;
+        this.hpSpecial = builder.hpSpecial;
+        this.hitDice = builder.hitDice;
+        this.speed = builder.speed;
+        this.scores = builder.scores;
+        this.save = builder.save;
+        this.skill = builder.skill;
+        this.senses = builder.senses;
+        this.passive = builder.passive;
+        this.vulnerable = builder.vulnerable;
+        this.resist = builder.resist;
+        this.immune = builder.immune;
+        this.conditionImmune = builder.conditionImmune;
+        this.languages = builder.languages;
+        this.cr = builder.cr;
+        this.trait = builder.trait;
+        this.action = builder.action;
+        this.reaction = builder.reaction;
+        this.legendary = builder.legendary;
+        this.environment = builder.environment;
     }
 
     public String getName() {
@@ -135,6 +130,9 @@ public class QuteMonster implements QuteSource {
     }
 
     public String getHp() {
+        if (hpSpecial != null) {
+            return hp + " (" + hpSpecial + ")";
+        }
         return hp;
     }
 
@@ -253,8 +251,8 @@ public class QuteMonster implements QuteSource {
         map.put("subtype", subtype);
         map.put("alignment", alignment);
 
-        map.put("ac", Integer.parseInt(ac));
-        map.put("hp", Integer.parseInt(hp));
+        addIntegerUnlessEmpty(map, "ac", ac.replaceAll("[^\\d]", ""));
+        addIntegerUnlessEmpty(map, "hp", hp.replaceAll("[^\\d]", ""));
         addUnlessEmpty(map, "hit_dice", hitDice);
 
         map.put("speed", speed);
@@ -295,6 +293,12 @@ public class QuteMonster implements QuteSource {
         addUnlessEmpty(map, "reactions", reaction);
 
         return map;
+    }
+
+    void addIntegerUnlessEmpty(Map<String, Object> map, String key, String value) {
+        if (value != null && !value.isBlank()) {
+            map.put(key, Integer.parseInt(value));
+        }
     }
 
     void addUnlessEmpty(Map<String, Object> map, String key, String value) {
@@ -363,6 +367,7 @@ public class QuteMonster implements QuteSource {
         protected String ac;
         protected String acText;
         protected String hp;
+        protected String hpSpecial; // optional special HP text
         protected String hitDice;
         protected String speed;
 
@@ -429,7 +434,17 @@ public class QuteMonster implements QuteSource {
             return this;
         }
 
+        public Builder setAc(String ac, String type) {
+            this.ac = ac;
+            this.acText = type;
+            return this;
+        }
+
         public Builder setHpDice(String tmpHp) {
+            return this.setHpDice(tmpHp, null);
+        }
+
+        public Builder setHpDice(String tmpHp, String special) {
             Matcher m = TYPE_DETAIL.matcher(tmpHp);
             if (m.matches()) {
                 hp = m.group(1);
@@ -438,6 +453,7 @@ public class QuteMonster implements QuteSource {
                 hp = tmpHp;
                 hitDice = null;
             }
+            this.hpSpecial = special;
             return this;
         }
 
@@ -540,10 +556,10 @@ public class QuteMonster implements QuteSource {
         }
 
         public QuteMonster build() {
-            return new QuteMonster(name, description, size, type, subtype,
-                    alignment, ac, acText, hp, hitDice, speed, scores,
-                    save, skill, senses, passive, vulnerable, resist, immune, conditionImmune,
-                    languages, cr, trait, action, reaction, legendary, environment);
+            if (description == null) {
+                description = List.of();
+            }
+            return new QuteMonster(this);
         }
     }
 }
