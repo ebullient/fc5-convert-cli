@@ -260,14 +260,31 @@ I am pulling from a much smaller set of sources overall. I included Elemental Ev
        target/CoreRulebooks-merged.xml
      ```    
 
-## Qute Markdown templates
+## Templates
 
 This applicaiton uses the [Qute Templating Engine](https://quarkus.io/guides/qute). Simple customizations to markdown output can be achieved by copying a template from src/main/resources/templates, making the desired modifications, and then specifying that template on the command line.
-    
+
+### When working with 5etools JSON
+
 ```shell
-java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian \
-  --background src/main/resources/templates/background2md.txt \
-  -o target/reference target/CoreRulebooks-merged.xml
+java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar 5etools 
+  --xml \
+  --md --background src/main/resources/templates/background2md.txt \
+  --index -o dm dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data wbtw-items.json
+```
+OR
+```
+fc5-convert 5etools --xml --md \
+  --index -o dm dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data wbtw-items.json
+```
+
+### When working from FC5 XML
+
+```shell
+java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar 5etools 
+  --xml \
+  --md --background src/main/resources/templates/background2md.txt \
+  --index -o dm dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data wbtw-items.json
 ```
 OR
 ```shell
@@ -275,4 +292,9 @@ fc5-convert obsidian \
   --background src/main/resources/templates/background2md.txt \
   -o target/reference target/CoreRulebooks-merged.xml
 ```    
-    
+
+### Template examples
+
+- [Default templates](https://github.com/ebullient/fc5-convert-cli/tree/main/src/main/resources/templates)
+- [Alternative templates](https://github.com/ebullient/fc5-convert-cli/tree/main/src/test/resources/customTemplates)
+
