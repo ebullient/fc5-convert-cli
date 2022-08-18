@@ -8,23 +8,32 @@ I like using both Fight Club 5 and Game Master 5 (more the former than the latte
 
 I also use [Obsidian](https://obsidian.md) to keep track of my notes. The goal is to use the same filtered resources as a reference both in my local notes (Obsidian) and in Fight Club 5 (Players).
 
+## To run without building yourself
+
+1. Install JBang: https://www.jbang.dev/documentation/guide/latest/installation.html
+2. Install the snapshot jar: 
+  ```
+  jbang app install --name fc5-convert --force --fresh https://jitpack.io/dev/ebullient/fc5-convert-cli/1.0.0-SNAPSHOT/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar
+  ```
+3. Run the command: 
+  ```
+  fc5-convert --help
+  ```
+
 ## To build (optional)
 
 1. Clone this repository
 2. Build this project: `quarkus build` or `./mvnw install`
 3. `java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar --help`
 
-## To run without building yourself
 
-1. Install JBang: https://www.jbang.dev/documentation/guide/latest/installation.html
-2. Install the snapshot jar: 
-```
-jbang app install --name fc5-convert --force --fresh https://jitpack.io/dev/ebullient/fc5-convert-cli/1.0.0-SNAPSHOT/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar
-```
-3. Run the command: 
-```
-fc5-convert --help
-```
+To run commands listed below, either: 
+
+- Replace `fc5-convert` with `java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar`
+- Use JBang to create an alias that points to the built jar: 
+  ```
+  jbang app install --name fc5-convert --force --fresh ~/.m2/repository/dev/ebullient/fc5-convert-cli/1.0.0-SNAPSHOT/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar
+    ```
 
 ## Starting with 5eTools JSON data
 
@@ -35,7 +44,12 @@ fc5-convert 5etools --help
 An example invocation (based on sources I own): 
 
 ```
-fc5-convert 5etools --xml --md --index -o dm dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data wbtw-items.json
+fc5-convert 5etools \
+  --xml \
+  --md \
+  --index \
+  -o dm \
+  dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data wbtw-items.json
 ```
 
 - `--xml` Create FightClub 5 Compendium XML files (compendium.xml and files per type)
@@ -201,64 +215,33 @@ I am pulling from a much smaller set of sources overall. I included Elemental Ev
 2. Look in the Collections directory of the Fight Club repository to see how collections work. Choose one of those or make your own.
 
 3. Validate the Collection (against a built-in XML schema)
-    - Using the built jar: 
-      ```shell
-      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar validate --help
-      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar validate FightClub5eXML/Collections/CoreRulebooks.xml
-      ```
-    - Using the jbang installed alias: 
-      ```shell
-      fc5-convert validate --help
-      fc5-convert validate FightClub5eXML/Collections/CoreRulebooks.xml
-      ```    
+    ```shell
+    fc5-convert validate --help
+    fc5-convert validate FightClub5eXML/Collections/CoreRulebooks.xml
+    ```    
 
 4. Merge and transform the collected XML documents using XSLT 2.0 (a default xslt file is in src/main/resources):
-    - Using the built jar: 
-      ```shell
-      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar transform --help
-      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar transform -o target -x '-merged' FightClub5eXML/Collections/CoreRulebooks.xml
-      ```
-    - Using the jbang installed alias (notice `-o target` for the output directory): 
-      ```shell
-      fc5-convert transform --help
-      fc5-convert transform -o target -x '-merged' FightClub5eXML/Collections/CoreRulebooks.xml
-      ```
+    ```shell
+    fc5-convert transform --help
+    fc5-convert transform -o target -x '-merged' FightClub5eXML/Collections/CoreRulebooks.xml
+    ```
       
-    This will create `target/CoreRulebooks-merged.xml`
+    This will create `target/CoreRulebooks-merged.xml` (notice `-o target` for the output directory)
 
 5. Convert the merged XML document to Obsidian markdown (basically CommonMark with YAML front-matter). For testing/tooling around purposes, you can tool around with test files (notice `-o target/reference` for the output directory). 
-    - Using the built jar: 
-      ```shell
-      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian --help
-      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian \
-        -o target/reference \
-        src/test/resources/backgroundAcolyte.xml
-      java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar obsidian \
-        -o target/reference \
-        target/CoreRulebooks-merged.xml
-      ```
-    - Using the jbang installed alias: 
-      ```shell
-      fc5-convert obsidian --help
-      fc5-convert obsidian \
-        -o target/reference \
-        target/CoreRulebooks-merged.xml
-      ```    
+    ```shell
+    fc5-convert obsidian --help
+    fc5-convert obsidian \
+      -o target/reference \
+      target/CoreRulebooks-merged.xml
+    ```    
 
 6. Export items to CSV (notice `-o target` for the output directory)
-   - Using the built jar:
-     ```shell
-     java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar \
-         transform -o target -x .csv \
-         -t src/main/resources/itemExport.xslt \
-         target/CoreRulebooks-merged.xml
-     ```
-   - Using the jbang installed alias :
-     ```shell
-     fc5-convert transform -o target -x .csv \
-       -t src/main/resources/itemExport.xslt \
-       target/CoreRulebooks-merged.xml
-     ```    
+   ```shell
+   fc5-convert transform -o target -x .csv \
+     -t src/main/resources/itemExport.xslt \
+     target/CoreRulebooks-merged.xml
+   ```    
 
 ## Templates
 
@@ -266,27 +249,14 @@ This applicaiton uses the [Qute Templating Engine](https://quarkus.io/guides/qut
 
 ### When working with 5etools JSON
 
-```shell
-java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar 5etools 
-  --xml \
+```
+fc5-convert 5etools --xml \
   --md --background src/main/resources/templates/background2md.txt \
-  --index -o dm dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data wbtw-items.json
-```
-OR
-```
-fc5-convert 5etools --xml --md \
   --index -o dm dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data wbtw-items.json
 ```
 
 ### When working from FC5 XML
 
-```shell
-java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar 5etools 
-  --xml \
-  --md --background src/main/resources/templates/background2md.txt \
-  --index -o dm dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data wbtw-items.json
-```
-OR
 ```shell
 fc5-convert obsidian \
   --background src/main/resources/templates/background2md.txt \
