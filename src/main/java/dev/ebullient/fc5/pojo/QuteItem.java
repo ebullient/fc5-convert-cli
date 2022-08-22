@@ -275,7 +275,7 @@ public class QuteItem implements QuteSource {
         List<String> tags = new ArrayList<>();
         tags.add(type.getItemTag(properties));
         for (PropertyEnum p : properties) {
-            tags.add("item/property/" + p.value().toLowerCase());
+            tags.add("item/property/" + MarkdownWriter.slugifier().slugify(p.value().toLowerCase()));
         }
         return tags;
     }
