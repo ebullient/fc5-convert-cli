@@ -49,19 +49,19 @@ fc5-convert 5etools \
   --md \
   --index \
   -o dm \
-  dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data wbtw-items.json
+  dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data my-items.json
 ```
 
 - `--xml` Create FightClub 5 Compendium XML files (compendium.xml and files per type)
 - `--md` Create Obsidian Markdown from [Templates](#templates)
-- `--index` Create `all-index.json` containing all of the touched artifact ids, and `src-index.json` that shows the filtered/allowed artifact ids. These are useful when tweaking exclude rules (as shown below).
-- `-o dm` The target output directory. All of the above files will be created in this directory.
+- `--index` Create `all-index.json` containing all of the touched artifact ids, and `src-index.json` that shows the filtered/allowed artifact ids. These files are useful when tweaking exclude rules (as shown below).
+- `-o dm` The target output directory. Files will be created in this directory.
 
 The rest of the command-line specifies input files: 
 
-- `dm-sources.json` Parsing parameters (shown in detail below)
-- `~/git/dnd/5etools-mirror-1.github.io/data` Path to the data directory of the 5eTools mirror
-- `wbtw-items.json` Custom items
+- `dm-sources.json` Additional parameters (shown in detail below)
+- `~/git/dnd/5etools-mirror-1.github.io/data` Path to the data directory containing 5etools files
+- `my-items.json` Custom items
 
 ### Additional parameters
 
@@ -125,12 +125,12 @@ Additional instructions for dealing with 5etools data can be supplied in a json 
 }
 ```
 
-- `from` defines the array of all sources. If you omit from (and don't specify any other sources on the command line), only SRD items are included. Only include items from sources you own.
-- `paths` allows you to specify that path that should be used in cross-document links, and to find conditions, and weapon/item properties. Used only when generating Markdown. By default, items, spells, monsters, backgrounds, races, and classes are in `/compendium/`, while files defining conditions and properties are in `/rules/`.
+- `from` defines the array of all sources. Only include content from sources you own. If you omit this parameter (and don't specify any other sources on the command line), this tool will use content from the SRD. 
+- `paths` allows you to specify a document path for cross-document links, and to find conditions, and weapon/item properties. Used only when generating Markdown. By default, items, spells, monsters, backgrounds, races, and classes are in `/compendium/`, while files defining conditions and properties are in `/rules/`.
 - `exclude` and `excludePattern` work against identifiers that can be found in the generated index files. They allow you to further tweak/constrain what is emitted. In the above example, I'm excluding all of the race variants from the DMG, and the monster-form of the expert sidekick from the Essentials Kit.
 
-To generate player-focused compendiums for The Wild Beyond the Witchlight, I've constrained things. 
-I am pulling from a much smaller set of sources overall. I included Elemental Evil Player's Companion (Genasi) and Volo's Guide to Monsters (Tabaxi), but then added exclude patterns to remove elements from these sourcebooks that I don't want my players to see (yet): 
+To generate player-focused reference content for a Wild Beyond the Witchlight campaign, I've constrained things further. 
+I am pulling from a much smaller set of sources. I included Elemental Evil Player's Companion (Genasi) and Volo's Guide to Monsters (Tabaxi), but then added exclude patterns to remove elements from these sourcebooks that I don't want my players to use in this campaign (some simplification for beginners):
 
 ```json
 {
