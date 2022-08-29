@@ -31,41 +31,61 @@ To run commands listed below, either:
 
 - Replace `fc5-convert` with `java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar`
 - Use JBang to create an alias that points to the built jar: 
-  ```
+
+    ```shell
   jbang app install --name fc5-convert --force --fresh ~/.m2/repository/dev/ebullient/fc5-convert-cli/1.0.0-SNAPSHOT/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar
     ```
 
+    > Feel free to use an alternate alias by replacing the value specified as the name: `--name fc5-convert`, and adjust the commands shown below accordingly.
+
 ## Starting with 5eTools JSON data
 
-```
-fc5-convert 5etools --help
-```
+1. Download a release of the 5e tools mirror, or create a shallow clone of the repo (which can/should be deleted afterwards):
 
-An example invocation (based on sources I own): 
+    ```shell
+    git clone --depth 1 https://github.com/5etools-mirror-1/5etools-mirror-1.github.io.git
+    ```
 
-```
-fc5-convert 5etools \
-  --xml \
-  --md \
-  --index \
-  -o dm \
-  dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data my-items.json
-```
+2. Invoke the CLI. In this first example, let's generate indexes and use only SRD content:
 
-- `--xml` Create FightClub 5 Compendium XML files (compendium.xml and files per type)
-- `--md` Create Obsidian Markdown from [Templates](#templates)
-- `--index` Create `all-index.json` containing all of the touched artifact ids, and `src-index.json` that shows the filtered/allowed artifact ids. These files are useful when tweaking exclude rules (as shown below).
-- `-o dm` The target output directory. Files will be created in this directory.
+    ```
+    fc5-convert 5etools \
+    --xml \
+    --md \
+    --index \
+    -o dm \
+    ~/git/dnd/5etools-mirror-1.github.io/data
+    ```
 
-The rest of the command-line specifies input files: 
+    - `--xml` Create FightClub 5 Compendium XML files (compendium.xml and files per type)
+    - `--md` Create Obsidian Markdown from [Templates](#templates)
+    - `--index` Create `all-index.json` containing all of the touched artifact ids, and `src-index.json` that shows the filtered/allowed artifact ids. These files are useful when tweaking exclude rules (as shown below).
+    - `-o dm` The target output directory. Files will be created in this directory.
 
-- `dm-sources.json` Additional parameters (shown in detail below)
-- `~/git/dnd/5etools-mirror-1.github.io/data` Path to the data directory containing 5etools files
-- `my-items.json` Custom items
+    The rest of the command-line specifies input files: 
+
+    - `~/git/dnd/5etools-mirror-1.github.io/data` Path to the data directory containing 5etools files (a clone or release of the mirror repo)
+
+3. Invoke the command again, this time including sources and custom items:
+
+    ```shell
+    fc5-convert 5etools \
+    --xml \
+    --md \
+    --index \
+    -o dm \
+    -s PHB,DMG,SCAG \
+    5etools-mirror-1.github.io/data \
+    my-items.json dm-sources.json
+    ```
+    
+    - `-s PHB,DMG,SCAG` Will include content from the Player's Handbook, the Dungeon Master's Guide, and the Sword Coast Adventurer's Guide, all of which I own. Source abbreviations are found in the [source code](https://github.com/ebullient/fc5-convert-cli/blob/74e5a8e4f1d1ec5f3ba996d8ac9476a3a1dbe892/src/main/java/dev/ebullient/fc5/json5e/CompendiumSources.java#L113).
+    - `my-items.json` Custom items that I've created for my campaign that follow 5etools JSON format.
+    - `dm-sources.json` Additional parameters (shown in detail below)
 
 ### Additional parameters
 
-Additional instructions for dealing with 5etools data can be supplied in a json file like this (based on sources I own): 
+I use a json file to provide detailed configuration for sources, as doing so with command line arguments becomes tedious and error-prone. I use something like this:
 
 ```json
 {
@@ -74,38 +94,9 @@ Additional instructions for dealing with 5etools data can be supplied in a json 
     "PHB",
     "DMG",
     "TCE",
-    "XGE",
-
-    "SCAG",
-    "EGW",
-    "FS",
-    "MaBJoV",
-
-    "AWM",
-    "CM",
     "LMoP",
     "ESK",
     "DIP",
-    "SLW",
-    "SDW",
-    "DC",
-    "IDRotF",
-    "PotA",
-    "EEPC",
-    "GoS",
-    "OoW",
-    "TftYP",
-    "TftYP-AtG",
-    "TftYP-DiT",
-    "TftYP-TFoF",
-    "TftYP-THSoT",
-    "TftYP-TSC",
-    "TftYP-ToH",
-    "TftYP-WPM",
-    "WBtW",
-    "WDH",
-    "WDMM",
-
     "FTD",
     "MM",
     "MTF",
@@ -125,12 +116,23 @@ Additional instructions for dealing with 5etools data can be supplied in a json 
 }
 ```
 
-- `from` defines the array of all sources. Only include content from sources you own. If you omit this parameter (and don't specify any other sources on the command line), this tool will use content from the SRD. 
-- `paths` allows you to specify a document path for cross-document links, and to find conditions, and weapon/item properties. Used only when generating Markdown. By default, items, spells, monsters, backgrounds, races, and classes are in `/compendium/`, while files defining conditions and properties are in `/rules/`.
-- `exclude` and `excludePattern` work against identifiers that can be found in the generated index files. They allow you to further tweak/constrain what is emitted. In the above example, I'm excluding all of the race variants from the DMG, and the monster-form of the expert sidekick from the Essentials Kit.
+- `from` defines the array of sources that should be included. Only include content from sources you own. If you omit this parameter (and don't specify any other sources on the command line), this tool will only include content from the SRD.
 
-To generate player-focused reference content for a Wild Beyond the Witchlight campaign, I've constrained things further. 
-I am pulling from a much smaller set of sources. I included Elemental Evil Player's Companion (Genasi) and Volo's Guide to Monsters (Tabaxi), but then added exclude patterns to remove elements from these sourcebooks that I don't want my players to use in this campaign (some simplification for beginners):
+    - **Source abbreviations** are found in the [source code](https://github.com/ebullient/fc5-convert-cli/blob/74e5a8e4f1d1ec5f3ba996d8ac9476a3a1dbe892/src/main/java/dev/ebullient/fc5/json5e/CompendiumSources.java#L113)
+
+- `paths` allows you to redefine vault paths for cross-document links, and to link to documents defining conditions, and weapon/item properties. By default, items, spells, monsters, backgrounds, races, and classes are in `/compendium/`, while files defining conditions and weapon properties are in `/rules/`. You can reconfigure either of these path roots in this block: 
+
+    ```json
+    "paths": {
+      "compendium": "/compendium/",
+      "rules": "/rules/"
+    },
+    ```
+    > Note: the leading slash indicates the path starting at the root of your vault.
+
+- `exclude`, and `excludePattern` work against the identifiers (listed in the generated index files). They allow you to further tweak/constrain what is emitted as formatted markdown. In the above example, I'm excluding all of the race variants from the DMG, and the monster-form of the expert sidekick from the Essentials Kit. I own both of these books, but I don't want those creatures in the formatted bestiary.
+
+For example, to generate player-focused reference content for a Wild Beyond the Witchlight campaign, I've constrained things further: I am pulling from a much smaller set of sources. I included Elemental Evil Player's Companion (Genasi) and Volo's Guide to Monsters (Tabaxi), but then added exclude patterns to remove elements from these sourcebooks that I don't want my players to use in this campaign (some simplification for beginners). My JSON looks like this:
 
 ```json
 {
@@ -247,15 +249,15 @@ I am pulling from a much smaller set of sources. I included Elemental Evil Playe
 
 This applicaiton uses the [Qute Templating Engine](https://quarkus.io/guides/qute). Simple customizations to markdown output can be achieved by copying a template from src/main/resources/templates, making the desired modifications, and then specifying that template on the command line.
 
-### When working with 5etools JSON
+### When starting with 5etools JSON data
 
 ```
-fc5-convert 5etools --xml \
-  --md --background src/main/resources/templates/background2md.txt \
-  --index -o dm dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data wbtw-items.json
+fc5-convert 5etools --xml --md --index  -o dm \
+  --background src/main/resources/templates/background2md.txt \
+  dm-sources.json ~/git/dnd/5etools-mirror-1.github.io/data my-items.json
 ```
 
-### When working from FC5 XML
+### When starting from FC5 XML data
 
 ```shell
 fc5-convert obsidian \
