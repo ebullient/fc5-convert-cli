@@ -12,6 +12,7 @@ import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import dev.ebullient.fc5.Log;
 import dev.ebullient.fc5.json5e.JsonIndex.IndexType;
 
 public class CompendiumSources {
@@ -395,15 +396,14 @@ public class CompendiumSources {
         abvToName.put("XMtS", "X Marks the Spot");
     }
 
-    public void checkKnown(Json5eTui tui, Set<String> missing) {
+    public void checkKnown(Set<String> missing) {
         bookSources.forEach(s -> {
             if (abvToName.containsKey(s)) {
                 return;
             }
             if (missing.add(s)) {
-                tui.warnf("Source %s is unknown", s);
+                Log.warnf("Source %s is unknown", s);
             }
         });
-
     }
 }

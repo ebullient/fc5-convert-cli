@@ -48,6 +48,20 @@ public final class Log {
         }
     }
 
+    public static void warnf(String format, Object... params) {
+        warn(String.format(format, params));
+    }
+
+    public static void warn(String output) {
+        if (isVerbose()) {
+            if (colors == null) {
+                Log.out.println(output);
+            } else {
+                Log.out.println(colors.ansi().new Text("🔸 @|yellow " + output + "|@", colors));
+            }
+        }
+    }
+
     public static void errorf(String format, Object... args) {
         error(null, String.format(format, args));
     }
