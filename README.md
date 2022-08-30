@@ -13,7 +13,7 @@ I also use [Obsidian](https://obsidian.md) to keep track of my notes. The goal i
 1. Install JBang: https://www.jbang.dev/documentation/guide/latest/installation.html
 2. Install the snapshot jar: 
   ```
-  jbang app install --name fc5-convert --force --fresh https://jitpack.io/dev/ebullient/fc5-convert-cli/1.0.0-SNAPSHOT/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar
+  jbang app install --name fc5-convert --force --fresh https://jitpack.io/dev/ebullient/fc5-convert-cli/1.1.0-SNAPSHOT/fc5-convert-cli-1.1.0-SNAPSHOT-runner.jar
   ```
 3. Run the command: 
   ```
@@ -24,16 +24,16 @@ I also use [Obsidian](https://obsidian.md) to keep track of my notes. The goal i
 
 1. Clone this repository
 2. Build this project: `quarkus build` or `./mvnw install`
-3. `java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar --help`
+3. `java -jar target/fc5-convert-cli-1.1.0-SNAPSHOT-runner.jar --help`
 
 
 To run commands listed below, either: 
 
-- Replace `fc5-convert` with `java -jar target/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar`
+- Replace `fc5-convert` with `java -jar target/fc5-convert-cli-1.1.0-SNAPSHOT-runner.jar`
 - Use JBang to create an alias that points to the built jar: 
 
     ```shell
-  jbang app install --name fc5-convert --force --fresh ~/.m2/repository/dev/ebullient/fc5-convert-cli/1.0.0-SNAPSHOT/fc5-convert-cli-1.0.0-SNAPSHOT-runner.jar
+  jbang app install --name fc5-convert --force --fresh ~/.m2/repository/dev/ebullient/fc5-convert-cli/1.1.0-SNAPSHOT/fc5-convert-cli-1.1.0-SNAPSHOT-runner.jar
     ```
 
     > Feel free to use an alternate alias by replacing the value specified as the name: `--name fc5-convert`, and adjust the commands shown below accordingly.
