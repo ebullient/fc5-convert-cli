@@ -1,0 +1,6 @@
+name: FC5 convert CLI
+release:
+  current-version: 1.1.0-SNAPSHOT
+  next-version: 1.1.0
+  snapshot-version: 199-SNAPSHOT
+toggle: false
