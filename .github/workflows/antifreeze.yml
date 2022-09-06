@@ -25,15 +25,26 @@ jobs:
         java-version: 11
         distribution: 'temurin'
 
+    - name: yq - portable yaml processor
+      uses: mikefarah/yq@v4.27.3
+
+    - name: Project metadata
+      id: metadata
+      run: |
+        SNAPSHOT=$(yq '.release.snapshot-version' .github/project.yml)
+        ARTIFACT=$(yq '.artifact' .github/project.yml)
+        echo $SNAPSHOT $ARTIFACT
+
+        echo "::set-output name=snapshot::${SNAPSHOT}"
+        echo "::set-output name=artifact::${ARTIFACT}"
+
     - name: Delete Jitpack resource
       id: jitpack-antifreeze
       env:
         JITPACK_TOKEN: ${{ secrets.JITPACK_TOKEN }}
+        SNAPSHOT: ${{ steps.metadata.outputs.snapshot }}
+        ARTIFACT: ${{ steps.metadata.outputs.artifact }}
       shell: bash
       run: |
-        VERSION=$(./mvnw -B --no-transfer-progress help:evaluate -Dexpression=project.version | grep -v INFO)
-        echo $VERSION
-        if [[ $VERSION == [.0-9]*-SNAPSHOT ]]; then
-          echo "Delete JitPack artifacts for tag"
-          curl -X "DELETE" -u${JITPACK_TOKEN} https://jitpack.io/api/builds/dev.ebullient/fc5-convert-cli/$VERSION
-        fi
+        echo "Delete JitPack artifacts for tag"
+        curl -X "DELETE" -u${JITPACK_TOKEN} https://jitpack.io/api/builds/dev.ebullient/$ARTIFACT/$SNAPSHOT
