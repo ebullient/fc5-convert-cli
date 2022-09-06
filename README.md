@@ -14,7 +14,7 @@ I also use [Obsidian](https://obsidian.md) to keep track of my notes. The goal i
 2. Install the pre-built jar:  
 
     ```shell
-    jbang app install --name fc5-convert --force --fresh https://jitpack.io/dev/ebullient/fc5-convert-cli/1.1.0-SNAPSHOT/fc5-convert-cli-1.1.0-SNAPSHOT-runner.jar
+    jbang app install --name fc5-convert --force --fresh https://jitpack.io/dev/ebullient/fc5-convert-cli/1.1.0/fc5-convert-cli-1.1.0-runner.jar
     ```
 3. Run the command: 
 
