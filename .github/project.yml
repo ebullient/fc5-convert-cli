@@ -1,7 +1,9 @@
 name: FC5 convert CLI
-artifact: fc5-convert-cli
 release:
   current-version: 1.1.0-SNAPSHOT
   next-version: 1.1.0
   snapshot-version: 199-SNAPSHOT
+jitpack:
+  group: com.github.ebullient
+  artifact: fc5-convert-cli
 toggle: false
