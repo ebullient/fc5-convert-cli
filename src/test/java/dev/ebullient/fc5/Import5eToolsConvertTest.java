@@ -1,4 +1,4 @@
-package dev.ebullient.fc5.json5e;
+package dev.ebullient.fc5;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,9 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
-import dev.ebullient.fc5.Fc5ConvertTest;
 import io.quarkus.test.junit.main.Launch;
 import io.quarkus.test.junit.main.LaunchResult;
 import io.quarkus.test.junit.main.QuarkusMainLauncher;
@@ -30,7 +28,7 @@ public class Import5eToolsConvertTest {
     }
 
     @Test
-    void testIndexXmlData(TestInfo info, QuarkusMainLauncher launcher) throws Exception {
+    void testIndexXmlData(QuarkusMainLauncher launcher) throws Exception {
         if (TOOLS_PATH.toFile().exists()) {
             LaunchResult result;
             result = launcher.launch("5etools", "--index", "--xml",
@@ -57,7 +55,7 @@ public class Import5eToolsConvertTest {
     }
 
     @Test
-    void testMarkdownData(TestInfo info, QuarkusMainLauncher launcher) throws Exception {
+    void testMarkdownData(QuarkusMainLauncher launcher) throws Exception {
         if (TOOLS_PATH.toFile().exists()) {
             launcher.launch("5etools", "--index", "--md",
                     "--monster", "src/test/resources/customTemplates/monster2-pieces.txt",
@@ -69,7 +67,7 @@ public class Import5eToolsConvertTest {
     }
 
     @Test
-    void testMarkdownBook(TestInfo info, QuarkusMainLauncher launcher) throws Exception {
+    void testMarkdownBook(QuarkusMainLauncher launcher) throws Exception {
         if (TOOLS_PATH.toFile().exists()) {
             launcher.launch("5etools",
                     "-o", OUTPUT_PATH.toString(),
