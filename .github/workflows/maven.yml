@@ -48,7 +48,7 @@ jobs:
         cache: maven
 
     - name: yq - portable yaml processor
-      uses: mikefarah/yq@v4.30.2
+      uses: mikefarah/yq@v4.30.5
 
     - name: Project metadata
       id: metadata
