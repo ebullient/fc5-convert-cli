@@ -66,11 +66,11 @@ jobs:
           echo "Tag does not exist yet"
         fi
 
-        echo "::set-output name=current::${CURRENT}"
-        echo "::set-output name=next::${NEXT}"
-        echo "::set-output name=snapshot::${SNAPSHOT}"
-        echo "::set-output name=artifact::${ARTIFACT}"
-        echo "::set-output name=group::${GROUP}"
+        echo "current=${CURRENT}" >> $GITHUB_OUTPUT
+        echo "next=${NEXT}" >> $GITHUB_OUTPUT
+        echo "snapshot=${SNAPSHOT}" >> $GITHUB_OUTPUT
+        echo "artifact=${ARTIFACT}" >> $GITHUB_OUTPUT
+        echo "group=${GROUP}" >> $GITHUB_OUTPUT
 
     - name: Maven release
       if: steps.filter.outputs.project == 'true'
@@ -84,8 +84,8 @@ jobs:
       run: |
         if git rev-parse "refs/tags/$NEXT" >/dev/null 2>&1; then
           echo "🔹 Tagged release alreay exists"
-          mvn -B formatter:validate install --file pom.xml
-          echo "::set-output name=release::false"
+          ./mvnw -B formatter:validate install --file pom.xml
+          echo "release=false" >> $GITHUB_OUTPUT
         else
           echo "🔹 Creating new release"
 
@@ -93,7 +93,7 @@ jobs:
           sed -i -r "s/$CURRENT/$NEXT/g" README.md
           sed -i -r "s|<revision>.*</revision>|<revision>$NEXT</revision>|" pom.xml
 
-          mvn -B clean package
+          ./mvnw -B clean package
 
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -109,19 +109,19 @@ jobs:
           git add pom.xml
           git commit -m "🔧 Prepare for next release"
           git push
-          echo "::set-output name=release::true"
+          echo "{release}={true}" >> $GITHUB_OUTPUT
         fi
 
     - name: Build with Maven
       if: steps.filter.outputs.project == 'false'
       id: mvn-build
       run: |
-        mvn -B formatter:validate install --file pom.xml
+        ./mvnw -B formatter:validate install --file pom.xml
 
     # Temporarily disable native builds
     # - name: Build in native
     #  if: steps.filter.outputs.project == 'false'
-    #  run: mvn -B -Dnative verify --file pom.xml
+    #  run: ./mvnw -B -Dnative verify --file pom.xml
 
     # Create the release on github
     - name: Create Release
