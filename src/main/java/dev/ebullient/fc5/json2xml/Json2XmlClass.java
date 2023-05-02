@@ -3,8 +3,6 @@ package dev.ebullient.fc5.json2xml;
 import java.math.BigInteger;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 import dev.ebullient.fc5.Log;
@@ -18,6 +16,7 @@ import dev.ebullient.fc5.json5e.CompendiumSources;
 import dev.ebullient.fc5.json5e.JsonClass;
 import dev.ebullient.fc5.json5e.JsonIndex;
 import dev.ebullient.fc5.pojo.QuteClassAutoLevel;
+import jakarta.xml.bind.JAXBElement;
 
 public class Json2XmlClass extends Json2XmlBase implements JsonClass {
 

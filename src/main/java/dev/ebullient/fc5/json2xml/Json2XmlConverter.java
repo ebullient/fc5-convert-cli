@@ -8,16 +8,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-
 import dev.ebullient.fc5.Log;
 import dev.ebullient.fc5.json2xml.jaxb.XmlCompendiumType;
 import dev.ebullient.fc5.json2xml.jaxb.XmlObjectFactory;
 import dev.ebullient.fc5.json5e.CompendiumSources;
 import dev.ebullient.fc5.json5e.JsonIndex;
 import dev.ebullient.fc5.json5e.JsonIndex.IndexType;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 
 public class Json2XmlConverter {
 

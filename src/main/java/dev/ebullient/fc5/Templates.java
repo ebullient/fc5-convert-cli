@@ -7,13 +7,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import dev.ebullient.fc5.pojo.*;
 import dev.ebullient.fc5.pojo.MarkdownWriter.FileMap;
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class Templates {
