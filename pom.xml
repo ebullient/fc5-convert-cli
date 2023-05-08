@@ -45,7 +45,7 @@
         <!-- Libraries -->
         <assertj.version>3.24.2</assertj.version>
         <github-slugify.version>3.0.4</github-slugify.version>
-        <saxon-he.version>12.1</saxon-he.version>
+        <saxon-he.version>12.2</saxon-he.version>
     </properties>
     <dependencyManagement>
         <dependencies>
