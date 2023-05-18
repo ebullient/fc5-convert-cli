@@ -189,7 +189,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <groups>java.,javax.,org.,com.</groups>
+                    <groups>java.,javax.,jakarta.,org.,com.</groups>
                     <staticGroups>*</staticGroups>
                     <skip>${format.skip}</skip>
                     <removeUnused>true</removeUnused>
