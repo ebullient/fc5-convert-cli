@@ -1,4 +1,6 @@
-# fc5-convert-cli
+> 📝 Note: This project has been replaced by work to convert 5eTools JSON data directly to Markdown (see [ebullient/ttrpg-convert-cli](https://github.com/ebullient/ttrpg-convert-cli). If there is still a strong desire to have updated FC5 resources, I could be pursuaded to figure out how to accomplish that from the new codebase, which has a much cleaner/current input source than this one does.
+
+# fc5-convert-cli (Archived)
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
